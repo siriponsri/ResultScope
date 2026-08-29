@@ -1,0 +1,203 @@
+from __future__ import annotations
+
+import json
+import logging
+import os
+import sqlite3
+import threading
+import time
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any
+
+import httpx
+
+from config import settings
+
+logger = logging.getLogger(__name__)
+
+
+class ConversationStore(ABC):
+    @abstractmethod
+    async def get(self, session_id: str) -> list[dict[str, str]]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def set(self, session_id: str, history: list[dict[str, str]]) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def clear(self, session_id: str) -> None:
+        raise NotImplementedError
+
+
+class MemoryConversationStore(ConversationStore):
+    def __init__(self) -> None:
+        self._data: dict[str, tuple[float, list[dict[str, str]]]] = {}
+
+    def _prune(self) -> None:
+        now = time.time()
+        expired = [key for key, (expires, _) in self._data.items() if expires <= now]
+        for key in expired:
+            self._data.pop(key, None)
+
+    async def get(self, session_id: str) -> list[dict[str, str]]:
+        self._prune()
+        item = self._data.get(session_id)
+        return list(item[1]) if item else []
+
+    async def set(self, session_id: str, history: list[dict[str, str]]) -> None:
+        self._data[session_id] = (time.time() + settings.SESSION_TTL_SECONDS, list(history))
+
+    async def clear(self, session_id: str) -> None:
+        self._data.pop(session_id, None)
+
+
+class SQLiteConversationStore(ConversationStore):
+    """Simple local persistence for development.
+
+    SQLite is intentionally NOT presented as a durable Vercel production database because
+    serverless filesystems are ephemeral. It is excellent for local coursework and demos.
+    """
+
+    def __init__(self, path: str) -> None:
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
+        self._init_db()
+
+    def _connect(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self.path, timeout=5)
+        conn.execute("PRAGMA journal_mode=WAL")
+        return conn
+
+    def _init_db(self) -> None:
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS conversations (
+                    session_id TEXT PRIMARY KEY,
+                    history_json TEXT NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    expires_at INTEGER NOT NULL
+                )
+                """
+            )
+            conn.commit()
+
+    async def get(self, session_id: str) -> list[dict[str, str]]:
+        now = int(time.time())
+        with self._lock, self._connect() as conn:
+            row = conn.execute(
+                "SELECT history_json, expires_at FROM conversations WHERE session_id = ?",
+                (session_id,),
+            ).fetchone()
+            if not row:
+                return []
+            history_json, expires_at = row
+            if expires_at <= now:
+                conn.execute("DELETE FROM conversations WHERE session_id = ?", (session_id,))
+                conn.commit()
+                return []
+        try:
+            data = json.loads(history_json)
+            return data if isinstance(data, list) else []
+        except json.JSONDecodeError:
+            return []
+
+    async def set(self, session_id: str, history: list[dict[str, str]]) -> None:
+        now = int(time.time())
+        expires = now + settings.SESSION_TTL_SECONDS
+        payload = json.dumps(history, ensure_ascii=False)
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO conversations(session_id, history_json, updated_at, expires_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(session_id) DO UPDATE SET
+                    history_json = excluded.history_json,
+                    updated_at = excluded.updated_at,
+                    expires_at = excluded.expires_at
+                """,
+                (session_id, payload, now, expires),
+            )
+            conn.commit()
+
+    async def clear(self, session_id: str) -> None:
+        with self._lock, self._connect() as conn:
+            conn.execute("DELETE FROM conversations WHERE session_id = ?", (session_id,))
+            conn.commit()
+
+
+class UpstashConversationStore(ConversationStore):
+    """Tiny Redis-over-HTTP adapter requiring no extra dependency.
+
+    Configure UPSTASH_REDIS_REST_URL/TOKEN. Messages are stored with a TTL and no user
+    identity. For real healthcare deployment, add formal privacy/security controls first.
+    """
+
+    def __init__(self, url: str, token: str) -> None:
+        self.url = url.rstrip("/")
+        self.token = token
+        self._headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    def _key(self, session_id: str) -> str:
+        return f"resultscope:session:{session_id}"
+
+    async def _command(self, command: list[Any]) -> Any:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            response = await client.post(self.url, headers=self._headers, json=command)
+            response.raise_for_status()
+            body = response.json()
+            return body.get("result")
+
+    async def get(self, session_id: str) -> list[dict[str, str]]:
+        try:
+            raw = await self._command(["GET", self._key(session_id)])
+            if not raw:
+                return []
+            data = json.loads(raw)
+            return data if isinstance(data, list) else []
+        except Exception:
+            logger.exception("Upstash read failed; returning empty history")
+            return []
+
+    async def set(self, session_id: str, history: list[dict[str, str]]) -> None:
+        payload = json.dumps(history, ensure_ascii=False)
+        try:
+            await self._command(
+                ["SETEX", self._key(session_id), settings.SESSION_TTL_SECONDS, payload]
+            )
+        except Exception:
+            logger.exception("Upstash write failed")
+
+    async def clear(self, session_id: str) -> None:
+        try:
+            await self._command(["DEL", self._key(session_id)])
+        except Exception:
+            logger.exception("Upstash delete failed")
+
+
+def build_store() -> ConversationStore:
+    backend = settings.STORAGE_BACKEND.lower().strip()
+    has_upstash = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
+    on_vercel = bool(os.getenv("VERCEL"))
+
+    if backend == "upstash" or (backend == "auto" and has_upstash):
+        logger.info("Conversation storage: Upstash Redis")
+        return UpstashConversationStore(
+            settings.UPSTASH_REDIS_REST_URL,
+            settings.UPSTASH_REDIS_REST_TOKEN,
+        )
+
+    if backend == "sqlite" or (backend == "auto" and not on_vercel):
+        logger.info("Conversation storage: SQLite (%s)", settings.SQLITE_PATH)
+        return SQLiteConversationStore(settings.SQLITE_PATH)
+
+    logger.warning(
+        "Conversation storage: in-memory. On Vercel this is non-durable; configure Upstash for persistence."
+    )
+    return MemoryConversationStore()
+
+
+conversation_store = build_store()

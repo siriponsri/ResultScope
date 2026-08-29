@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F2F0E8" />
+    <meta
+      name="description"
+      content="ResultScope — lab-only AI assistant that turns laboratory results into clear, grounded explanations."
+    />
+    <title>{{ app_name }} — {{ tagline }}</title>
+    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="ResultScope home">
+          <img src="/static/img/mark.svg" alt="" width="38" height="38" />
+          <span class="brand-copy">
+            <strong>{{ app_name }}</strong>
+            <span>LAB INTELLIGENCE</span>
+          </span>
+        </a>
+        <div class="topbar-meta">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Lab-only by design</span>
+          <span class="divider">/</span>
+          <span>{{ owner_name }}</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="rail" aria-label="Product context">
+          <div class="rail-block intro-block">
+            <p class="eyebrow">RESULTS, NOT NOISE</p>
+            <h1>Make lab results readable.</h1>
+            <p class="lede">
+              เปลี่ยนตัวเลขบนใบผลตรวจให้เป็นคำอธิบายที่มีบริบท โดยแยกสิ่งที่เห็นจริง
+              ออกจากสิ่งที่ยังต้องตีความ
+            </p>
+          </div>
+
+          <div class="rail-block">
+            <p class="rail-label">SUPPORTED DOMAINS</p>
+            <nav class="domain-list" aria-label="Supported laboratory domains">
+              <button type="button" data-sample="CBC: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100), Ferritin 7 ng/mL (15–150). ช่วยอธิบายภาพรวมให้หน่อย">
+                <span>01</span><strong>CBC & hematology</strong>
+              </button>
+              <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m² ช่วยอธิบายว่าควรอ่านสองค่านี้ร่วมกันอย่างไร">
+                <span>02</span><strong>Kidney function</strong>
+              </button>
+              <button type="button" data-sample="AST 68 U/L (0–40), ALT 92 U/L (0–41), ALP 88 U/L (40–129), bilirubin 0.8 mg/dL. ช่วยดู pattern ให้หน่อย">
+                <span>03</span><strong>Liver panel</strong>
+              </button>
+              <button type="button" data-sample="HbA1c 6.1% หมายความว่าอย่างไร และข้อมูลอะไรที่ต้องมีเพิ่มก่อนตีความ">
+                <span>04</span><strong>Glucose & HbA1c</strong>
+              </button>
+              <button type="button" data-sample="LDL 162 mg/dL, HDL 42 mg/dL, triglyceride 185 mg/dL. ช่วยอธิบายผล lipid profile แบบไม่ฟันธงโรค">
+                <span>05</span><strong>Lipid profile</strong>
+              </button>
+              <button type="button" data-sample="TSH 8.2 mIU/L, FT4 0.72 ng/dL. ช่วยอธิบายความสัมพันธ์ของสองค่านี้">
+                <span>06</span><strong>Thyroid & hormones</strong>
+              </button>
+            </nav>
+          </div>
+
+          <div class="rail-block guardrail-block">
+            <p class="rail-label">GUARDRAIL</p>
+            <p>
+              คำถามนอกเรื่องผลตรวจจะถูกหยุดด้วย symbolic scope gate ก่อนเรียก LLM
+              เพื่อลด hallucination และค่า API ที่ไม่จำเป็น
+            </p>
+          </div>
+
+          <div class="rail-foot">
+            <span>Prototype v0.1</span>
+            <span>Educational use only</span>
+          </div>
+        </aside>
+
+        <section class="analysis-panel" aria-label="Laboratory result assistant">
+          <div id="starter" class="starter">
+            <div class="starter-head">
+              <p class="eyebrow">NEW ANALYSIS</p>
+              <h2>Your lab results, in context.</h2>
+              <p>
+                วางผลตรวจหลายค่าได้เลย ถ้ามี <strong>หน่วย</strong> และ
+                <strong>reference range</strong> ให้ใส่มาด้วย ระบบจะยึดข้อมูลในใบผลตรวจเป็นหลัก
+              </p>
+            </div>
+
+            <div class="prompt-modes" aria-label="Quick actions">
+              <button type="button" data-prefix="ช่วย review ผลตรวจชุดนี้ให้หน่อย:\n">Review a panel</button>
+              <button type="button" data-prefix="ช่วยอธิบายผลตรวจค่านี้ให้เข้าใจง่าย:\n">Explain one test</button>
+              <button type="button" data-prefix="ช่วยเปรียบเทียบผลตรวจสองช่วงเวลานี้:\n">Compare over time</button>
+              <button type="button" data-prefix="จากผลตรวจนี้ ควรถามแพทย์หรือห้องปฏิบัติการอะไรต่อ:\n">What to ask next</button>
+            </div>
+
+            <form id="chat-form" class="composer">
+              <label for="message-input">LAB RESULT OR QUESTION</label>
+              <textarea
+                id="message-input"
+                rows="7"
+                maxlength="12000"
+                placeholder="ตัวอย่าง: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100), Ferritin 7 ng/mL (15–150)"
+                required
+              ></textarea>
+              <div class="composer-foot">
+                <button id="sample-button" class="text-button" type="button">Load sample</button>
+                <div class="composer-actions">
+                  <span id="char-count" class="char-count">0 / 12,000</span>
+                  <button id="send-button" class="primary-button" type="submit">
+                    Analyze result
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                  <button id="stop-button" class="secondary-button hidden" type="button">Stop</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="trust-line">
+              <span>Reference-range aware</span>
+              <span>Lab-only scope gate</span>
+              <span>No diagnosis or prescribing</span>
+            </div>
+          </div>
+
+          <div id="conversation" class="conversation hidden">
+            <div class="conversation-bar">
+              <div>
+                <p class="eyebrow">ACTIVE ANALYSIS</p>
+                <h2>Result interpretation</h2>
+              </div>
+              <button id="new-chat-button" type="button" class="text-button">New analysis</button>
+            </div>
+
+            <div id="chat-window" class="chat-window" aria-live="polite">
+              <div id="loading-indicator" class="loading-indicator hidden">
+                <span></span><span></span><span></span>
+                <p>Interpreting values and context…</p>
+              </div>
+            </div>
+
+            <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+            <form id="followup-form" class="followup-form">
+              <label for="followup-input">ASK ABOUT THESE RESULTS</label>
+              <div class="followup-row">
+                <textarea
+                  id="followup-input"
+                  rows="2"
+                  maxlength="12000"
+                  placeholder="เช่น แล้วค่าไหนควรติดตามซ้ำ หรือข้อมูลอะไรที่ยังขาด?"
+                  required
+                ></textarea>
+                <button id="followup-send" type="submit" class="primary-button">Send</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>{{ app_name }} / Business-ready coursework starter</span>
+        <span>AI-generated education · Not a diagnosis · Seek professional care for medical decisions</span>
+      </footer>
+    </div>
+
+    <script src="/static/js/chat.js"></script>
+  </body>
+</html>
