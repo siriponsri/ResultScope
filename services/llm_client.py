@@ -36,13 +36,15 @@ def _auth_headers() -> dict[str, str]:
 
 
 def _build_messages(
-    history: list[dict[str, str]], message: str, symbolic_context: str = ""
+    history: list[dict[str, str]], message: str, rule_grounding: str = ""
 ) -> list[dict[str, str]]:
     messages: list[dict[str, str]] = []
     if settings.SYSTEM_PROMPT:
         messages.append({"role": "system", "content": settings.SYSTEM_PROMPT})
-    if symbolic_context:
-        messages.append({"role": "system", "content": symbolic_context})
+    if rule_grounding:
+        # Kept as a system message for broad OpenAI-compatible provider support.
+        # Semantically this is the output of a required deterministic tool call.
+        messages.append({"role": "system", "content": rule_grounding})
     messages.extend(history[-settings.MAX_HISTORY_MESSAGES :])
     messages.append({"role": "user", "content": message})
     return messages
@@ -90,12 +92,12 @@ async def list_models() -> list[dict[str, Any]]:
 
 
 async def chat(
-    history: list[dict[str, str]], message: str, symbolic_context: str = ""
+    history: list[dict[str, str]], message: str, rule_grounding: str = ""
 ) -> str:
     _ensure_configured()
     payload: dict[str, Any] = {
         "model": settings.LLM_MODEL,
-        "messages": _build_messages(history, message, symbolic_context),
+        "messages": _build_messages(history, message, rule_grounding),
     }
     async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
         try:
@@ -122,7 +124,7 @@ async def chat(
 async def chat_stream(
     history: list[dict[str, str]],
     message: str,
-    symbolic_context: str = "",
+    rule_grounding: str = "",
 ) -> AsyncGenerator[dict[str, Any], None]:
     try:
         _ensure_configured()
@@ -132,7 +134,7 @@ async def chat_stream(
 
     payload: dict[str, Any] = {
         "model": settings.LLM_MODEL,
-        "messages": _build_messages(history, message, symbolic_context),
+        "messages": _build_messages(history, message, rule_grounding),
         "stream": True,
     }
 

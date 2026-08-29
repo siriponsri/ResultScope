@@ -7,17 +7,20 @@ The LLM is **not** the policy engine.
 ```text
 User input
   ↓
-Symbolic lab scope gate
-  ├─ out of scope → deterministic product response (no LLM call)
-  └─ in scope
+Versioned deterministic engine
+  ├─ scope denied → local product response (no LLM call)
+  └─ scope allowed
        ↓
-Deterministic marker/value/range parser
+literal parser → range validation → arithmetic flags → applied-rule trace
        ↓
-Session context + symbolic facts
+authoritative pre-answer contract (facts + rules + safety obligations)
        ↓
-OpenAI-compatible LLM
+OpenAI-compatible LLM reads contract before history and current message
        ↓
-Grounded educational explanation
+one integrated interactive analysis surface
+  ├─ selectable values + supplied-range visualization
+  ├─ grounded educational narrative
+  └─ progressively disclosed rule trace
 ```
 
 ## Why neuro-symbolic here
@@ -29,6 +32,9 @@ The symbolic layer handles things that should be explicit and testable:
 - marker/value/reference-range-like syntax;
 - high/low/within flags computed only from the user-supplied reference interval;
 - whether an ambiguous follow-up is attached to existing lab context.
+- the exact rule trace supplied to the LLM before it answers.
+
+The browser never calculates a medical status. It visualizes analysis metadata returned by the server.
 
 The neural layer handles things it is good at:
 

@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     APP_TAGLINE: str = "Laboratory results, in context."
     OWNER_NAME: str = "Your Name"
     APP_ENV: str = "development"
+    # Same-origin UI needs no CORS. Set an explicit comma-separated allowlist
+    # only when a separate trusted frontend must call this API.
+    CORS_ALLOWED_ORIGINS: str = ""
 
     # LLM: OpenAI-compatible provider (OpenRouter by default)
     LLM_BASE_URL: str = "https://openrouter.ai/api/v1"

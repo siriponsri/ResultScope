@@ -29,7 +29,9 @@ and adds a product layer:
 - **Lab-only by design** — unrelated prompts are blocked deterministically before an API call.
 - **Neuro-symbolic split** — symbolic rules define scope **and deterministically parse supplied marker/value/range data**; the LLM handles language and contextual explanation.
 - **Reference-range discipline** — prompt policy tells the model to use user-supplied ranges rather than inventing them.
-- **Deterministic readout** — parsed values are shown before the AI narrative; high/low flags are calculated only from ranges the user supplied.
+- **Versioned deterministic rulebook** — scope, parsing, range, grounding, safety, and output rules are inspectable at `GET /api/v1/rules`.
+- **Pre-answer contract** — applicable rules and immutable facts are placed before history and the current user message for every allowed LLM request.
+- **One integrated analysis** — selectable values, supplied-range visualization, AI narrative, and optional rule provenance live in one result object rather than competing outputs.
 - **Structured explanations** — Snapshot → What stands out → How values connect → Missing context → Questions to take forward.
 - **Serverless-aware session layer** — SQLite for local development, optional Upstash Redis for durable Vercel sessions.
 - **Business-oriented UI** — editorial/clinical visual system rather than a ChatGPT clone.
@@ -74,9 +76,12 @@ LLM_BASE_URL=https://openrouter.ai/api/v1
 LLM_API_KEY=your_key_here
 LLM_MODEL=openai/gpt-4o-mini
 OWNER_NAME=Your Name
+CORS_ALLOWED_ORIGINS=
 ```
 
 `OWNER_NAME` is intentionally visible in the UI so the deployed coursework link clearly identifies the student/project owner.
+
+Keep `CORS_ALLOWED_ORIGINS` empty for the bundled same-origin web app. If a separate trusted frontend must call the API, set an explicit comma-separated origin allowlist; wildcard credentialed CORS is intentionally disabled.
 
 Then restart the server and open:
 
@@ -166,7 +171,7 @@ UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
 ```
 
-4. Deploy. `vercel.json` routes requests to `api/index.py`, which exposes the FastAPI application from `main.py`.
+4. Deploy. Vercel's current FastAPI zero-config path discovers the root `main.py` ASGI `app`; this repo intentionally does not carry the removed legacy `api/index.py` adapter or `vercel.json`.
 5. Open the generated URL and verify `/health`, an in-scope lab question, and an out-of-scope question.
 
 ## Recommended pre-submission smoke test
@@ -229,19 +234,21 @@ Current tests cover:
 # Project structure
 
 ```text
-api/index.py               Vercel entrypoint
-main.py                    FastAPI app + static/template serving
+main.py                    FastAPI ASGI entrypoint + static/template serving
 config.py                  Product/LLM/storage configuration
 routers/chat.py            Session, scope gate, streaming API
 services/llm_client.py     OpenAI-compatible LLM transport
 services/lab_scope.py      Symbolic lab-domain classifier
 services/lab_parser.py     Deterministic marker/value/range parser
+services/deterministic_rules.py Versioned inspectable rule definitions
+services/deterministic_engine.py Runtime analysis + pre-answer LLM contract
 services/store.py          Memory / SQLite / Upstash adapters
 templates/index.html       Product UI
 static/css/style.css       Visual system
 static/js/chat.js          Streaming chat + guardrail UX
 static/img/                ResultScope SVG identity
-tests/                     Scope/store tests
+tests/                     Scope/store/engine/API-contract tests
+docs/DETERMINISTIC_RULEBOOK.md Human-readable engine contract
 scripts/                   Windows local workflow
 BUSINESS_BRIEF.md          Commercialization hypothesis
 ARCHITECTURE.md            Technical/product boundaries

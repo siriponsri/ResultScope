@@ -5,6 +5,7 @@ __pycache__/
 .env
 .vercel/
 data/*.db
+data/*.db-*
 data/*.sqlite*
 .DS_Store
 Thumbs.db

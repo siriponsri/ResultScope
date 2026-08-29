@@ -14,6 +14,6 @@ if (-not (Test-Path ".venv")) {
 }
 & .\.venv\Scripts\Activate.ps1
 Invoke-NativeCommand { python -m pip install -r requirements-dev.txt }
-Invoke-NativeCommand { python -m compileall -q api main.py config.py routers services tests }
+Invoke-NativeCommand { python -m compileall -q main.py config.py routers services tests }
 Invoke-NativeCommand { python -m pytest -q }
 Write-Host "Checks passed." -ForegroundColor Green

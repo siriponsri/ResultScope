@@ -10,7 +10,11 @@ from pydantic import BaseModel, Field
 
 from config import settings
 from services import llm_client
-from services.lab_parser import build_symbolic_context, extract_lab_values
+from services.deterministic_engine import (
+    analyze_message,
+    build_rule_grounding,
+    get_rulebook,
+)
 from services.lab_scope import (
     SCOPE_SUGGESTIONS,
     classify_lab_scope,
@@ -72,11 +76,17 @@ async def get_product():
     }
 
 
+@router.get("/rules")
+async def get_rules():
+    """Inspectable source of truth for the deterministic pre-answer layer."""
+    return get_rulebook()
+
+
 @router.post("/scope/check")
 async def post_scope_check(scope_request: ScopeRequest, request: Request):
     session_id, _ = _session_id(request)
     history = await conversation_store.get(session_id)
-    decision = classify_lab_scope(scope_request.message, history)
+    decision = analyze_message(scope_request.message, history).scope
     return {
         "allowed": decision.allowed,
         "reason": decision.reason,
@@ -107,7 +117,8 @@ async def post_chat_reset(request: Request, response: Response):
 async def post_chat(chat_request: ChatRequest, request: Request, response: Response):
     session_id, is_new = _session_id(request)
     history = await conversation_store.get(session_id)
-    decision = classify_lab_scope(chat_request.message, history)
+    analysis = analyze_message(chat_request.message, history)
+    decision = analysis.scope
 
     if is_new:
         _set_session_cookie(response, session_id)
@@ -115,11 +126,10 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
     if not decision.allowed:
         return ChatResponse(reply=local_scope_reply(decision, chat_request.message), scope=decision.reason)
 
-    parsed_values = extract_lab_values(chat_request.message)
-    symbolic_context = build_symbolic_context(parsed_values)
+    rule_grounding = build_rule_grounding(analysis)
 
     try:
-        reply_text = await llm_client.chat(history, chat_request.message, symbolic_context)
+        reply_text = await llm_client.chat(history, chat_request.message, rule_grounding)
     except LLMConnectionError as exc:
         return JSONResponse(status_code=502, content={"error": True, "message": exc.message})
 
@@ -138,7 +148,8 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
 async def post_chat_stream(chat_request: ChatRequest, request: Request):
     session_id, is_new = _session_id(request)
     history = await conversation_store.get(session_id)
-    decision = classify_lab_scope(chat_request.message, history)
+    analysis = analyze_message(chat_request.message, history)
+    decision = analysis.scope
 
     async def event_generator():
         if not decision.allowed:
@@ -154,26 +165,16 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
             yield 'data: {"done": true}\n\n'
             return
 
-        parsed_values = extract_lab_values(chat_request.message)
-        symbolic_context = build_symbolic_context(parsed_values)
-        if parsed_values:
-            yield "data: " + json.dumps(
-                {
-                    "analysis_meta": {
-                        "category": decision.category,
-                        "count": len(parsed_values),
-                        "flagged_count": sum(1 for item in parsed_values if item.flag in {"low", "high"}),
-                        "values": [item.to_dict() for item in parsed_values],
-                    }
-                },
-                ensure_ascii=False,
-            ) + "\n\n"
+        rule_grounding = build_rule_grounding(analysis)
+        yield "data: " + json.dumps(
+            {"analysis_meta": analysis.to_public_dict()}, ensure_ascii=False
+        ) + "\n\n"
 
         received_done = False
         accumulated_text = ""
         try:
             async for event in llm_client.chat_stream(
-                history, chat_request.message, symbolic_context
+                history, chat_request.message, rule_grounding
             ):
                 if event["type"] == "delta":
                     accumulated_text += event["content"]
@@ -200,6 +201,15 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
                         {"role": "user", "content": chat_request.message},
                         {"role": "assistant", "content": accumulated_text},
                     ]
+                )
+                await conversation_store.set(session_id, updated)
+            elif not received_done:
+                # Keep an accepted lab result as session context even when the
+                # provider is unavailable. A follow-up can then remain inside
+                # the same lab-only workflow instead of being rejected as an
+                # unrelated question.
+                updated = _bounded_history(
+                    history + [{"role": "user", "content": chat_request.message}]
                 )
                 await conversation_store.set(session_id, updated)
             if not received_done:

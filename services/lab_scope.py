@@ -151,7 +151,10 @@ def history_has_lab_context(history: list[dict[str, str]]) -> bool:
 
 def _matches_simple_intent(normalized: str, patterns: tuple[str, ...]) -> bool:
     stripped = normalized.strip(".!?,;: ")
-    return any(stripped == pattern or stripped.startswith(f"{pattern} ") for pattern in patterns)
+    # Local intents must be conversational messages on their own. Prefix matching
+    # would turn requests such as "Help me write Python" into product-help copy
+    # instead of the required lab-only out-of-scope response.
+    return stripped in patterns
 
 
 def classify_lab_scope(message: str, history: list[dict[str, str]] | None = None) -> ScopeDecision:
@@ -202,6 +205,14 @@ SCOPE_SUGGESTIONS = [
 def local_scope_reply(decision: ScopeDecision, message: str) -> str:
     """Return deterministic product copy for requests that should not reach the LLM."""
     thai = any("\u0e00" <= char <= "\u0e7f" for char in message)
+    if decision.reason == "outside_lab_scope":
+        if thai:
+            return OUT_OF_SCOPE_MESSAGE_TH
+        return (
+            "ResultScope is focused on laboratory results. Share a test name, value, unit, "
+            "and reference range, or ask about a panel such as CBC, kidney, liver, HbA1c, "
+            "lipid, or thyroid testing."
+        )
     if thai:
         replies = {
             "greeting": "สวัสดีครับ ผมช่วยอธิบายผลตรวจทางห้องปฏิบัติการได้ ส่งชื่อการตรวจ ค่า หน่วย และช่วงอ้างอิงมาได้เลย",

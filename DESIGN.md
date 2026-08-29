@@ -1,124 +1,66 @@
-# DESIGN.md — ResultScope UI direction
+# DESIGN.md — ResultScope spectral instrument direction
 
-## Objective
-Transform ResultScope from a chatbot assignment into a business-grade medical web app POC.
+## Design thesis
 
-## Design inspiration
-Use the interaction feel of a modern AI assistant in light mode:
-- clean
-- elegant
-- calm
-- product-like
-- minimal but premium
+ResultScope is an **interactive laboratory signal canvas**, not a chatbot wearing a health-tech theme.
 
-Do NOT copy the Dribbble screen literally.
-Use only high-level inspiration:
-- light mode layout
-- refined spacing
-- strong hierarchy
-- premium assistant feel
-- soft rounded surfaces
-- clear conversation flow
+The signature is a deep spectral field, instrument-like typography, hard-edged analysis surfaces, and direct manipulation of extracted values. Gradient and motion are allowed only when they communicate signal, depth, focus, or state change.
 
-## Product identity
-ResultScope is not a general chatbot.
-It is a lab-intelligence web app.
+## Primary interaction
 
-The UI should communicate:
-- laboratory result analysis
-- trustworthy interpretation workflow
-- educational medical context
-- structured result explanation
-- safe scope boundary
+1. Paste a report or ask a laboratory question.
+2. Watch one visible sequence: **Read → Verify → Explain**.
+3. Receive one integrated analysis object, not a symbolic answer followed by a separate AI answer.
+4. Select any extracted value to inspect its supplied range and deterministic status.
+5. Open **How this answer was grounded** only when rule-level provenance is useful.
+6. Ask a follow-up inside the current laboratory context.
 
-## Brand feel
-- clinical
-- modern
-- calm
-- premium
-- English-first
-- practical, not editorial
-- not playful
-- not startup-hype
-- not robotic
+## Anti-AI-slop guardrails
 
-## Visual rules
 Avoid:
-- dark mode
-- glassmorphism
-- neon gradients
-- floating blobs
-- generic AI sparkles
-- cartoonish icons
-- ChatGPT clone UI
-- feature-card spam
+
+- generic beige SaaS composition;
+- floating glass cards and decorative orbs;
+- a Three.js wireframe/polyhedron used only to signal “AI”;
+- pill-shaped controls everywhere;
+- neon glow on every edge;
+- robot, brain, sparkle, or magic-wand imagery;
+- generic chat bubbles or a transcript as the primary product surface;
+- grids of promotional feature cards;
+- rounded rectangles without information hierarchy;
+- continuous motion unrelated to user input or application state.
 
 Prefer:
-- light background
-- subtle panel contrast
-- medical accent colors
-- sans-serif hierarchy with a restrained mono data layer
-- one primary intake panel, not a staged marketing sequence
-- compact structured result views
-- soft borders
-- clean iconography
-- mobile-first responsiveness
 
-## Suggested palette
-- background: warm off-white / very light gray
-- surface: white
-- text: deep slate
-- muted text: cool gray
-- primary accent: medical teal / blue-green
-- secondary accent: soft cyan
-- success/info accents: restrained green-blue
-- danger/warning: muted clinical red/amber only when needed
+- one memorable domain-specific visual system: spectral lines and instrument readouts;
+- asymmetrical, hard-edged composition with clipped corners;
+- data typography and stable spatial relationships;
+- direct value selection and a responsive range inspector;
+- progressive disclosure for detailed rule traces;
+- transitions that preserve object identity and explain state change;
+- high-contrast long-form reading surfaces;
+- reduced-motion and keyboard-complete behavior.
 
-## Layout
-Desktop:
-- left informational rail or top summary zone
-- main analysis workspace
-- structured input composer
-- results/chat panel
-- deterministic result summary visible
+## Visual system
 
-Mobile:
-- single-column
-- no cramped two-column layout
-- sticky input actions if useful
-- cards stack vertically
-- maintain premium spacing and readability
+- Background: deep ink-to-violet spectral gradient with a pointer-responsive contour field.
+- Data accent: cyan for active/verified, restrained red for outside range, green for within, amber for unknown.
+- Surfaces: solid dark instrument console and light analysis canvas; no glassmorphism.
+- Shape: square/low-radius controls, clipped top-right corners, circular geometry only for status and value markers.
+- Typography: Manrope for display, IBM Plex Sans Thai for body, IBM Plex Mono for rules and data.
+- Motion: short feedback for controls, interruptible value switching, staged Read/Verify/Explain progress, and no essential information conveyed by animation.
 
-## Core screens
-1. Landing / intake state
-   - concise English-first headline
-   - structured textarea as the clear first action
-   - compact examples below the intake
-   - safety note without promotional process copy
+## Responsive contract
 
-2. Active analysis state
-   - deterministic extracted values card
-   - flagged values summary
-   - AI interpretation panel
-   - follow-up input
-   - new analysis action
+- Desktop: narrative introduction + intake instrument; analysis rail + integrated result canvas.
+- Tablet: stacked intake; pipeline becomes a horizontal strip.
+- Mobile: single column, horizontally selectable value deck, no hidden essential controls, touch targets at least 44 px where practical.
 
-3. Out-of-scope state
-   - calm refusal
-   - explain lab-only boundary
-   - offer example prompts
+## Accessibility contract
 
-## Interaction rules
-- user should feel like using a web app, not only a chat window
-- first action = “Analyze result”
-- keep chat for follow-up
-- show symbolic/deterministic layer before AI narrative when available
-- loading states should feel premium and calm
-- errors should be product-like, not debug-like
-
-## Accessibility
-- responsive down to mobile width
-- readable contrast
-- clear focus states
-- touch-friendly buttons
-- avoid tiny text
+- visible focus states;
+- semantic buttons/details/headings;
+- status always written in text, never color-only;
+- `prefers-reduced-motion` disables nonessential animation;
+- canvas is decorative and `aria-hidden`;
+- the server owns all flags; JavaScript only visualizes returned metadata.

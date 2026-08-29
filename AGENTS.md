@@ -6,7 +6,7 @@ Turn the Week 7 FastAPI/Vercel chatbot starter into a credible lab-intelligence 
 
 ## Non-negotiables
 
-1. Preserve FastAPI + `api/index.py` + Vercel compatibility.
+1. Preserve FastAPI root `main.py` + Vercel zero-config compatibility. Do not recreate the removed legacy `api/index.py` adapter or `vercel.json` unless a verified platform requirement changes.
 2. Keep OpenAI-compatible provider portability.
 3. Do not expose API keys to the browser or commit `.env`.
 4. Unrelated prompts must be rejected before LLM invocation.
@@ -22,7 +22,7 @@ Turn the Week 7 FastAPI/Vercel chatbot starter into a credible lab-intelligence 
 Use Hallmark when available as an audit/redesign critic.
 
 Avoid:
-- gradient-heavy AI aesthetics;
+- generic aurora gradients that are unrelated to laboratory signal or interaction;
 - glass cards;
 - decorative blobs/orbs;
 - generic 3-column SaaS feature-card grids;
@@ -32,6 +32,9 @@ Avoid:
 
 Prefer:
 - clinical/editorial information design;
+- the spectral-instrument direction in `DESIGN.md`;
+- one integrated analysis object rather than separate deterministic and AI answers;
+- direct selection of extracted values and progressive rule disclosure;
 - strong typography and hierarchy;
 - clear data affordances;
 - accessible contrast/focus states;

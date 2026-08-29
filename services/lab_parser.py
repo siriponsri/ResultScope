@@ -12,6 +12,7 @@ class ParsedLabValue:
     reference_low: float | None
     reference_high: float | None
     flag: str  # low | high | within | unknown
+    range_state: str  # valid | missing | invalid
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -35,6 +36,8 @@ LAB_VALUE_RE = re.compile(
 
 def _flag(value: float, low: float | None, high: float | None) -> str:
     if low is None or high is None:
+        return "unknown"
+    if low > high:
         return "unknown"
     if value < low:
         return "low"
@@ -78,6 +81,13 @@ def extract_lab_values(text: str, max_values: int = 30) -> list[ParsedLabValue]:
                 reference_low=low,
                 reference_high=high,
                 flag=_flag(value, low, high),
+                range_state=(
+                    "missing"
+                    if low is None or high is None
+                    else "invalid"
+                    if low > high
+                    else "valid"
+                ),
             )
         )
 

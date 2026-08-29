@@ -10,6 +10,7 @@ Required:
 - LLM_API_KEY=<set in Vercel only>
 - LLM_MODEL=<your selected model>
 - STORAGE_BACKEND=auto
+- CORS_ALLOWED_ORIGINS= (leave empty for the same-origin web app)
 
 Optional:
 - UPSTASH_REDIS_REST_URL
@@ -20,15 +21,20 @@ Optional:
 - API key is not printed in logs
 - local app runs
 - /health returns ok
+- /api/v1/rules returns rulebook version 2026.08
 - in-scope lab prompt works
+- stream emits analysis_meta before the first LLM delta
+- selecting extracted values updates the range inspector
+- “How this answer was grounded” opens and is keyboard accessible
 - out-of-scope prompt is blocked
 - reset conversation works
 - mobile layout looks acceptable
+- reduced-motion preference removes nonessential motion
 - owner name is visible in UI
 
 ## Vercel checks
-- vercel.json points to api/index.py
-- app imports correctly from main.py
+- root main.py exports the FastAPI app for zero-config discovery
+- removed legacy api/index.py and vercel.json have not been recreated
 - static files load in deployment
 - homepage works
 - streaming chat works or gracefully degrades
