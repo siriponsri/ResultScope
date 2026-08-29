@@ -23,7 +23,7 @@ class LLMConnectionError(Exception):
 def _ensure_configured() -> None:
     if not settings.LLM_API_KEY or settings.LLM_API_KEY == "replace_me":
         raise LLMConnectionError(
-            "ยังไม่ได้ตั้งค่า LLM_API_KEY — ใส่ API key ในไฟล์ .env หรือ Vercel Environment Variables ก่อน",
+            "LLM_API_KEY is not configured. Add it in .env or Vercel Environment Variables before requesting an AI explanation.",
             status_code=503,
         )
 
@@ -57,7 +57,7 @@ def _friendly_error_from_response(exc: httpx.HTTPStatusError) -> LLMConnectionEr
         detail = exc.response.text
 
     if status == 401:
-        message = "API key ไม่ถูกต้องหรือหมดอายุ กรุณาตรวจสอบ LLM_API_KEY"
+        message = "The API key is invalid or expired. Check LLM_API_KEY and try again."
     elif status == 400:
         message = f"คำขอไปยังโมเดลไม่ถูกต้อง: {detail}" if detail else "คำขอไปยังโมเดลไม่ถูกต้อง"
     elif status == 404:

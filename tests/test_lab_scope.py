@@ -1,4 +1,4 @@
-from services.lab_scope import classify_lab_scope
+from services.lab_scope import classify_lab_scope, local_scope_reply
 
 
 def test_allows_common_lab_question():
@@ -35,3 +35,24 @@ def test_python_version_is_not_misread_as_lab_value():
 def test_general_organ_question_is_not_lab_scope():
     decision = classify_lab_scope("ตับมีหน้าที่อะไร")
     assert decision.allowed is False
+
+
+def test_greeting_is_a_deterministic_local_intent():
+    decision = classify_lab_scope("Hello")
+    assert decision.allowed is False
+    assert decision.reason == "greeting"
+    assert "Hello" in local_scope_reply(decision, "Hello")
+
+
+def test_help_and_closing_are_deterministic_local_intents():
+    assert classify_lab_scope("What can you do?").reason == "help"
+    assert classify_lab_scope("Thank you").reason == "closing"
+
+
+def test_ambiguous_lab_like_question_requests_details():
+    decision = classify_lab_scope("Is this high?")
+    assert decision.allowed is False
+    assert decision.reason == "ambiguous"
+    reply = local_scope_reply(decision, "Is this high?")
+    assert "test name" in reply
+    assert "reference range" in reply

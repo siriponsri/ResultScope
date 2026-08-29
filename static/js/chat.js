@@ -44,7 +44,7 @@ function appendUserMessage(text) {
   const wrapper = document.createElement("article");
   wrapper.className = "message user";
   wrapper.innerHTML = `
-    <div class="message-label">SUBMITTED RESULT / QUESTION</div>
+    <div class="message-label">Submitted result</div>
     <div class="bubble"></div>
   `;
   wrapper.querySelector(".bubble").textContent = text;
@@ -56,7 +56,7 @@ function createAiMessage() {
   const wrapper = document.createElement("article");
   wrapper.className = "message ai";
   wrapper.innerHTML = `
-    <div class="message-label">EXPLANATION</div>
+    <div class="message-label">AI explanation</div>
     <div class="bubble"></div>
   `;
   chatWindow.insertBefore(wrapper, loadingIndicator);
@@ -77,9 +77,9 @@ function appendSymbolicReadout(meta) {
   const heading = document.createElement("div");
   const label = document.createElement("div");
   label.className = "message-label";
-  label.textContent = "EXTRACTED FROM YOUR REPORT";
+  label.textContent = "Result overview";
   const title = document.createElement("strong");
-  title.textContent = `${meta.count} value${meta.count === 1 ? "" : "s"} parsed`;
+  title.textContent = "Extracted values";
   heading.append(label, title);
   const status = document.createElement("span");
   status.textContent = flaggedText;
@@ -88,6 +88,14 @@ function appendSymbolicReadout(meta) {
 
   const grid = document.createElement("div");
   grid.className = "value-grid";
+  const columnHead = document.createElement("div");
+  columnHead.className = "value-row value-column-head";
+  ["Test", "Result", "Reference", "Status"].forEach((name) => {
+    const cell = document.createElement("span");
+    cell.textContent = name;
+    columnHead.appendChild(cell);
+  });
+  grid.appendChild(columnHead);
   (meta.values || []).forEach((item) => {
     const row = document.createElement("div");
     row.className = "value-row";
@@ -112,12 +120,12 @@ function appendSymbolicReadout(meta) {
   chatWindow.insertBefore(wrapper, loadingIndicator);
 }
 
-function appendGuardrail(message, suggestions = []) {
+function appendLocalResponse(message, intent, suggestions = []) {
   const wrapper = document.createElement("article");
-  wrapper.className = "message guardrail";
+  wrapper.className = "message local-response";
   const label = document.createElement("div");
   label.className = "message-label";
-  label.textContent = "LAB-ONLY SCOPE GATE";
+  label.textContent = intent === "outside_lab_scope" ? "Keeping this lab-focused" : "ResultScope";
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.innerHTML = renderMarkdown(message);
@@ -209,8 +217,8 @@ async function sendMessage(message) {
           continue;
         }
 
-        if (payload.guardrail) {
-          appendGuardrail(payload.message, payload.suggestions || []);
+        if (payload.local_response) {
+          appendLocalResponse(payload.message, payload.intent, payload.suggestions || []);
         } else if (payload.analysis_meta) {
           appendSymbolicReadout(payload.analysis_meta);
         } else if (payload.delta) {
@@ -218,7 +226,7 @@ async function sendMessage(message) {
           accumulatedText += payload.delta;
           aiBubble.innerHTML = renderMarkdown(accumulatedText);
         } else if (payload.error) {
-          showError(payload.message || "เกิดข้อผิดพลาดระหว่างประมวลผล");
+          showError(payload.message || "Something went wrong while preparing the analysis.");
         } else if (payload.done) {
           receivedDone = true;
         }
@@ -226,14 +234,14 @@ async function sendMessage(message) {
     }
 
     if (!receivedDone) {
-      showError("การเชื่อมต่อถูกตัดกลางทาง กรุณาลองใหม่อีกครั้ง");
+      showError("The response ended early. Please try again.");
     }
   } catch (error) {
     if (error.name === "AbortError") {
-      showError("หยุดการตอบกลับแล้ว", true);
+      showError("Analysis stopped.", true);
     } else {
       console.error(error);
-      showError("เชื่อมต่อ backend ไม่สำเร็จ กรุณาตรวจสอบการตั้งค่าและลองใหม่");
+      showError("Could not reach the service. Check your setup and try again.");
     }
   } finally {
     activeAbortController = null;
@@ -286,7 +294,7 @@ newChatButton.addEventListener("click", resetConversation);
 messageInput.addEventListener("input", updateCount);
 
 sampleButton.addEventListener("click", () => {
-  messageInput.value = "CBC: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100), RDW 17.2% (11.5–14.5), Ferritin 7 ng/mL (15–150). ช่วยสรุปว่าค่าไหนเด่น เชื่อมโยงกันอย่างไร และข้อมูลอะไรที่ยังขาด";
+  messageInput.value = "CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), RDW 17.2% (11.5-14.5), Ferritin 7 ng/mL (15-150). Please summarize what stands out, how the values relate, and what context is still missing.";
   updateCount();
   messageInput.focus();
 });

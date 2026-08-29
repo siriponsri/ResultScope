@@ -12,9 +12,9 @@ from config import settings
 from services import llm_client
 from services.lab_parser import build_symbolic_context, extract_lab_values
 from services.lab_scope import (
-    OUT_OF_SCOPE_MESSAGE_TH,
     SCOPE_SUGGESTIONS,
     classify_lab_scope,
+    local_scope_reply,
 )
 from services.llm_client import LLMConnectionError
 from services.store import conversation_store
@@ -113,7 +113,7 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
         _set_session_cookie(response, session_id)
 
     if not decision.allowed:
-        return ChatResponse(reply=OUT_OF_SCOPE_MESSAGE_TH, scope="blocked")
+        return ChatResponse(reply=local_scope_reply(decision, chat_request.message), scope=decision.reason)
 
     parsed_values = extract_lab_values(chat_request.message)
     symbolic_context = build_symbolic_context(parsed_values)
@@ -144,9 +144,10 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
         if not decision.allowed:
             yield "data: " + json.dumps(
                 {
-                    "guardrail": True,
-                    "message": OUT_OF_SCOPE_MESSAGE_TH,
-                    "suggestions": SCOPE_SUGGESTIONS,
+                    "local_response": True,
+                    "intent": decision.reason,
+                    "message": local_scope_reply(decision, chat_request.message),
+                    "suggestions": SCOPE_SUGGESTIONS if decision.reason == "outside_lab_scope" else [],
                 },
                 ensure_ascii=False,
             ) + "\n\n"

@@ -1,0 +1,9 @@
+{
+  "date": "2026-08-29",
+  "font_stack": "Instrument Sans, IBM Plex Sans Thai, IBM Plex Mono",
+  "palette": "OKLCH custom properties in static/css/tokens.css",
+  "motion": "motion-cut; CSS-only transitions and reduced-motion support",
+  "spacing": "4px semantic CSS token scale",
+  "framework": "Vanilla HTML/CSS/JS served by FastAPI",
+  "preserved": ["FastAPI route structure", "existing type stack", "clinical teal palette", "deterministic result readout"]
+}

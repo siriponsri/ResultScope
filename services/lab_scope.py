@@ -82,6 +82,25 @@ FOLLOW_UP_HINTS = (
     "แล้ว", "อันนี้", "ค่านี้", "ค่าไหน", "หมายความว่า", "แปลว่า", "สูงไหม", "ต่ำไหม",
     "อันตรายไหม", "ต้องกังวลไหม", "เกี่ยวกันไหม", "ควรถาม", "ควรตรวจ", "ต่อไหม",
     "why", "what does", "is this high", "is this low", "should i worry", "what next",
+    "tell me more", "explain more", "how about this",
+)
+
+GREETING_PATTERNS = (
+    "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+    "สวัสดี", "สวัสดีครับ", "สวัสดีค่ะ",
+)
+HELP_PATTERNS = (
+    "help", "what can you do", "how does this work", "what do you do",
+    "ช่วยอะไรได้บ้าง", "ใช้งานอย่างไร",
+)
+CLOSING_PATTERNS = (
+    "thanks", "thank you", "thankyou", "bye", "goodbye", "see you",
+    "ขอบคุณ", "ขอบคุณครับ", "ขอบคุณค่ะ", "ลาก่อน",
+)
+AMBIGUOUS_PATTERNS = (
+    "is this high", "is this low", "is this okay", "what does this mean",
+    "what does it mean", "can you explain this", "help me understand",
+    "ผลนี้", "ค่านี้", "สูงไหม", "ต่ำไหม", "แปลว่าอะไร",
 )
 
 # Recognize value-like lab syntax even when marker vocabulary is uncommon.
@@ -130,6 +149,11 @@ def history_has_lab_context(history: list[dict[str, str]]) -> bool:
     return False
 
 
+def _matches_simple_intent(normalized: str, patterns: tuple[str, ...]) -> bool:
+    stripped = normalized.strip(".!?,;: ")
+    return any(stripped == pattern or stripped.startswith(f"{pattern} ") for pattern in patterns)
+
+
 def classify_lab_scope(message: str, history: list[dict[str, str]] | None = None) -> ScopeDecision:
     history = history or []
     normalized = _normalize(message)
@@ -146,6 +170,18 @@ def classify_lab_scope(message: str, history: list[dict[str, str]] | None = None
     if history_has_lab_context(history) and any(hint in normalized for hint in FOLLOW_UP_HINTS):
         return ScopeDecision(True, "lab_follow_up", (), "follow_up")
 
+    if _matches_simple_intent(normalized, GREETING_PATTERNS):
+        return ScopeDecision(False, "greeting", (), "local")
+
+    if _matches_simple_intent(normalized, HELP_PATTERNS):
+        return ScopeDecision(False, "help", (), "local")
+
+    if _matches_simple_intent(normalized, CLOSING_PATTERNS):
+        return ScopeDecision(False, "closing", (), "local")
+
+    if any(pattern in normalized for pattern in AMBIGUOUS_PATTERNS):
+        return ScopeDecision(False, "ambiguous", (), "needs_lab_detail")
+
     return ScopeDecision(False, "outside_lab_scope")
 
 
@@ -161,3 +197,29 @@ SCOPE_SUGGESTIONS = [
     "AST/ALT สูงควรอ่านร่วมกับค่าอะไร",
     "HbA1c คืออะไร",
 ]
+
+
+def local_scope_reply(decision: ScopeDecision, message: str) -> str:
+    """Return deterministic product copy for requests that should not reach the LLM."""
+    thai = any("\u0e00" <= char <= "\u0e7f" for char in message)
+    if thai:
+        replies = {
+            "greeting": "สวัสดีครับ ผมช่วยอธิบายผลตรวจทางห้องปฏิบัติการได้ ส่งชื่อการตรวจ ค่า หน่วย และช่วงอ้างอิงมาได้เลย",
+            "help": "ResultScope ช่วยอ่านผลตรวจทางห้องปฏิบัติการที่คุณส่งมา โดยแสดงค่าที่แยกได้และอธิบายเชิงการศึกษา ใช้ได้ดีกับชื่อการตรวจ ค่า หน่วย และช่วงอ้างอิงจากรายงานของคุณ",
+            "closing": "ยินดีครับ หากมีผลตรวจที่อยากอ่านเพิ่มเติม ส่งมาได้ทุกเมื่อ",
+            "ambiguous": "ส่งชื่อการตรวจ ค่าที่ได้ หน่วย และช่วงอ้างอิงจากรายงานมาได้เลย แล้วผมจะช่วยอธิบายให้เป็นขั้นตอน",
+            "empty_message": "ส่งผลตรวจหรือคำถามเกี่ยวกับการตรวจทางห้องปฏิบัติการมาได้เลย",
+        }
+    else:
+        replies = {
+            "greeting": "Hello. I can help you understand laboratory results in clear, practical language. Share the test name, value, unit, and reference range when you have them.",
+            "help": "ResultScope explains laboratory results you provide. It can organize your values, compare them with the reference ranges from your report, and suggest useful questions to ask next. It does not diagnose or prescribe.",
+            "closing": "You are welcome. Send any laboratory result when you would like to review it.",
+            "ambiguous": "Please share the test name, result, unit, and reference range from your report. That gives me enough context to explain the value carefully.",
+            "empty_message": "Share a laboratory result or a question about a test to begin.",
+        }
+
+    return replies.get(
+        decision.reason,
+        "ResultScope is focused on laboratory results. Share a test name, value, unit, and reference range, or ask about a lab panel such as CBC, kidney, liver, HbA1c, lipid, or thyroid testing.",
+    )

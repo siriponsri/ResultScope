@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,64 +19,70 @@
       <header class="app-header">
         <a class="brand" href="/" aria-label="ResultScope home">
           <img src="/static/img/mark.svg" alt="" width="38" height="38" />
-          <span class="brand-copy"><strong>{{ app_name }}</strong><span>Laboratory intelligence</span></span>
+          <span class="brand-copy"><strong>{{ app_name }}</strong><span>Lab intelligence</span></span>
         </a>
         <div class="header-meta">
-          <span class="boundary-status"><i aria-hidden="true"></i> Lab-only workspace</span>
-          <span class="owner-name">Owner: {{ owner_name }}</span>
+          <span class="boundary-status"><i aria-hidden="true"></i> Lab-only</span>
+          <span class="owner-name">{{ owner_name }}</span>
         </div>
       </header>
 
       <main class="app-main">
         <section id="starter" class="intake-workspace" aria-labelledby="intake-title">
           <div class="intake-introduction">
-            <h1 id="intake-title">Analyze my lab results.</h1>
-            <p class="intake-lede">Paste the values from your report to get a structured readout before the explanation. Include units and the laboratory's reference range where available.</p>
-            <div class="intake-summary">
-              <strong>Built for laboratory results only</strong>
-              <p>ResultScope explains supplied values and context. It does not diagnose, prescribe, or replace clinical care.</p>
-            </div>
+            <p class="section-kicker desktop-kicker">A clearer view of your labs</p>
+            <p class="mobile-greeting">Good evening,<br /><strong>{{ owner_name }}.</strong></p>
+            <h1 id="intake-title">ResultScope</h1>
+            <p class="intake-statement">Understand your lab results.<br />Without getting lost in the numbers.</p>
+            <p class="intake-lede">A focused space to read the values, reference ranges, and patterns in your report.</p>
+            <p class="trust-line">Lab-focused <span aria-hidden="true">&#183;</span> Uses your ranges <span aria-hidden="true">&#183;</span> Educational only</p>
           </div>
 
-          <section class="intake-panel" aria-label="Laboratory result intake">
+          <section class="intake-stage" aria-label="Laboratory result intake">
+            <canvas id="depth-scene" class="depth-scene" aria-hidden="true"></canvas>
+            <aside class="preview-surface preview-cbc" aria-hidden="true"><span>CBC</span><strong>Hb 10.8</strong><small>g/dL / 12-16</small><i></i></aside>
+            <aside class="preview-surface preview-kidney" aria-hidden="true"><span>Kidney function</span><strong>eGFR 58</strong><small>mL/min/1.73m2</small><i></i></aside>
+            <aside class="preview-surface preview-standout" aria-hidden="true"><span>What stands out</span><p>Values are read alongside the range supplied by your laboratory.</p></aside>
+          <section class="intake-panel">
             <div class="panel-heading">
-              <div><p class="section-kicker">New analysis</p><h2>Paste results</h2></div>
+              <div><p class="section-kicker">New analysis</p><h2>Start with your report</h2></div>
               <button id="sample-button" class="quiet-button" type="button">Use sample</button>
             </div>
             <form id="chat-form" class="intake-form">
               <label for="message-input">Laboratory results or question</label>
-              <textarea id="message-input" rows="8" maxlength="12000" placeholder="Example: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150)" required></textarea>
+              <textarea id="message-input" rows="8" maxlength="12000" placeholder="Paste your lab results or ask about a test..." required></textarea>
               <div class="intake-form-footer">
-                <p><span id="char-count">0 / 12,000</span><span>Reference ranges are used only when you provide them.</span></p>
+                <p><span id="char-count">0 / 12,000</span><span>Add the laboratory's reference range when available.</span></p>
                 <div class="intake-actions">
                   <button id="stop-button" class="secondary-button hidden" type="button">Stop</button>
                   <button id="send-button" class="primary-button" type="submit">Analyze results <span aria-hidden="true">&rarr;</span></button>
                 </div>
               </div>
             </form>
-            <div class="supported-domains" aria-label="Supported laboratory domains">
-              <p>Try an example</p>
+            <div class="supported-domains" aria-label="Laboratory result examples">
+              <p>Try a lab question</p>
               <div class="domain-actions">
-                <button type="button" data-sample="CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150). Please explain the overall pattern.">CBC & hematology</button>
-                <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. Please explain how these should be read together.">Kidney function</button>
-                <button type="button" data-sample="AST 68 U/L (0-40), ALT 92 U/L (0-41), ALP 88 U/L (40-129). Please explain the pattern without diagnosing.">Liver panel</button>
-                <button type="button" data-sample="HbA1c 6.1%. What additional information affects interpretation?">Glucose & HbA1c</button>
+                <button type="button" data-sample="CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150). Please explain the overall pattern.">CBC</button>
+                <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. Please explain how these should be read together.">Kidney</button>
+                <button type="button" data-sample="AST 68 U/L (0-40), ALT 92 U/L (0-41), ALP 88 U/L (40-129). Please explain the pattern without diagnosing.">Liver</button>
+                <button type="button" data-sample="HbA1c 6.1%. What additional information affects interpretation?">HbA1c</button>
+                <button type="button" data-sample="LDL 162 mg/dL. What other details affect how this is interpreted?">Lipid</button>
+                <button type="button" data-sample="TSH 5.2 mIU/L. What context changes how this test is read?">Thyroid</button>
               </div>
             </div>
+          </section>
           </section>
         </section>
 
         <section id="conversation" class="analysis-workspace hidden" aria-labelledby="analysis-title">
-          <header class="analysis-header">
-            <div><p class="section-kicker">Active analysis</p><h1 id="analysis-title">Your analysis</h1></div>
-            <button id="new-chat-button" type="button" class="quiet-button">New analysis</button>
-          </header>
           <div class="analysis-layout">
-            <aside class="analysis-rail" aria-label="Analysis guidance">
-              <div><p class="section-kicker">Reading the result</p><p>Extracted values appear first. Any high or low flag is calculated only against a range supplied in your message.</p></div>
-              <div class="analysis-safety"><strong>Lab-only boundary</strong><p>Unrelated requests are declined before an LLM is used.</p></div>
-            </aside>
+            <aside class="analysis-aside" aria-hidden="true"><canvas id="analysis-depth-scene" class="analysis-depth-scene"></canvas><p>Result<br />overview</p></aside>
             <div class="analysis-content">
+              <header class="analysis-header">
+                <div><p class="section-kicker">Active analysis</p><h1 id="analysis-title">Your results, in context</h1></div>
+                <button id="new-chat-button" type="button" class="quiet-button">New analysis</button>
+              </header>
+              <div class="analysis-note"><strong>Result overview</strong><span>Values are extracted from your message. Status is calculated only when your report includes a reference range.</span></div>
               <div id="chat-window" class="chat-window" aria-live="polite">
                 <div id="loading-indicator" class="loading-indicator hidden"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><p>Preparing your analysis</p></div>
               </div>
@@ -92,5 +98,6 @@
       <footer class="app-footer"><span>{{ app_name }} / Laboratory-result intelligence</span><span>Educational support, not a diagnosis</span></footer>
     </div>
     <script src="/static/js/chat.js"></script>
+    <script type="module" src="/static/js/scene.js"></script>
   </body>
 </html>

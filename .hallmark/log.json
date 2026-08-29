@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-08-29",
+    "macrostructure": "Editorial floating intake",
+    "theme": "custom",
+    "theme_axes": "warm-white paper / Instrument Sans editorial display / restrained cyan",
+    "vibe": "premium personal health assistant with laboratory intelligence",
+    "enrichment": "subtle Three.js spatial depth",
+    "brief": "Reference-led ResultScope desktop and mobile product workspace refinement"
+  },
+  {
+    "date": "2026-08-29",
+    "macrostructure": "Clinical intake workbench",
+    "theme": "custom",
+    "theme_axes": "off-white clinical paper / restrained sans / teal-cyan",
+    "vibe": "premium consumer healthcare workspace",
+    "enrichment": "none",
+    "brief": "Refined ResultScope intake, analysis readout, and local scope responses"
+  },
+  {
+    "date": "2026-08-29",
     "macrostructure": "Workbench",
     "theme": "custom",
     "theme_axes": "light clinical paper / editorial serif / medical teal",
