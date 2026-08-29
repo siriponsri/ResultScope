@@ -3,6 +3,7 @@ const conversation = document.getElementById("conversation");
 const chatWindow = document.getElementById("chat-window");
 const loadingIndicator = document.getElementById("loading-indicator");
 const errorBanner = document.getElementById("error-banner");
+const analysisContent = document.querySelector(".analysis-content");
 
 const chatForm = document.getElementById("chat-form");
 const messageInput = document.getElementById("message-input");
@@ -31,6 +32,7 @@ function scrollToLatest() {
 function showConversation() {
   starter.classList.add("hidden");
   conversation.classList.remove("hidden");
+  conversation.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function showStarter() {
@@ -54,7 +56,7 @@ function createAiMessage() {
   const wrapper = document.createElement("article");
   wrapper.className = "message ai";
   wrapper.innerHTML = `
-    <div class="message-label">RESULTSCOPE INTERPRETATION</div>
+    <div class="message-label">EXPLANATION</div>
     <div class="bubble"></div>
   `;
   chatWindow.insertBefore(wrapper, loadingIndicator);
@@ -72,13 +74,16 @@ function appendSymbolicReadout(meta) {
   const flaggedText = meta.flagged_count
     ? `${meta.flagged_count} outside supplied range`
     : "no deterministic out-of-range flag";
-  head.innerHTML = `
-    <div>
-      <div class="message-label">DETERMINISTIC READ</div>
-      <strong>${meta.count} value${meta.count === 1 ? "" : "s"} parsed</strong>
-    </div>
-    <span>${flaggedText}</span>
-  `;
+  const heading = document.createElement("div");
+  const label = document.createElement("div");
+  label.className = "message-label";
+  label.textContent = "EXTRACTED FROM YOUR REPORT";
+  const title = document.createElement("strong");
+  title.textContent = `${meta.count} value${meta.count === 1 ? "" : "s"} parsed`;
+  heading.append(label, title);
+  const status = document.createElement("span");
+  status.textContent = flaggedText;
+  head.append(heading, status);
   wrapper.appendChild(head);
 
   const grid = document.createElement("div");
@@ -91,12 +96,16 @@ function appendSymbolicReadout(meta) {
     if (item.reference_low !== null && item.reference_high !== null) {
       reference = `${item.reference_low}–${item.reference_high}${unit}`;
     }
-    row.innerHTML = `
-      <strong>${item.marker}</strong>
-      <span>${item.value}${unit}</span>
-      <span>${reference}</span>
-      <span class="flag flag-${item.flag}">${item.flag}</span>
-    `;
+    const marker = document.createElement("strong");
+    marker.textContent = item.marker;
+    const value = document.createElement("span");
+    value.textContent = `${item.value}${unit}`;
+    const range = document.createElement("span");
+    range.textContent = reference;
+    const flag = document.createElement("span");
+    flag.className = `flag flag-${item.flag}`;
+    flag.textContent = item.flag;
+    row.append(marker, value, range, flag);
     grid.appendChild(row);
   });
   wrapper.appendChild(grid);
@@ -137,6 +146,7 @@ function showError(message, notice = false) {
   errorBanner.textContent = message;
   errorBanner.classList.remove("hidden");
   errorBanner.classList.toggle("notice", notice);
+  errorBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function clearError() {
@@ -152,6 +162,7 @@ function setBusy(isBusy) {
   stopButton.classList.toggle("hidden", !isBusy);
   followupSend.disabled = isBusy;
   loadingIndicator.classList.toggle("hidden", !isBusy);
+  analysisContent?.setAttribute("aria-busy", String(isBusy));
 }
 
 async function sendMessage(message) {
@@ -244,6 +255,7 @@ async function resetConversation() {
   followupInput.value = "";
   updateCount();
   showStarter();
+  analysisContent?.setAttribute("aria-busy", "false");
   messageInput.focus();
   newChatButton.disabled = false;
 }
@@ -293,7 +305,7 @@ document.querySelectorAll("[data-sample]").forEach((button) => {
     messageInput.value = button.dataset.sample || "";
     updateCount();
     messageInput.focus();
-    document.querySelector(".analysis-panel")?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(".intake-panel")?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 });
 

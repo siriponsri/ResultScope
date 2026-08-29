@@ -1,10 +1,19 @@
 $ErrorActionPreference = "Stop"
 
+function Invoke-NativeCommand {
+    param([scriptblock]$Command)
+
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "Native command failed with exit code $LASTEXITCODE."
+    }
+}
+
 if (-not (Test-Path ".venv")) {
-    py -m venv .venv
+    Invoke-NativeCommand { py -m venv .venv }
 }
 & .\.venv\Scripts\Activate.ps1
-pip install -r requirements-dev.txt
-python -m compileall -q .
-python -m pytest -q
+Invoke-NativeCommand { python -m pip install -r requirements-dev.txt }
+Invoke-NativeCommand { python -m compileall -q api main.py config.py routers services tests }
+Invoke-NativeCommand { python -m pytest -q }
 Write-Host "Checks passed." -ForegroundColor Green
