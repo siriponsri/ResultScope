@@ -1,0 +1,17 @@
+Agent Kit dispatch evidence (2026-10-01)
+
+Canonical command attempted:
+run-implementation-review.ps1 -WorktreePath C:\Users\User\Desktop\myProject\ResultScope -ImplementationPromptFile docs\progress\TASK_PACKET_PHASE_0_IMPLEMENT.txt -ReviewPromptFile docs\progress\TASK_PACKET_PHASE_0_REVIEW.txt -TimeoutSeconds 1800
+
+Observed result: exit 1 before worker creation.
+Error: dispatch-route.ps1 calls [IO.Path]::IsPathFullyQualified, unavailable in the installed PowerShell runtimes.
+
+Worker-side route-worker.ps1 contains the same call. No Agent Kit/global file was modified.
+
+Existing active route ce161b0a01c84a70bca2aaabcb4a7bb0 was inspected and verified to target:
+C:\Users\User\Desktop\myProject\dr-support-screening-poc
+It is unrelated and was left untouched.
+
+Configured roles from config/fo.json:
+MAIN=MaxPlus; IMPLEMENT=MaxPlus; REVIEW=O1 (read-only).
+MAIN/REVIEW account independence is preserved by configuration; this MAIN session is MaxPlus while REVIEW is O1.

@@ -1,0 +1,4 @@
+﻿TIMESTAMP=2026-10-01T22:29:10+07:00
+COMMAND=.\\.venv\\Scripts\\python.exe -m pip list --format=freeze
+Project venv interpreter returned Access is denied for configured base executable.
+EXIT_CODE=103

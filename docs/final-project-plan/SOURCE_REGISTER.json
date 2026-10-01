@@ -1,0 +1,161 @@
+{
+  "date": "2026-10-01",
+  "baseline": {
+    "repository": "siriponsri/ResultScope",
+    "commit": "78ae247d671d507cbf68225aa87a73621a7872e1",
+    "review": "static source inspection, no runtime tests"
+  },
+  "assignment": {
+    "file": "Final Project.docx",
+    "business_name_due": "2026-10-03",
+    "submission_due": "2026-10-17",
+    "timezone": "Asia/Bangkok",
+    "sha256": "c02b15e3fce123162ca4941d807cb4d5661cdeae08636745e36afce14934a45a"
+  },
+  "references": [
+    {
+      "repository": "chacharin/light-rag",
+      "url": "https://github.com/chacharin/light-rag",
+      "default_branch": "main",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chacharin/mcp-lightrag",
+      "url": "https://github.com/chacharin/mcp-lightrag",
+      "default_branch": "main",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chacharin/chatbot-with-image-bill",
+      "url": "https://github.com/chacharin/chatbot-with-image-bill",
+      "default_branch": "main",
+      "license_metadata": null,
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chacharin/LineOA-LLM-Chatbot",
+      "url": "https://github.com/chacharin/LineOA-LLM-Chatbot",
+      "default_branch": "main",
+      "license_metadata": null,
+      "archived": false,
+      "review_level": "metadata + api/index.py excerpt",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chacharin/chatbot-it-kmitl",
+      "url": "https://github.com/chacharin/chatbot-it-kmitl",
+      "default_branch": "main",
+      "license_metadata": null,
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chacharin/llama-guard-layer",
+      "url": "https://github.com/chacharin/llama-guard-layer",
+      "default_branch": "main",
+      "license_metadata": null,
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "mckaywrigley/chatbot-ui",
+      "url": "https://github.com/mckaywrigley/chatbot-ui",
+      "default_branch": "main",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "iOfficeAI/AionUi",
+      "url": "https://github.com/iOfficeAI/AionUi",
+      "default_branch": "main",
+      "license_metadata": "Apache-2.0",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "agentscope-ai/agentscope",
+      "url": "https://github.com/agentscope-ai/agentscope",
+      "default_branch": "main",
+      "license_metadata": "Apache-2.0",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "pathwaycom/llm-app",
+      "url": "https://github.com/pathwaycom/llm-app",
+      "default_branch": "main",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "FlowiseAI/Flowise",
+      "url": "https://github.com/FlowiseAI/Flowise",
+      "default_branch": "main",
+      "license_metadata": "NOASSERTION",
+      "archived": true,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "chatboxai/chatbox",
+      "url": "https://github.com/chatboxai/chatbox",
+      "default_branch": "main",
+      "license_metadata": "GPL-3.0",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "AstrBotDevs/AstrBot",
+      "url": "https://github.com/AstrBotDevs/AstrBot",
+      "default_branch": "master",
+      "license_metadata": "AGPL-3.0",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "lm-sys/FastChat",
+      "url": "https://github.com/lm-sys/FastChat",
+      "default_branch": "main",
+      "license_metadata": "Apache-2.0",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "LeoStehlik/no-slop-ui",
+      "url": "https://github.com/LeoStehlik/no-slop-ui",
+      "default_branch": "master",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    },
+    {
+      "repository": "Vanszs/Anti-AI-UI",
+      "url": "https://github.com/Vanszs/Anti-AI-UI",
+      "default_branch": "main",
+      "license_metadata": "MIT",
+      "archived": false,
+      "review_level": "metadata + README; selected additional files as described in plan",
+      "retrieved_date": "2026-10-01"
+    }
+  ]
+}

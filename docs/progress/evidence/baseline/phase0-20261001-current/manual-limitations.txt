@@ -1,0 +1,13 @@
+﻿TIMESTAMP=2026-10-01T22:26:28+07:00
+BROWSER_AUTOMATION=NOT_SUPPORTED: no browser automation tool is available in this session.
+LOCAL_RUNTIME=BLOCKED: project .venv interpreter cannot execute because its configured base Python returns Windows access-denied (inner exit 103).
+DESKTOP_FLOW=NOT_RUN
+NARROW_MOBILE_FLOW=NOT_RUN
+IN_SCOPE_LAB_PROMPT=NOT_RUN: provider-backed UI flow not executed.
+LAB_FOLLOW_UP=NOT_RUN: provider-backed UI flow not executed.
+OUT_OF_SCOPE_PROMPT=NOT_RUN: runtime route/test execution blocked in current run.
+NEW_ANALYSIS_RESET=NOT_RUN
+MISSING_API_KEY_ERROR=NOT_RUN
+VERCEL_DEPLOY=NOT_RUN: static deployment assumptions inspected only; no deployment or remote state changed.
+SCREENSHOTS=NOT_SUPPORTED: no screenshots captured.
+LIVE_PROVIDER=NOT_RUN: no API key was read or used; no external provider was called.

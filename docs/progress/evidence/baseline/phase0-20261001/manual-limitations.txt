@@ -1,0 +1,3 @@
+Browser/manual evidence: NOT_SUPPORTED in this session. No browser automation capability was available to capture desktop/mobile screenshots or execute the full interactive flow. No screenshot, latency, provider output, or credential-backed behavior is claimed.
+Live provider: NOT_RUN. No API key was read or used.
+Vercel deploy: NOT_RUN by owner instruction.

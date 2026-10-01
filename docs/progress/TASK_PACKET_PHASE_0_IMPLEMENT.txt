@@ -1,0 +1,18 @@
+# TASK_PACKET: ResultScope Phase 0 baseline evidence
+
+- Objective: Complete the non-mutating Phase 0 baseline evidence for ResultScope Final Project on the existing local main worktree. Inspect source/config/tests/scripts, create or reuse only the project-local venv if needed, run the repository baseline checks, inspect route/config/UI inventory, and record exact commands/results without secrets. Do not implement Phase 1+ features.
+- Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope
+- Selected Cell: 10-testing, with 02-repository-analysis as needed
+- Primary Agent: IMPLEMENT (MaxPlus)
+- Route Class: implementation
+- Relevant Skills: repository-navigation, test-engineering
+- Tool Capability Needs: repository, code-navigation, shell, testing; browser only if available and needed for static baseline
+- Base Revision: 78ae247d671d507cbf68225aa87a73621a7872e1
+- Branch: main (owner requires no branch/worktree changes)
+- Scope: Read-only inspection plus project-local environment/test evidence; write only the assigned evidence file below.
+- Allowed writes: docs/progress/BASELINE.md and docs/progress/evidence/baseline/*; do not edit any other file, do not stage/commit/push.
+- Do Not Touch: source code, AGENTS.md, plan documents, PHASE_0_REPORT.md, .env, credentials, runtime DB, global config/environment, other projects, branches/worktrees, remote state.
+- Acceptance Criteria: BASELINE.md records root, branch, HEAD, status, remotes, existing untracked owner work, architecture/routes/config/dependency/test inventory, Python/venv/dependency/test command results with exact exit codes, browser/manual limitations, source baseline comparison, and no secret values. Mark unavailable checks NOT_RUN/BLOCKED rather than PASS.
+- Tests / Evidence: Run scripts/check.ps1 if safe; otherwise equivalent project-local compile/test commands. Capture output path and exact exit codes. Redact secrets; never read or print .env values.
+- Dependencies: Current repository state and docs/final-project-plan/Phase 0 docs are authoritative.
+- Handoff Target: MAIN, then independent REVIEW of the exact resulting worktree.

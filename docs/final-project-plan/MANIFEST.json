@@ -1,0 +1,98 @@
+{
+  "package": "ResultScope_Plan_20261001",
+  "status": "planning_only_not_implemented",
+  "files": {
+    "00_START_HERE.md": {
+      "bytes": 6478,
+      "sha256": "66d021a469d7c7a20e8dc50c62f6b2596e46d313496e26f5a26a98e69e3f0cb5"
+    },
+    "01_MASTER_PLAN.md": {
+      "bytes": 11226,
+      "sha256": "7b30be3e1e3bf1563229eb6c55a9a1574f2f16a193bbbc134657ae33731bb61e"
+    },
+    "02_SOURCE_AUDIT_AND_RUBRIC.md": {
+      "bytes": 7755,
+      "sha256": "f9f1618e5300fd37f743a44920b2fbb1cb510a230f95a85fa940a1238d8d73aa"
+    },
+    "03_FO_WORKFLOW_AND_LOCAL_SETUP.md": {
+      "bytes": 7304,
+      "sha256": "9eb208fde3ad2f32b6b7cd6329eaefc1ab00302521dbfbc26721f8735c3ecbe6"
+    },
+    "04_ARCHITECTURE_AND_CONTRACTS.md": {
+      "bytes": 10230,
+      "sha256": "28a57fc54b800594364501f436c7a17e70efbd47599c5154612f86c1e14ee93a"
+    },
+    "05_UI_DESIGN_SPEC.md": {
+      "bytes": 7371,
+      "sha256": "8099b10a9b8cce881659f8448ca33d4345d4530773e5dc240fede29e0715b2bf"
+    },
+    "06_REFERENCE_REPO_DECISIONS.md": {
+      "bytes": 7467,
+      "sha256": "4eee9181429bfb44a6039304b50b5b620fec0729c59957bdfde30e54dccfada5"
+    },
+    "07_EVALUATION_AND_SUBMISSION.md": {
+      "bytes": 11909,
+      "sha256": "5ca16fb44da4b302b36f1d7d3d3af4cb0c5c263cc1a73cfc70ed2d56156d0608"
+    },
+    "08_PRODUCT_CATALOG_ROADMAP.md": {
+      "bytes": 5388,
+      "sha256": "ec1090842f4489c9a96fc2745822941d2ebb559cae7acdbb4297bcd443359c26"
+    },
+    "09_MAIN_START_PROMPT.md": {
+      "bytes": 4748,
+      "sha256": "79200348ebd9b841bc0878cd0cd9a11e2859cfb3d3e4694065f6fd06c8a73bc3"
+    },
+    "SOURCE_REGISTER.json": {
+      "bytes": 5819,
+      "sha256": "bfdca86a0eae8544e637419d47e18a46cf1ec60e9ba3ebcca88ea1cf895107eb"
+    },
+    "phases/PHASE_0_BASELINE.md": {
+      "bytes": 4372,
+      "sha256": "f4da1d9976def1863ad2348ff489a32a2a6216fc43adf5b1d0f421ca1305361c"
+    },
+    "phases/PHASE_1_BUSINESS_KB.md": {
+      "bytes": 5732,
+      "sha256": "bb9d7c6aa79e683013a6d49cb32578c7a0c1d59311f97c8484f0e2d2c9f8f89d"
+    },
+    "phases/PHASE_2_RAG_AND_API.md": {
+      "bytes": 5708,
+      "sha256": "557e0540e776b2a0b577552489afe70282c7e5304e6099baa0406b912a0449a0"
+    },
+    "phases/PHASE_3_VISION.md": {
+      "bytes": 4700,
+      "sha256": "35cec6edd1730f1594eeafaffd49718b21b89948fac7972a817eca6df4d852d8"
+    },
+    "phases/PHASE_4_SAFETY.md": {
+      "bytes": 5091,
+      "sha256": "f631f85b051c5aa43380105960e7d632eef9414f9dc68171b1a1d1121dd81fa0"
+    },
+    "phases/PHASE_5_UI_AND_CATALOG_DEMO.md": {
+      "bytes": 4851,
+      "sha256": "d958c47bc6c1ac3c7e320fb37a77cf3fe3ee715a0d565226e1a1021a484fb155"
+    },
+    "phases/PHASE_6_EVALUATION_RELEASE.md": {
+      "bytes": 5991,
+      "sha256": "8557cabc5dd5df6a59a123cc6ada5a69304732553114fe3c243318198753f7f3"
+    },
+    "phases/PHASE_7_PILOT_EXTENSIONS.md": {
+      "bytes": 4400,
+      "sha256": "6bcb0bc342a1b89d09861c8654a907a31abce1aacaacf2633359fffbe7ab00b1"
+    },
+    "phases/PHASE_8_COMMERCIAL_PRODUCT.md": {
+      "bytes": 4227,
+      "sha256": "79facd7132a53695e511f7cda8e349239342b0a57cd91c174c6490d7f33546ce"
+    },
+    "templates/DECISIONS_AND_CONTRIBUTIONS.md": {
+      "bytes": 2062,
+      "sha256": "cf39fb50f31d70d309b220b67fda48c9ab8755536f99edffd77d3da5fd5a0fe4"
+    },
+    "templates/EVALUATION_TABLES.md": {
+      "bytes": 2704,
+      "sha256": "b39e9cef8637bbc66f12b79f470ed3c902c3557572f177f1b5fbda26da4c3946"
+    },
+    "templates/PHASE_REPORT_TEMPLATE.md": {
+      "bytes": 1340,
+      "sha256": "580ee8ddbd2189eb4bead8a3add9900291f2cc916302fe282e2b12c0df3823c1"
+    }
+  }
+}
