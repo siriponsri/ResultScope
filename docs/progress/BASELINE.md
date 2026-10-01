@@ -22,7 +22,7 @@ Root deployment assumptions remain unchanged: `main.py` is present, while `verce
 ## Verification
 
 - Historical baseline run: `scripts/check.ps1` exit 0; 25 tests passed; compileall exit 0. Raw evidence: `docs/progress/evidence/baseline/phase0-20261001/`.
-- Fresh current run: `scripts/check.ps1` exit 1; direct pytest and compileall exit 103 because the project venv's configured Python executable returns Windows access denied. Raw evidence: `docs/progress/evidence/baseline/phase0-20261001-current/`.
+- Fresh current run: an earlier `scripts/check.ps1` run failed with interpreter access denied; current project-venv revalidation passes `scripts/check.ps1` (exit 0), with 25 pytest tests and compileall passing. Raw evidence: `docs/progress/evidence/baseline/phase0-20261001-current/`.
 - Browser automation and screenshots: `NOT_SUPPORTED`; interactive flows and live provider checks: `NOT_RUN`.
 - No Phase 1 implementation was started.
 
