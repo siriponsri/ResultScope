@@ -7,7 +7,7 @@ Status: BLOCKED (reviewed 2026-10-01)
 - Project Brain used: `C:\Users\User\.agent-kit\brains\resultscope`
 - Plan documents: `docs/final-project-plan/`
 - Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1` on local `main`
-- Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`; current integration/checkpoint HEAD: `e835d163add496df5012f1d85f1b566d773a3fe9`. The checkpoint contains Phase 0 plan/evidence documentation only; no tracked application source was changed after the pinned baseline.
+- Evidence/integration SHA: `e835d163add496df5012f1d85f1b566d773a3fe9` at the baseline verification point; subsequent MAIN commits are documentation-only corrections. No tracked application source was changed after the pinned baseline.
 - Current phase: Phase 0 only; Phase 1 was not started
 - Operating constraint: MAIN remained on local `main`; no branch or worktree was created; no push or deploy occurred
 - Account independence: MAIN is MaxPlus and REVIEW is O1, so configured account independence is preserved
@@ -38,7 +38,7 @@ Status: BLOCKED (reviewed 2026-10-01)
 
 | Check | Result | Evidence |
 |---|---|---|
-| Repository root, branch, HEAD, status, remotes, worktrees | PASS / 0; `main`, HEAD equals baseline | `.../phase0-20261001-current/inventory.txt` |
+| Repository root, branch, HEAD, status, remotes, worktrees | PASS / 0; local `main` and checkpoint HEAD recorded; source comparison remains against the pinned baseline | `.../phase0-20261001-current/inventory.txt` |
 | Canonical Agent Kit brain | PASS; existing brain reused | `C:\Users\User\.agent-kit\brains\resultscope\brain.json` |
 | Canonical IMPLEMENT→REVIEW route | BLOCKED before worker creation; installed route calls unavailable `[IO.Path]::IsPathFullyQualified` | `.../phase0-20261001/agentkit-dispatch-blocker.txt` |
 | Fresh `scripts/check.ps1` | BLOCKED; exit 1 because venv Python returns access denied | `.../phase0-20261001-current/check.log` |
