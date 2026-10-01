@@ -7,7 +7,7 @@ Status: BLOCKED (reviewed 2026-10-01)
 - Project Brain used: `C:\Users\User\.agent-kit\brains\resultscope`
 - Plan documents: `docs/final-project-plan/`
 - Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1` on local `main`
-- Current integration/checkpoint SHA: `4cdde519a4a7bfaf2afe84cbdf052e5264be1755`; baseline evidence checkpoint: `e835d163add496df5012f1d85f1b566d773a3fe9`. All commits after the pinned baseline are documentation/evidence-only corrections. No tracked application source was changed.
+- Evidence checkpoint before this final metadata-only commit: `3f0428a`; baseline evidence checkpoint: `e835d163add496df5012f1d85f1b566d773a3fe9`. All commits after the pinned baseline are documentation/evidence-only corrections. No tracked application source was changed.
 - Current phase: Phase 0 only; Phase 1 was not started
 - Operating constraint: MAIN remained on local `main`; no branch or worktree was created; no push or deploy occurred
 - Account independence: MAIN is MaxPlus and REVIEW is O1, so configured account independence is preserved
