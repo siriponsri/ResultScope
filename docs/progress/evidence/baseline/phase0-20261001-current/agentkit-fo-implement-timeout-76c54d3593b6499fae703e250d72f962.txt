@@ -1,0 +1,21 @@
+Agent Kit FO dispatch evidence (2026-10-02 local; receipt timestamps are UTC)
+
+Canonical helper:
+C:\Users\User\.agent-kit\orca\background\run-implementation-review.ps1
+
+Run ID: 76c54d3593b6499fae703e250d72f962
+Route: implement
+Worktree: C:\Users\User\Desktop\myProject\ResultScope
+Started UTC: 2026-10-01T17:07:43.8673941Z
+Completed UTC: 2026-10-01T17:11:44.7096804Z
+Exit code: -1
+Status: TIMED_OUT
+Safe stderr excerpt: Access is denied
+Receipt: C:\Users\User\.agent-kit\state\orca-receipts\76c54d3593b6499fae703e250d72f962.json
+Diagnostics: C:\Users\User\.agent-kit\state\orca-diagnostics\76c54d3593b6499fae703e250d72f962
+
+Lifecycle evidence records dispatch, worker start, CODEX process start, termination request, worker termination, and cleanup completion. The helper did not start REVIEW because IMPLEMENT did not complete a handoff. The repository was clean after cleanup and no application source, plan, global Agent Kit file, branch, worktree, remote, or deployment state was changed by this attempt.
+
+Configured roles at dispatch: MAIN=MaxPlus; IMPLEMENT=MaxPlus with workspace-write; REVIEW=O1 read-only; no_daemon=true; capacity_fallback=ask-owner. MAIN and REVIEW used distinct configured accounts for this run.
+
+This record contains no credentials, secret values, personal data, or provider response content.
