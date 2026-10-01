@@ -7,7 +7,7 @@ Status: BLOCKED (reviewed 2026-10-01)
 - Project Brain used: `C:\Users\User\.agent-kit\brains\resultscope`
 - Plan documents: `docs/final-project-plan/`
 - Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1` on local `main`
-- Current integration/checkpoint SHA: `189754ce0d50334bbe9661e981b4162ec670b086`; baseline evidence checkpoint: `e835d163add496df5012f1d85f1b566d773a3fe9`. All commits after the pinned baseline are documentation/evidence-only corrections. No tracked application source was changed.
+- Current integration/checkpoint SHA: `64c9e2ed56288e85757af6b79ce65e6769680648`; baseline evidence checkpoint: `e835d163add496df5012f1d85f1b566d773a3fe9`. All commits after the pinned baseline are documentation/evidence-only corrections. No tracked application source was changed.
 - Current phase: Phase 0 only; Phase 1 was not started
 - Operating constraint: MAIN remained on local `main`; no branch or worktree was created; no push or deploy occurred
 - Account independence: MAIN is MaxPlus and REVIEW is O1, so configured account independence is preserved
@@ -62,7 +62,7 @@ O1 independently confirmed:
 
 Full independent review output was returned by the configured O1 account in the orchestration session; the repository evidence paths above preserve the inspectable facts without storing a transcript.
 
-Fresh O1 re-review of the updated evidence was attempted in read-only mode but was not available: the configured `gpt-6-sol` model returned `invalid_request_error` for the selected provider channel. No review claim is made for that failed invocation.
+Fresh O1 re-review of the updated evidence was attempted in read-only mode but was not available: the configured `gpt-6-sol` model returned `invalid_request_error` for the selected provider channel. No review claim is made for that failed invocation. The earlier independent O1 review remains the basis for the `BLOCKED` recommendation.
 
 ## Blockers
 
