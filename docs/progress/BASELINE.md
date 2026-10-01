@@ -6,7 +6,8 @@ Status: BLOCKED for G0; source baseline and repository state are recorded.
 
 - Root: `C:\Users\User\Desktop\myProject\ResultScope`
 - Branch: `main`
-- HEAD/source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
+- Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
+- Current integration/checkpoint HEAD: `e835d163add496df5012f1d85f1b566d773a3fe9` (documentation/evidence checkpoint; no tracked application source mutation after the pinned baseline)
 - Remote: `origin` points to the repository configured by the owner; no remote state was changed.
 - Working tree: tracked source is clean; untracked owner work is under `docs/final-project-plan/` and `docs/progress/`.
 - Runtime-only `data/resultscope.db` is ignored and was not staged.
