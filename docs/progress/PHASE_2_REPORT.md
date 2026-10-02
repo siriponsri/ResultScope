@@ -69,7 +69,7 @@ Configured accounts are distinct (`MAIN/IMPLEMENT=MaxPlus`, `REVIEW=O1`), so no 
 
 ## Dated coursework demo integration addendum — 2026-10-02
 
-This addendum records the owner-authorized local integration from base checkpoint `21f14f541a99f7271f99810390ba21bea550dd59`. It does not revise the historical G0 or G1-data claims above.
+This addendum records the owner-authorized local integration from base checkpoint `21f14f541a99f7271f99810390ba21bea550dd59`. The implementation checkpoint is `651480afa12134ea3b52046de584f9f476e3c9e9`; the evaluator evidence was regenerated against that checkpoint. It does not revise the historical G0 or G1-data claims above.
 
 ### Scope and source audit
 

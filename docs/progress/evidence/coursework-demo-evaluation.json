@@ -1,7 +1,7 @@
 {
   "schema_version": "coursework-demo-evidence-v1",
-  "timestamp_utc": "2026-10-02T13:03:04.147430+00:00",
-  "repository_revision": "21f14f541a99f7271f99810390ba21bea550dd59",
+  "timestamp_utc": "2026-10-02T13:05:39.644057+00:00",
+  "repository_revision": "651480afa12134ea3b52046de584f9f476e3c9e9",
   "mode": "synthetic",
   "data_class": "synthetic",
   "corpus_version": "promptlab-synthetic-v1",
