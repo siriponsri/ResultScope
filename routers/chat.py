@@ -13,6 +13,7 @@ from config import settings
 from services import llm_client
 from services.answer_service import AnswerResult, answer_query
 from services.deterministic_engine import analyze_message, get_rulebook
+from services.extraction_store import ExtractionStoreError, extraction_store
 from services.intent_router import IntentDecision, route_intent
 from services.lab_scope import SCOPE_SUGGESTIONS, local_scope_reply
 from services.llm_client import LLMConnectionError
@@ -28,6 +29,7 @@ SESSION_MAX_AGE = settings.SESSION_TTL_SECONDS
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=settings.MAX_MESSAGE_CHARS)
+    extraction_id: str | None = Field(default=None, max_length=64)
 
 
 class ChatResponse(BaseModel):
@@ -47,6 +49,14 @@ class ChatResponse(BaseModel):
 
 class ScopeRequest(BaseModel):
     message: str = Field(min_length=1, max_length=settings.MAX_MESSAGE_CHARS)
+
+
+class ExtractionRequestError(Exception):
+    def __init__(self, code: str, message: str, status_code: int) -> None:
+        self.code = code
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
 
 
 def _session_id(request: Request) -> tuple[str, bool]:
@@ -87,14 +97,36 @@ def _local_result(intent: IntentDecision, message: str) -> AnswerResult:
 
 
 async def _run_pipeline(
-    message: str, history: list[dict[str, str]]
+    message: str, history: list[dict[str, str]], confirmed_extraction: dict[str, Any] | None = None
 ) -> tuple[IntentDecision, Any, AnswerResult]:
     intent = route_intent(message, history)
     analysis = analyze_message(message, history)
     if intent.kind in {"local", "unrelated"}:
         return intent, analysis, _local_result(intent, message)
-    answer = await answer_query(message, intent, history, analysis)
+    answer = await answer_query(message, intent, history, analysis, confirmed_extraction=confirmed_extraction)
     return intent, analysis, answer
+
+
+async def _load_confirmed_extraction(session_id: str, extraction_id: str | None) -> dict[str, Any] | None:
+    if not extraction_id:
+        return None
+    try:
+        import uuid
+
+        uuid.UUID(extraction_id)
+    except (ValueError, AttributeError, TypeError):
+        raise ExtractionRequestError("extraction_not_found", "The extraction is not available for this session.", 404)
+    record = await extraction_store.get(session_id, extraction_id)
+    if record is None:
+        raise ExtractionRequestError("extraction_not_found", "The extraction is not available for this session.", 404)
+    if record.status != "confirmed":
+        raise ExtractionRequestError("extraction_confirmation_required", "Review and confirm the image fields before asking about them.", 409)
+    return {
+        "extraction_id": record.extraction_id,
+        "document_type": record.document_type,
+        "fields": record.fields,
+        "warnings": record.warnings,
+    }
 
 
 def _response_model(intent: IntentDecision, result: AnswerResult) -> ChatResponse:
@@ -141,6 +173,13 @@ async def _persist_turn(
     if result.status not in {"error"}:
         updated.append({"role": "assistant", "content": result.text})
     await conversation_store.set(session_id, _bounded_history(updated))
+
+
+def _extraction_error_response(error: ExtractionRequestError) -> JSONResponse:
+    return JSONResponse(
+        status_code=error.status_code,
+        content={"error": True, "code": error.code, "message": error.message},
+    )
 
 
 @router.get("/product")
@@ -198,7 +237,8 @@ async def post_chat_reset(request: Request, response: Response):
         if not is_new:
             async with session_locks.lock(session_id):
                 await conversation_store.clear(session_id)
-    except ConversationStoreError:
+                await extraction_store.clear(session_id)
+    except (ConversationStoreError, ExtractionStoreError):
         return _store_error_response()
     rotated_id = new_session_id()
     _set_session_cookie(response, rotated_id)
@@ -211,9 +251,12 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
     try:
         async with session_locks.lock(session_id):
             history = _bounded_history(await conversation_store.get(session_id))
-            intent, _, result = await _run_pipeline(chat_request.message, history)
+            confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
+            intent, _, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
             await _persist_turn(session_id, history, chat_request.message, result)
-    except ConversationStoreError:
+    except ExtractionRequestError as exc:
+        return _extraction_error_response(exc)
+    except (ConversationStoreError, ExtractionStoreError):
         return _store_error_response(response)
     if is_new:
         _set_session_cookie(response, session_id)
@@ -236,7 +279,8 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
         try:
             async with session_locks.lock(session_id):
                 history = _bounded_history(await conversation_store.get(session_id))
-                intent, analysis, result = await _run_pipeline(chat_request.message, history)
+                confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
+                intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
                 await _persist_turn(session_id, history, chat_request.message, result)
                 if analysis.scope.allowed:
                     yield "data: " + json.dumps(
@@ -261,7 +305,12 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
                 else:
                     yield "data: " + json.dumps({"delta": result.text}, ensure_ascii=False) + "\n\n"
                 yield 'data: {"done": true}\n\n'
-        except ConversationStoreError:
+        except ExtractionRequestError as exc:
+            yield "data: " + json.dumps(
+                {"error": True, "code": exc.code, "message": exc.message}, ensure_ascii=False
+            ) + "\n\n"
+            yield 'data: {"done": true}\n\n'
+        except (ConversationStoreError, ExtractionStoreError):
             yield "data: " + json.dumps(
                 {"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."},
                 ensure_ascii=False,

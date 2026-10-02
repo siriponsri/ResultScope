@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 
 from config import settings
 from routers.chat import router as chat_router
+from routers.images import router as images_router
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -41,6 +42,7 @@ if cors_origins:
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 app.include_router(chat_router)
+app.include_router(images_router)
 
 
 @app.get("/")

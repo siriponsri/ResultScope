@@ -71,6 +71,17 @@ class Settings(BaseSettings):
     KNOWLEDGE_MODE: str = "release"
     SESSION_SIGNING_KEY: str = ""
 
+    # Vision/OCR is opt-in. A text-capable model is never assumed to support images.
+    VISION_ENABLED: bool = False
+    VISION_BASE_URL: str = ""
+    VISION_API_KEY: str = ""
+    VISION_MODEL: str = ""
+    VISION_TIMEOUT_SECONDS: float = 60.0
+    IMAGE_MAX_BYTES: int = 3 * 1024 * 1024
+    IMAGE_MAX_PIXELS: int = 12 * 1000 * 1000
+    MAX_EXTRACTION_FIELDS: int = 30
+    EXTRACTION_TTL_SECONDS: int = 60 * 60 * 24
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

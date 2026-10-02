@@ -23,7 +23,8 @@ UNSAFE_HINTS = (
 )
 LAB_TERM_HINTS = (
     "hb", "hba1c", "cbc", "fpg", "ferritin", "creatinine", "egfr", "cholesterol", "triglyceride",
-    "alt", "ast", "tsh", "platelet", "ผลตรวจ", "ค่าเลือด", "ค่าแล็บ", "ผลแล็บ",
+    "alt", "ast", "tsh", "platelet", "marker-a", "marker-b", "marker-c",
+    "ผลตรวจ", "ค่าเลือด", "ค่าแล็บ", "ผลแล็บ",
 )
 MIXED_ANALYSIS_HINTS = (
     "result", "mean", "explain", "interpret", "high", "low", "normal",
@@ -68,7 +69,7 @@ def route_intent(message: str, history: list[dict[str, str]] | None = None) -> I
         return IntentDecision("business", "business_faq", True, scope)
     if has_business:
         return IntentDecision("business", "business_faq", True, scope)
-    if scope.allowed:
+    if scope.allowed or has_lab:
         return IntentDecision("lab", scope.reason, True, scope)
     if scope.reason in {"greeting", "help", "closing", "ambiguous", "empty_message"}:
         return IntentDecision("local", scope.reason, False, scope)

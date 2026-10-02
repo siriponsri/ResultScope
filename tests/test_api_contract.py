@@ -19,6 +19,8 @@ def test_rulebook_endpoint_and_home_surface():
     assert home.status_code == 200
     assert "Read the signal" in home.text
     assert "Open full rulebook" in home.text
+    assert 'id="image-input"' in home.text
+    assert 'id="image-review"' in home.text
 
 
 def test_default_same_origin_configuration_does_not_emit_wildcard_cors():

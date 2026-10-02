@@ -61,6 +61,17 @@
             <form id="chat-form" class="intake-form">
               <label for="message-input">Laboratory results or question</label>
               <textarea id="message-input" rows="9" maxlength="12000" placeholder="Example: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100)…" required></textarea>
+              <div class="image-intake" id="image-intake">
+                <div class="image-intake-heading">
+                  <div>
+                    <label for="image-input">Read a document image</label>
+                    <p>JPEG or PNG only. Review every extracted field before using it in an answer.</p>
+                  </div>
+                  <span id="image-status" class="image-status">No image selected</span>
+                </div>
+                <input id="image-input" type="file" accept="image/jpeg,image/png" />
+                <div id="image-review" class="image-review hidden" aria-live="polite"></div>
+              </div>
               <div class="intake-form-footer">
                 <p><span id="char-count">0 / 12,000</span><span>Include the report's unit and reference range when available.</span></p>
                 <div class="intake-actions">

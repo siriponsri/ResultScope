@@ -11,6 +11,9 @@ const sendButton = document.getElementById("send-button");
 const stopButton = document.getElementById("stop-button");
 const sampleButton = document.getElementById("sample-button");
 const charCount = document.getElementById("char-count");
+const imageInput = document.getElementById("image-input");
+const imageStatus = document.getElementById("image-status");
+const imageReview = document.getElementById("image-review");
 
 const followupForm = document.getElementById("followup-form");
 const followupInput = document.getElementById("followup-input");
@@ -19,6 +22,10 @@ const newChatButton = document.getElementById("new-chat-button");
 
 let activeAbortController = null;
 let runCount = 0;
+let pendingExtraction = null;
+let confirmedExtractionId = null;
+let imagePreviewUrl = null;
+let currentImageFile = null;
 
 function renderMarkdown(rawText) {
   if (window.marked && window.DOMPurify) {
@@ -322,9 +329,157 @@ function clearError() {
   errorBanner.textContent = "";
 }
 
+function setImageStatus(message, state = "") {
+  imageStatus.textContent = message;
+  imageStatus.dataset.state = state;
+}
+
+function clearImagePreview() {
+  if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+  imagePreviewUrl = null;
+}
+
+function resetImageState() {
+  clearImagePreview();
+  pendingExtraction = null;
+  confirmedExtractionId = null;
+  currentImageFile = null;
+  imageInput.value = "";
+  imageReview.replaceChildren();
+  imageReview.classList.add("hidden");
+  setImageStatus("No image selected");
+}
+
+function renderImageReview(file, extraction) {
+  pendingExtraction = extraction;
+  imageReview.replaceChildren();
+  imageReview.classList.remove("hidden");
+  clearImagePreview();
+  imagePreviewUrl = URL.createObjectURL(file);
+
+  const preview = createElement("img", "image-preview");
+  preview.src = imagePreviewUrl;
+  preview.alt = "Uploaded laboratory document preview";
+
+  const panel = createElement("div", "image-review-fields");
+  const heading = createElement("div", "image-review-heading");
+  heading.append(
+    createElement("strong", "", extraction.status === "confirmed" ? "Confirmed extraction" : "Review extracted fields"),
+    createElement("small", "", "Image text is untrusted data. Correct anything unclear before confirming.")
+  );
+  panel.appendChild(heading);
+
+  if (!extraction.fields?.length) {
+    panel.appendChild(createElement("p", "image-review-empty", "No readable fields were returned. Upload a clearer image or enter the values manually."));
+  }
+
+  const fieldNodes = [];
+  (extraction.fields || []).forEach((field) => {
+    const row = createElement("fieldset", "image-field");
+    row.dataset.fieldId = field.field_id;
+    const legend = createElement("legend", "", field.marker || "Unknown field");
+    const valueLabel = createElement("label", "", "Value");
+    const value = document.createElement("input");
+    value.type = "text";
+    value.value = field.raw_value || "";
+    value.autocomplete = "off";
+    valueLabel.appendChild(value);
+    const unitLabel = createElement("label", "", "Unit");
+    const unit = document.createElement("input");
+    unit.type = "text";
+    unit.value = field.unit || "";
+    unit.autocomplete = "off";
+    unitLabel.appendChild(unit);
+    const rangeLabel = createElement("label", "", "Reference range");
+    const range = document.createElement("input");
+    range.type = "text";
+    range.value = field.reference_range_raw || "";
+    range.placeholder = "e.g. 10-15 or leave blank";
+    range.autocomplete = "off";
+    rangeLabel.appendChild(range);
+    row.append(legend, valueLabel, unitLabel, rangeLabel);
+    panel.appendChild(row);
+    fieldNodes.push({ row, field, value, unit, range });
+  });
+
+  const actions = createElement("div", "image-review-actions");
+  const cancel = createElement("button", "secondary-button", "Discard image");
+  cancel.type = "button";
+  cancel.addEventListener("click", cancelImageExtraction);
+  actions.appendChild(cancel);
+  if (extraction.status === "review_required" && fieldNodes.length) {
+    const confirm = createElement("button", "primary-button", "Confirm fields");
+    confirm.type = "button";
+    confirm.addEventListener("click", () => confirmImageExtraction(fieldNodes));
+    actions.appendChild(confirm);
+  }
+  panel.appendChild(actions);
+
+  const shell = createElement("div", "image-review-shell");
+  shell.append(preview, panel);
+  imageReview.appendChild(shell);
+  setImageStatus(extraction.status === "confirmed" ? "Confirmed for this session" : "Review required", extraction.status);
+}
+
+async function cancelImageExtraction() {
+  const extractionId = pendingExtraction?.extraction_id;
+  if (extractionId) {
+    try { await fetch(`/api/v1/images/${extractionId}`, { method: "DELETE" }); } catch (error) { console.warn("image cancel failed", error); }
+  }
+  resetImageState();
+}
+
+async function confirmImageExtraction(fieldNodes) {
+  if (!pendingExtraction) return;
+  const fields = fieldNodes.map(({ row, field, value, unit, range }) => {
+    const rangeParts = range.value.match(/^\s*([^\-–]+?)\s*[-–]\s*(.+?)\s*$/);
+    return {
+      field_id: row.dataset.fieldId,
+      marker: field.marker,
+      raw_value: value.value.trim() || null,
+      unit: unit.value.trim() || null,
+      reference_low: rangeParts ? rangeParts[1].trim() : null,
+      reference_high: rangeParts ? rangeParts[2].trim() : null,
+      reference_range_raw: range.value.trim() || null,
+    };
+  });
+  try {
+    const response = await fetch(`/api/v1/images/${pendingExtraction.extraction_id}/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ revision: pendingExtraction.revision, fields }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.message || "The extracted fields could not be confirmed.");
+    pendingExtraction = body;
+    confirmedExtractionId = body.extraction_id;
+    renderImageReview(currentImageFile, body);
+  } catch (error) {
+    showError(error.message || "The extracted fields could not be confirmed.");
+  }
+}
+
+async function uploadImage(file) {
+  resetImageState();
+  currentImageFile = file;
+  setImageStatus("Reading image…", "loading");
+  const form = new FormData();
+  form.append("file", file, file.name);
+  try {
+    const response = await fetch("/api/v1/images/extract", { method: "POST", body: form });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.message || "The image could not be read.");
+    renderImageReview(file, body);
+  } catch (error) {
+    resetImageState();
+    setImageStatus(error.message || "The image could not be read.", "error");
+  }
+}
+
 function setBusy(isBusy) {
   messageInput.disabled = isBusy;
   followupInput.disabled = isBusy;
+  imageInput.disabled = isBusy;
   sendButton.classList.toggle("hidden", isBusy);
   stopButton.classList.toggle("hidden", !isBusy);
   followupSend.disabled = isBusy;
@@ -347,7 +502,7 @@ async function sendMessage(message) {
     const response = await fetch("/api/v1/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, extraction_id: confirmedExtractionId }),
       signal: activeAbortController.signal,
     });
 
@@ -423,6 +578,7 @@ async function resetConversation() {
   clearError();
   messageInput.value = "";
   followupInput.value = "";
+  resetImageState();
   runCount = 0;
   updateCount();
   showStarter();
@@ -455,6 +611,10 @@ followupForm.addEventListener("submit", (event) => {
 stopButton.addEventListener("click", () => activeAbortController?.abort());
 newChatButton.addEventListener("click", resetConversation);
 messageInput.addEventListener("input", updateCount);
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files?.[0];
+  if (file) uploadImage(file);
+});
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && activeAbortController) activeAbortController.abort();
