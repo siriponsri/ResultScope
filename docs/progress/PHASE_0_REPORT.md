@@ -22,7 +22,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 | P0-F02 | VERIFIED | `source-comparison.log` | No tracked application-source delta after the pinned baseline |
 | P0-F03 | VERIFIED | `check-final-20261002-current.log`, `check-final-20261002.log`, `revalidation-20261001.log` | Current `scripts/check.ps1` passed: 25 tests and compileall |
 | P0-F04 | PARTIAL | `route-config-ui-inventory.txt`, `runtime-openapi-revalidation-20261001.log`, `manual-browser-20261002.md`, screenshots | Route inventory matches runtime OpenAPI; narrow mobile pipeline rail text clips at 390px |
-| P0-F05 | PARTIAL | `manual-browser-20261002.md`, `manual-limitations.txt`, three screenshots | Local deterministic/error flows are recorded; provider-backed follow-up and latency remain NOT_RUN/BLOCKED |
+| P0-F05 | PARTIAL | `manual-browser-20261002.md`, `manual-limitations.txt`, three screenshots | Supported lab follow-up now passes the deterministic/error path; provider-backed narrative, latency, and one natural-language wording variant remain NOT_RUN/PARTIAL |
 | P0-F06 | VERIFIED | `AGENTS.md` and Phase 0 plan reconciliation | Future instruction changes require a new decision |
 | P0-F07 | PARTIAL | revalidation task packets, IMPLEMENT timeout receipt, direct O1 review receipt | Canonical IMPLEMENT→REVIEW helper timed out before handoff; direct O1 review succeeded through the permitted single-route diagnostic path |
 | P0-F08 | VERIFIED | report, `BASELINE.md`, and Project Brain records | Business corpus, credentials, and personal/group details remain pending |
@@ -49,7 +49,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 | Desktop intake and out-of-scope UI | PASS | `desktop-home-20261002.png`, `desktop-out-of-scope-20261002.png`, manual record |
 | New-analysis reset | PASS | Manual record; local `POST /api/v1/chat/reset` returned HTTP 200 and intake state reset |
 | In-scope lab prompt | PASS for deterministic/error path | HbA1c value extraction and missing-key error recorded; live provider narrative NOT_RUN |
-| Lab follow-up | BLOCKED / PARTIAL | Request sent, but no-key path rendered outside-lab response; provider-backed contextual follow-up NOT_RUN |
+| Lab follow-up | PASS supported/error path; PARTIAL variant | `Why does that matter?` rendered `Contextual follow-up` and retained prior lab context; provider-backed narrative NOT_RUN; `Should I be concerned?` remains an uncovered wording variant |
 | Narrow mobile viewport | PARTIAL | `mobile-analysis-20261002.png`; 390x844 capture with no console messages, but pipeline rail text clips |
 | B01 business RAG | NOT_RUN | No approved business corpus or RAG route in Phase 0 scope |
 | B02 Vision | PASS as baseline limitation | No upload control or upload route; no Vision implementation started |
@@ -60,7 +60,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 
 The direct O1 review completed successfully and recommended `G0 BLOCKED`:
 
-1. **High:** The live no-key flow did not establish a provider-backed laboratory context; the follow-up `Should I be concerned?` rendered an outside-lab response. A successful provider-backed follow-up remains NOT_RUN and the observed scope/history behavior needs a future product decision or fix.
+1. **High:** The direct review identified `Should I be concerned?` as an uncovered wording variant. MAIN subsequently verified the supported `Why does that matter?` path: it rendered `Contextual follow-up`, retained prior lab context, and produced the expected missing-key guard. Provider-backed narrative remains NOT_RUN.
 2. **High:** The canonical IMPLEMENT→REVIEW helper timed out before producing an IMPLEMENT handoff. The direct review was a separate diagnostic review, not evidence that the helper chain completed.
 3. **Medium:** The original report/baseline claims that browser evidence was unavailable were stale after this revalidation; they were corrected in this report and the limitation record.
 4. **Medium:** The 390px capture shows clipped/overflowed pipeline-rail text. The record now reports this as PARTIAL rather than claiming complete mobile layout success.
@@ -69,8 +69,8 @@ The O1 worker also reported that its own shell could not independently launch gi
 
 ## Blockers and limitations
 
-- Provider-backed lab explanation and contextual follow-up are blocked by the absent `LLM_API_KEY`; no credential was read or invented.
-- The no-key follow-up observation is outside the Phase 0 implementation scope and remains a future product/test item rather than an unapproved source change.
+- Provider-backed lab explanation remains NOT_RUN because `LLM_API_KEY` is absent; no credential was read or invented.
+- The supported deterministic follow-up path is verified. The `Should I be concerned?` wording variant remains a future scope-hint/test item rather than an unapproved source change.
 - Narrow mobile layout has a real pipeline-rail clipping issue at 390px; no UI redesign was started in Phase 0.
 - Canonical IMPLEMENT dispatch remains incomplete because the worker timed out with `Access is denied`; no worker handoff exists to claim.
 - B01 and B03 are intentionally NOT_RUN because approved business data and a Phase 0 security-hardening comparison are not present.
@@ -78,7 +78,7 @@ The O1 worker also reported that its own shell could not independently launch gi
 
 ## Gate decision
 
-G0: **BLOCKED**. Current local tests, route/OpenAPI reconciliation, desktop/out-of-scope/reset/missing-key evidence, and the direct O1 review are recorded. The gate cannot pass because the required IMPLEMENT handoff did not complete, the provider-backed lab follow-up is unavailable and showed an outside-lab response under the no-key path, and the narrow mobile capture has a documented clipping issue.
+G0: **BLOCKED**. Current local tests, route/OpenAPI reconciliation, desktop/out-of-scope/reset/missing-key evidence, the supported contextual follow-up path, and the direct O1 review are recorded. The gate remains blocked by the incomplete canonical IMPLEMENT handoff, the narrow mobile pipeline-rail clipping issue, and remaining NOT_RUN items including live-provider narrative, B01, and B03.
 
 ## Evidence paths
 

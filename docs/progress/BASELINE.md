@@ -24,7 +24,7 @@ Root deployment assumptions remain unchanged: `main.py` is present, while `verce
 - Current `scripts/check.ps1`: PASS, exit 0; 25 tests passed and compileall passed. Evidence: `docs/progress/evidence/baseline/phase0-20261001-current/check-final-20261002-current.log`.
 - Runtime OpenAPI/source route reconciliation: PASS. Evidence: `runtime-openapi-revalidation-20261001.log` and `route-config-ui-inventory.txt`.
 - Browser/manual evidence: desktop intake, out-of-scope response, reset, missing-key error path, and 390x844 mobile capture are recorded in `manual-browser-20261002.md`; the mobile pipeline rail clips at the narrow viewport and is reported as PARTIAL.
-- Provider-backed lab explanation and contextual follow-up: NOT_RUN/BLOCKED because no `LLM_API_KEY` was read or supplied. The no-key follow-up rendered an outside-lab response and remains a future issue, not a Phase 0 source change.
+- Provider-backed lab explanation: NOT_RUN because no `LLM_API_KEY` was read or supplied. The supported no-key follow-up `Why does that matter?` retained lab context and rendered `Contextual follow-up`; the natural-language variant `Should I be concerned?` remains an uncovered scope-hint case, not a Phase 0 source change.
 - B01 business RAG: NOT_RUN; no approved business corpus or RAG route exists in Phase 0 scope.
 - B02 Vision: verified baseline limitation; no upload route/control and no Vision implementation started.
 - B03 output/session hardening comparison: NOT_RUN.

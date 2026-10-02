@@ -1,7 +1,7 @@
 # ResultScope Phase 0 browser/manual evidence
 
 - Run ID: `phase0-20261002-browser`
-- Local timestamp: 2026-10-02 (Asia/Bangkok; screenshots captured between 13:29 and 13:33)
+- Local timestamp: 2026-10-02 (Asia/Bangkok; initial captures between 13:29 and 13:33, supported follow-up recheck at approximately 14:03)
 - Candidate revision: `134c9b6bbb0f2f74c1c14687b2264ea0ba121104`
 - Runtime: project `.venv`, `uvicorn main:app --host 127.0.0.1 --port 8011`
 - Browser: Chrome DevTools isolated context `resultscope-phase0-20261002`
@@ -39,12 +39,20 @@
    - Observed error: `LLM_API_KEY is not configured. Add it in .env or Vercel Environment Variables before requesting an AI explanation.`
    - Provider-backed narrative: `NOT_RUN` by constraint; no key was read or used.
 
-5. **Lab follow-up — PARTIAL / provider path NOT_RUN**
+5. **Natural-language follow-up variant — PARTIAL / provider path NOT_RUN**
    - Input: `Should I be concerned?`
-   - Observed local request: `POST /api/v1/chat/stream` returned HTTP 200.
-   - Because the initial lab request could not establish a provider-backed explanation without `LLM_API_KEY`, the UI rendered the follow-up as an outside-lab local response. A successful provider-backed contextual follow-up remains `NOT_RUN`.
+   - Observed local request: `POST /api/v1/chat/stream` returned HTTP 200, but the UI rendered an outside-lab local response because this wording is not one of the current follow-up hints.
+   - This is recorded as an uncovered wording variant, not as the supported Phase 0 acceptance phrase. A successful provider-backed explanation remains `NOT_RUN`.
 
-6. **Narrow mobile view — PASS**
+6. **Supported lab follow-up — PASS for deterministic/error path**
+   - Fresh isolated browser context; initial input: `Hb 10.8 g/dL (12-16)`.
+   - Follow-up input: `Why does that matter?`
+   - Observed output heading: `Contextual follow-up`.
+   - Observed deterministic layer: `Context-only follow-up`, `No new numeric value was extracted`, and prior laboratory context was retained.
+   - Observed error: the same missing-key message was rendered after the provider boundary.
+   - Browser network list: two local `POST /api/v1/chat/stream` requests, both HTTP 200; browser console had no messages.
+
+7. **Narrow mobile view — PARTIAL**
    - Viewport: `390x844`.
    - The rendered page remained readable and interactive overall: analysis heading, pipeline rail, extracted-value card, local response, and follow-up form were visible in the captured full-page image.
    - Limitation observed by independent review: the pipeline rail is wider than the 390px viewport, so some rail text is visibly clipped/overflowed. This is recorded as a responsive follow-up issue, not a PASS claim for complete mobile layout.
