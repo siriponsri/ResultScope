@@ -1,0 +1,14 @@
+Objective: Independently review the exact Phase 2 candidate produced by the preceding IMPLEMENT task against its task packet, repository contracts, security/session boundaries, data provenance, tests, and report claims.
+Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope; local main; base 6f7ae8cbf0843dbb7c6d70bdcfb5924778635028. Inspect the actual candidate HEAD and dirty diff after IMPLEMENT.
+Selected Cell: 11-code-review.
+Primary Agent: REVIEW (configured O1); read-only. Do not infer review success from launch/receipt status.
+Route Class: planning-review; read-only.
+Relevant Skills: code-review, test-engineering, security-review, data-contracts.
+Tool Capability Needs: Read repository/diff, execute local focused tests and scripts/check.ps1. Do not access credentials, .env values, or external providers.
+Scope: Review only changes owned by the Phase 2 task packet. Specifically inspect intent routing, retrieval inputs, release/synthetic separation, citation resolution, answer validation, sync/SSE parity, cookie signing/reset/concurrency, safe provider/store errors, and evidence/report assertions.
+Do Not Touch: Do not edit files, stage, commit, push, deploy, change global Agent Kit/account settings, or alter the untracked docs/coursework-demo directory. Do not include that demo pack in the index; it explicitly targets post-Phase-2 integration.
+Acceptance Criteria: Report actionable findings with severity and file/line evidence; distinguish specification findings from standards/judgment concerns; verify relevant tests on the exact candidate where the route permits; state tests not run as NOT_RUN. Confirm whether structural validation, release readiness, live evaluation, and independent review claims remain distinct. A worker exit/receipt is not technical approval.
+Tests / Evidence: Run focused Phase 2 tests and scripts/check.ps1 if the candidate is complete. Report command, exit status, revision, and limitations. Do not print or save secrets.
+Dependencies: IMPLEMENT must finish and leave a candidate available for independent inspection. If account/launch fails before repository inspection, return REVIEW NOT_RUN with that reason; do not retry this route.
+Owner Decisions Required: None for code review; approved real business sources remain outside review scope and G1-data stays BLOCKED.
+Handoff Target: Return findings to MAIN. MAIN resolves defects, reruns checks, and owns staging/commit. Do not claim approval if repository inspection failed.

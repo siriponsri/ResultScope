@@ -50,27 +50,20 @@ def _build_messages(
     return messages
 
 
-def _friendly_error_from_response(exc: httpx.HTTPStatusError) -> LLMConnectionError:
-    status = exc.response.status_code
-    try:
-        body = exc.response.json()
-        detail = body.get("error", {}).get("message", "")
-    except (ValueError, AttributeError):
-        detail = exc.response.text
-
+def _friendly_error_for_status(status: int) -> LLMConnectionError:
     if status == 401:
-        message = "The API key is invalid or expired. Check LLM_API_KEY and try again."
-    elif status == 400:
-        message = f"คำขอไปยังโมเดลไม่ถูกต้อง: {detail}" if detail else "คำขอไปยังโมเดลไม่ถูกต้อง"
-    elif status == 404:
-        message = f"ไม่พบโมเดลที่ตั้งค่าไว้: {detail}" if detail else "ไม่พบโมเดลที่ตั้งค่าไว้"
+        message = "The AI provider rejected the configured credentials."
     elif status == 429:
         message = "ผู้ให้บริการจำกัดอัตราการเรียกใช้งาน กรุณาลองใหม่ภายหลัง"
-    elif status == 503:
+    elif status >= 500:
         message = "ผู้ให้บริการ AI ยังไม่พร้อมให้บริการในขณะนี้"
     else:
-        message = f"ผู้ให้บริการ AI ตอบกลับด้วยข้อผิดพลาด ({status})"
+        message = "ผู้ให้บริการ AI ไม่สามารถประมวลผลคำขอนี้ได้"
     return LLMConnectionError(message, status_code=502)
+
+
+def _friendly_error_from_response(exc: httpx.HTTPStatusError) -> LLMConnectionError:
+    return _friendly_error_for_status(exc.response.status_code)
 
 
 async def list_models() -> list[dict[str, Any]]:
@@ -88,7 +81,16 @@ async def list_models() -> list[dict[str, Any]]:
             raise LLMConnectionError("ผู้ให้บริการ AI ตอบสนองช้าเกินไป") from exc
         except httpx.HTTPStatusError as exc:
             raise _friendly_error_from_response(exc) from exc
-        return response.json().get("data", [])
+        except httpx.HTTPError as exc:
+            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง") from exc
+        models = data.get("data") if isinstance(data, dict) else None
+        if not isinstance(models, list):
+            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
+        return models
 
 
 async def chat(
@@ -113,12 +115,20 @@ async def chat(
             raise LLMConnectionError("ผู้ให้บริการ AI ตอบสนองช้าเกินไป") from exc
         except httpx.HTTPStatusError as exc:
             raise _friendly_error_from_response(exc) from exc
-
-        data = response.json()
-        choices = data.get("choices", [])
-        if not choices:
-            return ""
-        return choices[0].get("message", {}).get("content", "")
+        except httpx.HTTPError as exc:
+            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง") from exc
+        choices = data.get("choices") if isinstance(data, dict) else None
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
+        message = choices[0].get("message")
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str) or not content.strip():
+            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
+        return content
 
 
 async def chat_stream(
@@ -147,14 +157,9 @@ async def chat_stream(
                 json=payload,
             ) as response_llm:
                 if response_llm.status_code >= 400:
-                    body = await response_llm.aread()
-                    try:
-                        detail = json.loads(body).get("error", {}).get("message", "")
-                    except (ValueError, AttributeError):
-                        detail = body.decode("utf-8", errors="ignore")
                     yield {
                         "type": "error",
-                        "message": detail or f"ผู้ให้บริการ AI ตอบกลับด้วยสถานะ {response_llm.status_code}",
+                        "message": _friendly_error_for_status(response_llm.status_code).message,
                     }
                     return
 
@@ -181,9 +186,9 @@ async def chat_stream(
         yield {"type": "error", "message": "เชื่อมต่อผู้ให้บริการ AI ไม่ได้"}
     except httpx.TimeoutException:
         yield {"type": "error", "message": "ผู้ให้บริการ AI ตอบสนองช้าเกินไป"}
-    except httpx.HTTPError as exc:
-        logger.exception("Unexpected HTTP error during stream")
-        yield {"type": "error", "message": f"เกิดข้อผิดพลาดในการเชื่อมต่อ: {exc}"}
+    except httpx.HTTPError:
+        logger.warning("AI provider stream connection failed")
+        yield {"type": "error", "message": "เชื่อมต่อผู้ให้บริการ AI ไม่ได้"}
     except Exception:
         logger.exception("Unexpected stream failure")
         yield {"type": "error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิดระหว่างประมวลผล"}

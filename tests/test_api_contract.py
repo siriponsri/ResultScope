@@ -26,20 +26,20 @@ def test_default_same_origin_configuration_does_not_emit_wildcard_cors():
     assert response.headers.get("access-control-allow-origin") is None
 
 
-def test_stream_sends_deterministic_meta_before_llm_delta(monkeypatch):
+def test_stream_uses_validated_answer_pipeline_and_resolves_citations(monkeypatch):
     captured = {}
 
-    async def fake_stream(history, message, rule_grounding):
+    async def fake_chat(history, message, rule_grounding):
         captured["grounding"] = rule_grounding
-        yield {"type": "delta", "content": "Grounded answer"}
-        yield {"type": "done"}
+        return "Grounded synthetic answer"
 
     monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
-    monkeypatch.setattr(chat_router.llm_client, "chat_stream", fake_stream)
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+    monkeypatch.setattr(chat_router.llm_client, "chat", fake_chat)
 
     response = client.post(
         "/api/v1/chat/stream",
-        json={"message": "Hb 10.8 g/dL (12-16) ช่วยอธิบาย"},
+        json={"message": "Tell me about synthetic basic panel"},
     )
     assert response.status_code == 200
     events = [
@@ -47,20 +47,19 @@ def test_stream_sends_deterministic_meta_before_llm_delta(monkeypatch):
         for line in response.text.splitlines()
         if line.startswith("data: ")
     ]
-    meta_index = next(index for index, event in enumerate(events) if "analysis_meta" in event)
+    meta_index = next(index for index, event in enumerate(events) if "response_meta" in event)
     delta_index = next(index for index, event in enumerate(events) if "delta" in event)
     assert meta_index < delta_index
-    assert events[meta_index]["analysis_meta"]["values"][0]["flag"] == "low"
-    assert "AUTHORITATIVE DETERMINISTIC PRE-ANSWER CONTRACT" in captured["grounding"]
+    assert events[meta_index]["response_meta"]["demo"] is True
+    assert events[meta_index]["response_meta"]["citations"][0]["source_id"] == "SRC-SYNTHETIC-SERVICE-FIXTURE"
+    assert events[delta_index]["delta"].startswith("Grounded synthetic answer")
+    assert "retrieved source facts" in captured["grounding"]
 
 
-def test_failed_allowed_stream_retains_lab_context_for_follow_up(monkeypatch):
-    async def failing_stream(history, message, rule_grounding):
-        yield {"type": "error", "message": "Provider unavailable"}
-
+def test_lab_abstention_retains_context_for_follow_up(monkeypatch):
     store = MemoryConversationStore()
     monkeypatch.setattr(chat_router, "conversation_store", store)
-    monkeypatch.setattr(chat_router.llm_client, "chat_stream", failing_stream)
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
 
     response = client.post(
         "/api/v1/chat/stream", json={"message": "Hb 10.8 g/dL (12-16)"}

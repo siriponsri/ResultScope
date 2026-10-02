@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     # Product behavior
     MAX_MESSAGE_CHARS: int = 12000
     MAX_HISTORY_MESSAGES: int = 20
+    KNOWLEDGE_MODE: str = "release"
+    SESSION_SIGNING_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -81,7 +81,7 @@ LAB_TERMS: dict[str, tuple[str, ...]] = {
 FOLLOW_UP_HINTS = (
     "แล้ว", "อันนี้", "ค่านี้", "ค่าไหน", "หมายความว่า", "แปลว่า", "สูงไหม", "ต่ำไหม",
     "อันตรายไหม", "ต้องกังวลไหม", "เกี่ยวกันไหม", "ควรถาม", "ควรตรวจ", "ต่อไหม",
-    "why", "what does", "is this high", "is this low", "should i worry", "what next",
+    "why", "what does", "is this high", "is this low", "should i worry", "should i be concerned", "what next",
     "tell me more", "explain more", "how about this",
 )
 

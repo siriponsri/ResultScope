@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -10,18 +11,13 @@ from pydantic import BaseModel, Field
 
 from config import settings
 from services import llm_client
-from services.deterministic_engine import (
-    analyze_message,
-    build_rule_grounding,
-    get_rulebook,
-)
-from services.lab_scope import (
-    SCOPE_SUGGESTIONS,
-    classify_lab_scope,
-    local_scope_reply,
-)
+from services.answer_service import AnswerResult, answer_query
+from services.deterministic_engine import analyze_message, get_rulebook
+from services.intent_router import IntentDecision, route_intent
+from services.lab_scope import SCOPE_SUGGESTIONS, local_scope_reply
 from services.llm_client import LLMConnectionError
-from services.store import conversation_store
+from services.sessions import new_session_id, session_locks, sign_session_id, verify_session_cookie
+from services.store import ConversationStoreError, conversation_store
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1")
@@ -36,7 +32,15 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    scope: str = "lab"
+    scope: str
+    status: str
+    intent: str
+    citations: list[dict[str, str]] = Field(default_factory=list)
+    corpus_mode: str
+    corpus_version: str | None = None
+    demo: bool
+    retrieval_reason: str = "not_run"
+    retrieval_latency_ms: float = 0.0
 
 
 class ScopeRequest(BaseModel):
@@ -44,16 +48,14 @@ class ScopeRequest(BaseModel):
 
 
 def _session_id(request: Request) -> tuple[str, bool]:
-    existing = request.cookies.get(SESSION_COOKIE)
-    if existing:
-        return existing, False
-    return str(uuid.uuid4()), True
+    existing = verify_session_cookie(request.cookies.get(SESSION_COOKIE))
+    return (existing, False) if existing else (new_session_id(), True)
 
 
 def _set_session_cookie(response: Response, session_id: str) -> None:
     response.set_cookie(
         key=SESSION_COOKIE,
-        value=session_id,
+        value=sign_session_id(session_id),
         httponly=True,
         samesite="lax",
         secure=settings.APP_ENV.lower() == "production",
@@ -62,7 +64,79 @@ def _set_session_cookie(response: Response, session_id: str) -> None:
 
 
 def _bounded_history(history: list[dict[str, str]]) -> list[dict[str, str]]:
-    return history[-settings.MAX_HISTORY_MESSAGES :]
+    valid = [
+        {"role": row["role"], "content": row["content"]}
+        for row in history
+        if isinstance(row, dict)
+        and row.get("role") in {"user", "assistant"}
+        and isinstance(row.get("content"), str)
+    ]
+    return valid[-settings.MAX_HISTORY_MESSAGES :]
+
+
+def _local_result(intent: IntentDecision, message: str) -> AnswerResult:
+    return AnswerResult(
+        status="refused",
+        text=local_scope_reply(intent.scope, message),
+        intent=intent.kind,
+        corpus_mode=settings.KNOWLEDGE_MODE,
+        demo=settings.KNOWLEDGE_MODE == "synthetic",
+    )
+
+
+async def _run_pipeline(
+    message: str, history: list[dict[str, str]]
+) -> tuple[IntentDecision, Any, AnswerResult]:
+    intent = route_intent(message, history)
+    analysis = analyze_message(message, history)
+    if intent.kind in {"local", "unrelated"}:
+        return intent, analysis, _local_result(intent, message)
+    answer = await answer_query(message, intent, history, analysis)
+    return intent, analysis, answer
+
+
+def _response_model(intent: IntentDecision, result: AnswerResult) -> ChatResponse:
+    meta = result.metadata()
+    return ChatResponse(
+        reply=result.text,
+        scope=intent.reason,
+        status=result.status,
+        intent=result.intent,
+        citations=meta["citations"],
+        corpus_mode=result.corpus_mode,
+        corpus_version=result.corpus_version,
+        demo=result.demo,
+        retrieval_reason=result.retrieval_reason,
+        retrieval_latency_ms=result.retrieval_latency_ms,
+    )
+
+
+def _store_error_response(response: Response | None = None) -> JSONResponse:
+    error = JSONResponse(
+        status_code=503,
+        content={"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."},
+    )
+    if response and response.headers.get("set-cookie"):
+        error.headers.append("set-cookie", response.headers["set-cookie"])
+    return error
+
+
+def _error_status(result: AnswerResult) -> int:
+    return 503
+
+
+async def _persist_turn(
+    session_id: str,
+    history: list[dict[str, str]],
+    message: str,
+    result: AnswerResult,
+) -> None:
+    if result.intent in {"unrelated", "local", "unsafe"}:
+        return
+    updated = history + [{"role": "user", "content": message}]
+    if result.status not in {"error"}:
+        updated.append({"role": "assistant", "content": result.text})
+    await conversation_store.set(session_id, _bounded_history(updated))
 
 
 @router.get("/product")
@@ -83,15 +157,22 @@ async def get_rules():
 
 
 @router.post("/scope/check")
-async def post_scope_check(scope_request: ScopeRequest, request: Request):
-    session_id, _ = _session_id(request)
-    history = await conversation_store.get(session_id)
-    decision = analyze_message(scope_request.message, history).scope
+async def post_scope_check(scope_request: ScopeRequest, request: Request, response: Response):
+    session_id, is_new = _session_id(request)
+    try:
+        async with session_locks.lock(session_id):
+            history = _bounded_history(await conversation_store.get(session_id))
+    except ConversationStoreError:
+        return _store_error_response()
+    intent = route_intent(scope_request.message, history)
+    if is_new:
+        _set_session_cookie(response, session_id)
     return {
-        "allowed": decision.allowed,
-        "reason": decision.reason,
-        "category": decision.category,
-        "matched_terms": decision.matched_terms,
+        "allowed": intent.allowed,
+        "reason": intent.reason,
+        "intent": intent.kind,
+        "category": intent.scope.category,
+        "matched_terms": intent.scope.matched_terms,
     }
 
 
@@ -101,125 +182,98 @@ async def get_models():
         models = await llm_client.list_models()
         return {"models": models}
     except LLMConnectionError as exc:
-        return JSONResponse(status_code=200, content={"error": True, "message": exc.message})
+        return JSONResponse(status_code=exc.status_code, content={"error": True, "message": exc.message})
 
 
 @router.post("/chat/reset")
 async def post_chat_reset(request: Request, response: Response):
     session_id, is_new = _session_id(request)
-    await conversation_store.clear(session_id)
-    if is_new:
-        _set_session_cookie(response, session_id)
+    try:
+        if not is_new:
+            async with session_locks.lock(session_id):
+                await conversation_store.clear(session_id)
+    except ConversationStoreError:
+        return _store_error_response()
+    rotated_id = new_session_id()
+    _set_session_cookie(response, rotated_id)
     return {"ok": True}
 
 
 @router.post("/chat", response_model=ChatResponse)
 async def post_chat(chat_request: ChatRequest, request: Request, response: Response):
     session_id, is_new = _session_id(request)
-    history = await conversation_store.get(session_id)
-    analysis = analyze_message(chat_request.message, history)
-    decision = analysis.scope
-
+    try:
+        async with session_locks.lock(session_id):
+            history = _bounded_history(await conversation_store.get(session_id))
+            intent, _, result = await _run_pipeline(chat_request.message, history)
+            await _persist_turn(session_id, history, chat_request.message, result)
+    except ConversationStoreError:
+        return _store_error_response(response)
     if is_new:
         _set_session_cookie(response, session_id)
-
-    if not decision.allowed:
-        return ChatResponse(reply=local_scope_reply(decision, chat_request.message), scope=decision.reason)
-
-    rule_grounding = build_rule_grounding(analysis)
-
-    try:
-        reply_text = await llm_client.chat(history, chat_request.message, rule_grounding)
-    except LLMConnectionError as exc:
-        return JSONResponse(status_code=502, content={"error": True, "message": exc.message})
-
-    updated = _bounded_history(
-        history
-        + [
-            {"role": "user", "content": chat_request.message},
-            {"role": "assistant", "content": reply_text},
-        ]
-    )
-    await conversation_store.set(session_id, updated)
-    return ChatResponse(reply=reply_text)
+    if result.status == "error":
+        error = JSONResponse(
+            status_code=_error_status(result),
+            content={"error": True, "code": result.error_code, "message": result.text, "metadata": result.metadata()},
+        )
+        if is_new:
+            _set_session_cookie(error, session_id)
+        return error
+    return _response_model(intent, result)
 
 
 @router.post("/chat/stream")
 async def post_chat_stream(chat_request: ChatRequest, request: Request):
     session_id, is_new = _session_id(request)
-    history = await conversation_store.get(session_id)
-    analysis = analyze_message(chat_request.message, history)
-    decision = analysis.scope
 
     async def event_generator():
-        if not decision.allowed:
+        try:
+            async with session_locks.lock(session_id):
+                history = _bounded_history(await conversation_store.get(session_id))
+                intent, analysis, result = await _run_pipeline(chat_request.message, history)
+                await _persist_turn(session_id, history, chat_request.message, result)
+                if analysis.scope.allowed:
+                    yield "data: " + json.dumps(
+                        {"analysis_meta": analysis.to_public_dict()}, ensure_ascii=False
+                    ) + "\n\n"
+                metadata = result.metadata()
+                yield "data: " + json.dumps({"response_meta": metadata}, ensure_ascii=False) + "\n\n"
+                if result.status == "error":
+                    yield "data: " + json.dumps(
+                        {"error": True, "code": result.error_code, "message": result.text}, ensure_ascii=False
+                    ) + "\n\n"
+                elif intent.kind in {"unrelated", "local", "unsafe"}:
+                    yield "data: " + json.dumps(
+                        {
+                            "local_response": True,
+                            "intent": intent.reason,
+                            "message": result.text,
+                            "suggestions": SCOPE_SUGGESTIONS if intent.kind == "unrelated" else [],
+                        },
+                        ensure_ascii=False,
+                    ) + "\n\n"
+                else:
+                    yield "data: " + json.dumps({"delta": result.text}, ensure_ascii=False) + "\n\n"
+                yield 'data: {"done": true}\n\n'
+        except ConversationStoreError:
             yield "data: " + json.dumps(
-                {
-                    "local_response": True,
-                    "intent": decision.reason,
-                    "message": local_scope_reply(decision, chat_request.message),
-                    "suggestions": SCOPE_SUGGESTIONS if decision.reason == "outside_lab_scope" else [],
-                },
+                {"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."},
                 ensure_ascii=False,
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'
-            return
-
-        rule_grounding = build_rule_grounding(analysis)
-        yield "data: " + json.dumps(
-            {"analysis_meta": analysis.to_public_dict()}, ensure_ascii=False
-        ) + "\n\n"
-
-        received_done = False
-        accumulated_text = ""
-        try:
-            async for event in llm_client.chat_stream(
-                history, chat_request.message, rule_grounding
-            ):
-                if event["type"] == "delta":
-                    accumulated_text += event["content"]
-                    payload = {"delta": event["content"]}
-                elif event["type"] == "error":
-                    payload = {"error": True, "message": event["message"]}
-                elif event["type"] == "done":
-                    received_done = True
-                    payload = {"done": True}
-                else:
-                    continue
-                yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
         except Exception:
-            logger.exception("stream failed session=%s", session_id)
+            logger.exception("Chat pipeline failed")
             yield "data: " + json.dumps(
-                {"error": True, "message": "เกิดข้อผิดพลาดที่ไม่คาดคิด"},
+                {"error": True, "code": "internal_error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิด"},
                 ensure_ascii=False,
             ) + "\n\n"
-        finally:
-            if accumulated_text and received_done:
-                updated = _bounded_history(
-                    history
-                    + [
-                        {"role": "user", "content": chat_request.message},
-                        {"role": "assistant", "content": accumulated_text},
-                    ]
-                )
-                await conversation_store.set(session_id, updated)
-            elif not received_done:
-                # Keep an accepted lab result as session context even when the
-                # provider is unavailable. A follow-up can then remain inside
-                # the same lab-only workflow instead of being rejected as an
-                # unrelated question.
-                updated = _bounded_history(
-                    history + [{"role": "user", "content": chat_request.message}]
-                )
-                await conversation_store.set(session_id, updated)
-            if not received_done:
-                yield 'data: {"done": true}\n\n'
+            yield 'data: {"done": true}\n\n'
 
-    resp = StreamingResponse(
+    response = StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
     if is_new:
-        _set_session_cookie(resp, session_id)
-    return resp
+        _set_session_cookie(response, session_id)
+    return response

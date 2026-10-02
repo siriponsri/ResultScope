@@ -17,6 +17,10 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
+class ConversationStoreError(Exception):
+    pass
+
+
 class ConversationStore(ABC):
     @abstractmethod
     async def get(self, session_id: str) -> list[dict[str, str]]:
@@ -157,10 +161,17 @@ class UpstashConversationStore(ConversationStore):
             if not raw:
                 return []
             data = json.loads(raw)
-            return data if isinstance(data, list) else []
+            if not isinstance(data, list) or any(
+                not isinstance(row, dict)
+                or row.get("role") not in {"user", "assistant"}
+                or not isinstance(row.get("content"), str)
+                for row in data
+            ):
+                raise ValueError("invalid conversation payload")
+            return data
         except Exception:
-            logger.exception("Upstash read failed; returning empty history")
-            return []
+            logger.warning("Upstash conversation read failed")
+            raise ConversationStoreError("Conversation history is temporarily unavailable.") from None
 
     async def set(self, session_id: str, history: list[dict[str, str]]) -> None:
         payload = json.dumps(history, ensure_ascii=False)
@@ -169,13 +180,15 @@ class UpstashConversationStore(ConversationStore):
                 ["SETEX", self._key(session_id), settings.SESSION_TTL_SECONDS, payload]
             )
         except Exception:
-            logger.exception("Upstash write failed")
+            logger.warning("Upstash conversation write failed")
+            raise ConversationStoreError("Conversation history could not be saved.") from None
 
     async def clear(self, session_id: str) -> None:
         try:
             await self._command(["DEL", self._key(session_id)])
         except Exception:
-            logger.exception("Upstash delete failed")
+            logger.warning("Upstash conversation reset failed")
+            raise ConversationStoreError("Conversation history could not be reset.") from None
 
 
 def build_store() -> ConversationStore:

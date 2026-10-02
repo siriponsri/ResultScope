@@ -1,0 +1,105 @@
+{
+  "schema_version": "retrieval-evidence-v1",
+  "run_id": "phase2-dev-20261002T112905Z",
+  "timestamp_utc": "2026-10-02T11:29:05.585050+00:00",
+  "repository_revision": "6f7ae8cbf0843dbb7c6d70bdcfb5924778635028",
+  "mode": "synthetic",
+  "demo": true,
+  "retrieval_method": "lexical-char-ngram-v1",
+  "corpus_version": "resultscope-lab-demo-pending-v1",
+  "corpus_source_ids": [
+    "SRC-SYNTHETIC-SERVICE-FIXTURE"
+  ],
+  "live_provider_or_embedding_call": false,
+  "cases_passed": 5,
+  "cases_total": 5,
+  "cases": [
+    {
+      "case_id": "R01",
+      "query": "synthetic basic panel",
+      "expected_record_ids": [
+        "SYN-SVC-001"
+      ],
+      "actual_record_ids": [
+        "SYN-SVC-001",
+        "SYN-SVC-002",
+        "SYN-SVC-003"
+      ],
+      "top_k": 4,
+      "source_ids": [
+        "SRC-SYNTHETIC-SERVICE-FIXTURE"
+      ],
+      "reason": "matched",
+      "latency_ms": 0.631,
+      "passed": true
+    },
+    {
+      "case_id": "R02",
+      "query": "synthetic chemistry panel",
+      "expected_record_ids": [
+        "SYN-SVC-002"
+      ],
+      "actual_record_ids": [
+        "SYN-SVC-002",
+        "SYN-SVC-001",
+        "SYN-SVC-003"
+      ],
+      "top_k": 4,
+      "source_ids": [
+        "SRC-SYNTHETIC-SERVICE-FIXTURE"
+      ],
+      "reason": "matched",
+      "latency_ms": 0.262,
+      "passed": true
+    },
+    {
+      "case_id": "R03",
+      "query": "synthetic annual check",
+      "expected_record_ids": [
+        "SYN-SVC-003"
+      ],
+      "actual_record_ids": [
+        "SYN-SVC-003",
+        "SYN-SVC-001",
+        "SYN-SVC-002"
+      ],
+      "top_k": 4,
+      "source_ids": [
+        "SRC-SYNTHETIC-SERVICE-FIXTURE"
+      ],
+      "reason": "matched",
+      "latency_ms": 0.245,
+      "passed": true
+    },
+    {
+      "case_id": "R04",
+      "query": "ตัวอย่างตรวจสุขภาพพื้นฐานราคาเท่าไร",
+      "expected_record_ids": [
+        "SYN-SVC-001"
+      ],
+      "actual_record_ids": [
+        "SYN-SVC-001",
+        "SYN-SVC-003",
+        "SYN-SVC-002"
+      ],
+      "top_k": 4,
+      "source_ids": [
+        "SRC-SYNTHETIC-SERVICE-FIXTURE"
+      ],
+      "reason": "matched",
+      "latency_ms": 0.405,
+      "passed": true
+    },
+    {
+      "case_id": "R05",
+      "query": "where is the nearest real laboratory in Bangkok",
+      "expected_record_ids": [],
+      "actual_record_ids": [],
+      "top_k": 4,
+      "source_ids": [],
+      "reason": "ambiguous",
+      "latency_ms": 0.334,
+      "passed": true
+    }
+  ]
+}

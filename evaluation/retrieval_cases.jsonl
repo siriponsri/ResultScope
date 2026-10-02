@@ -1,0 +1,5 @@
+{"case_id":"R01","query":"synthetic basic panel","expected_record_ids":["SYN-SVC-001"]}
+{"case_id":"R02","query":"synthetic chemistry panel","expected_record_ids":["SYN-SVC-002"]}
+{"case_id":"R03","query":"synthetic annual check","expected_record_ids":["SYN-SVC-003"]}
+{"case_id":"R04","query":"ตัวอย่างตรวจสุขภาพพื้นฐานราคาเท่าไร","expected_record_ids":["SYN-SVC-001"]}
+{"case_id":"R05","query":"where is the nearest real laboratory in Bangkok","expected_record_ids":[]}
