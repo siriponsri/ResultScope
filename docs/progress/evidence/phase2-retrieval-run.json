@@ -1,8 +1,8 @@
 {
   "schema_version": "retrieval-evidence-v1",
-  "run_id": "phase2-dev-20261002T112905Z",
-  "timestamp_utc": "2026-10-02T11:29:05.585050+00:00",
-  "repository_revision": "6f7ae8cbf0843dbb7c6d70bdcfb5924778635028",
+  "run_id": "phase2-dev-20261002T113729Z",
+  "timestamp_utc": "2026-10-02T11:37:29.237998+00:00",
+  "repository_revision": "d4bd1b7350b576f6d9020696cfd30f225e305463",
   "mode": "synthetic",
   "demo": true,
   "retrieval_method": "lexical-char-ngram-v1",
@@ -30,7 +30,7 @@
         "SRC-SYNTHETIC-SERVICE-FIXTURE"
       ],
       "reason": "matched",
-      "latency_ms": 0.631,
+      "latency_ms": 0.419,
       "passed": true
     },
     {
@@ -49,7 +49,7 @@
         "SRC-SYNTHETIC-SERVICE-FIXTURE"
       ],
       "reason": "matched",
-      "latency_ms": 0.262,
+      "latency_ms": 0.148,
       "passed": true
     },
     {
@@ -68,7 +68,7 @@
         "SRC-SYNTHETIC-SERVICE-FIXTURE"
       ],
       "reason": "matched",
-      "latency_ms": 0.245,
+      "latency_ms": 0.115,
       "passed": true
     },
     {
@@ -87,7 +87,7 @@
         "SRC-SYNTHETIC-SERVICE-FIXTURE"
       ],
       "reason": "matched",
-      "latency_ms": 0.405,
+      "latency_ms": 0.225,
       "passed": true
     },
     {
@@ -98,7 +98,7 @@
       "top_k": 4,
       "source_ids": [],
       "reason": "ambiguous",
-      "latency_ms": 0.334,
+      "latency_ms": 0.174,
       "passed": true
     }
   ]
