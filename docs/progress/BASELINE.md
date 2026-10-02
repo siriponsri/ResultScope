@@ -1,33 +1,39 @@
 # ResultScope Phase 0 Baseline
 
-Status: BLOCKED for G0; source baseline and repository state are recorded.
+Status: **BLOCKED for G0; revalidated 2026-10-02.**
 
-## Identity and State
+## Identity and state
 
 - Root: `C:\Users\User\Desktop\myProject\ResultScope`
-- Branch: `main`
+- Branch: local `main`
+- Current HEAD: `134c9b6bbb0f2f74c1c14687b2264ea0ba121104`
 - Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
-- Final Phase 0 checkpoint: the committed state containing this baseline; verify the exact SHA with `git rev-parse HEAD` (documentation/evidence only; no tracked application source mutation after the pinned baseline)
-- Remote: `origin` points to the repository configured by the owner; no remote state was changed.
-- Working tree: tracked source is clean; untracked owner work is under `docs/final-project-plan/` and `docs/progress/`.
+- Remote state: not changed; no push or deploy occurred.
+- No application source was changed after the pinned source baseline. Current changes are documentation, evidence, task packets, and screenshots only.
 - Runtime-only `data/resultscope.db` is ignored and was not staged.
-- No `.env` is present; no secret values were read or recorded.
+- No `.env` values or API keys were read or recorded.
 
-## Scope Inventory
+## Scope inventory
 
 The application is a root `main.py` FastAPI app with static/template serving and an `/api/v1` router. Source-derived routes, configuration field names, UI assets, dependencies, and tests are recorded in `docs/progress/evidence/baseline/phase0-20261001-current/route-config-ui-inventory.txt` and `inventory.txt`.
 
-Root deployment assumptions remain unchanged: `main.py` is present, while `vercel.json` and `api/index.py` are absent. This matches the repository rules and README zero-config direction.
+Root deployment assumptions remain unchanged: `main.py` is present, while `vercel.json` and `api/index.py` are absent. This matches the repository rules and README zero-config direction. No upload route or image pipeline is present in the baseline UI/source inventory.
 
 ## Verification
 
-- Historical baseline run: `scripts/check.ps1` exit 0; 25 tests passed; compileall exit 0. Raw evidence: `docs/progress/evidence/baseline/phase0-20261001/`.
-- Fresh current run: an earlier `scripts/check.ps1` run failed with interpreter access denied; current project-venv revalidation passes `scripts/check.ps1` (exit 0), with 25 pytest tests and compileall passing. Raw evidence: `docs/progress/evidence/baseline/phase0-20261001-current/`.
-- Browser automation and screenshots: `NOT_SUPPORTED`; interactive flows and live provider checks: `NOT_RUN`.
+- Current `scripts/check.ps1`: PASS, exit 0; 25 tests passed and compileall passed. Evidence: `docs/progress/evidence/baseline/phase0-20261001-current/check-final-20261002-current.log`.
+- Runtime OpenAPI/source route reconciliation: PASS. Evidence: `runtime-openapi-revalidation-20261001.log` and `route-config-ui-inventory.txt`.
+- Browser/manual evidence: desktop intake, out-of-scope response, reset, missing-key error path, and 390x844 mobile capture are recorded in `manual-browser-20261002.md`; the mobile pipeline rail clips at the narrow viewport and is reported as PARTIAL.
+- Provider-backed lab explanation and contextual follow-up: NOT_RUN/BLOCKED because no `LLM_API_KEY` was read or supplied. The no-key follow-up rendered an outside-lab response and remains a future issue, not a Phase 0 source change.
+- B01 business RAG: NOT_RUN; no approved business corpus or RAG route exists in Phase 0 scope.
+- B02 Vision: verified baseline limitation; no upload route/control and no Vision implementation started.
+- B03 output/session hardening comparison: NOT_RUN.
 - No Phase 1 implementation was started.
 
-## Ownership and Limitations
+## Ownership and limitations
 
-MAIN owns integration and acceptance. IMPLEMENT (MaxPlus) created this baseline and evidence only. REVIEW (O1) independently inspected the exact worktree read-only and recommended G0 `BLOCKED`. MAIN remained on local `main`; no branch/worktree, push, or deploy was performed.
+MAIN owns integration and acceptance. The canonical IMPLEMENT→REVIEW helper was retried through `pwsh` Core but timed out before producing an IMPLEMENT handoff; the direct configured O1 review diagnostic completed with a `G0 BLOCKED` recommendation. Evidence is preserved in the two Agent Kit receipt summaries under `docs/progress/evidence/baseline/phase0-20261001-current/`.
 
-See `docs/progress/PHASE_0_REPORT.md` for the decision record, blockers, and complete evidence index.
+The existing Project Brain at `C:\Users\User\.agent-kit\brains\resultscope` was reused. No branch/worktree, push, deploy, credential access, global configuration change, or unrelated-worktree mutation was performed.
+
+See `docs/progress/PHASE_0_REPORT.md` for the gate decision, blocker register, evidence index, and exact review findings.

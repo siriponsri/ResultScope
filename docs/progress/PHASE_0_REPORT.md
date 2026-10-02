@@ -1,89 +1,94 @@
 # Phase 0 Report
 
-Status: BLOCKED (reviewed 2026-10-02)
+Status: **BLOCKED** (revalidated 2026-10-02)
 
 - Phase / MAIN / IMPLEMENT / REVIEW: Phase 0 / MAIN (MaxPlus) / MaxPlus / O1
 - Project root: `C:\Users\User\Desktop\myProject\ResultScope`
 - Project Brain used: `C:\Users\User\.agent-kit\brains\resultscope`
 - Plan documents: `docs/final-project-plan/`
-- Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1` on local `main`
-- Final Phase 0 checkpoint: the committed state containing this report; verify the exact SHA with `git rev-parse HEAD`; baseline evidence checkpoint: `e835d163add496df5012f1d85f1b566d773a3fe9`. All commits after the pinned baseline are documentation/evidence-only corrections. No tracked application source was changed.
-- Current phase: Phase 0 only; Phase 1 was not started
-- Operating constraint: MAIN remained on local `main`; no branch or worktree was created; no push or deploy occurred
-- Account independence: MAIN is MaxPlus and REVIEW is O1, so configured account independence is preserved
+- Pinned source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
+- Current HEAD: `134c9b6bbb0f2f74c1c14687b2264ea0ba121104` on local `main`
+- Current worktree: MAIN verified clean before this evidence update; no application source changed after the pinned source baseline
+- Current evidence changes: documentation, task packets, browser screenshots, and evidence logs only
+- Phase 1: not started
+- Operating constraint: local `main`; no branch/worktree creation, push, deploy, or global Agent Kit change
+- Account independence: MAIN/IMPLEMENT are MaxPlus and REVIEW is O1; configured account independence is preserved
 
-## Work Items
+## Work items
 
 | ID | Status | Evidence | Remaining issue |
 |---|---|---|---|
-| P0-F01 | VERIFIED | Git state in `docs/progress/evidence/baseline/phase0-20261001-current/inventory.txt` | Existing untracked plan/progress work is preserved |
-| P0-F02 | VERIFIED | `source-comparison.log`; BASE and HEAD are identical | No tracked source delta to audit |
-| P0-F03 | VERIFIED | `check-revalidation-20261001.log` and `revalidation-20261001.log` | Project-venv `scripts/check.ps1` passes; 25 tests passed and compileall passed |
-| P0-F04 | VERIFIED | `route-config-ui-inventory.txt`, `runtime-openapi-revalidation-20261001.log` | Runtime OpenAPI matches all API/application routes; mounted static assets are explicitly excluded from OpenAPI; browser/UI evidence remains unavailable |
-| P0-F05 | BLOCKED | `manual-limitations.txt` | Browser automation/screenshots and interactive flows are unsupported/not run |
-| P0-F06 | VERIFIED | `AGENTS.md` plus plan documents reviewed | Future instruction changes require a new decision |
-| P0-F07 | PARTIAL | IMPLEMENT/REVIEW packets, `agentkit-dispatch-blocker.txt`, `agentkit-fo-implement-timeout-76c54d3593b6499fae703e250d72f962.txt`, and `fo` route receipts | Owner-authorized roles/settings verified; the latest IMPLEMENT attempt timed out before handoff, so the helper did not start REVIEW; the earlier independent O1 review remains the available review evidence |
-| P0-F08 | VERIFIED | This report and brain decision records | Business source data, credentials, and personal/group details remain pending |
+| P0-F01 | VERIFIED | `docs/progress/evidence/baseline/phase0-20261001-current/inventory.txt` plus MAIN git checks | Existing owner documentation/evidence work remains in scope and was preserved |
+| P0-F02 | VERIFIED | `source-comparison.log` | No tracked application-source delta after the pinned baseline |
+| P0-F03 | VERIFIED | `check-final-20261002-current.log`, `check-final-20261002.log`, `revalidation-20261001.log` | Current `scripts/check.ps1` passed: 25 tests and compileall |
+| P0-F04 | PARTIAL | `route-config-ui-inventory.txt`, `runtime-openapi-revalidation-20261001.log`, `manual-browser-20261002.md`, screenshots | Route inventory matches runtime OpenAPI; narrow mobile pipeline rail text clips at 390px |
+| P0-F05 | PARTIAL | `manual-browser-20261002.md`, `manual-limitations.txt`, three screenshots | Local deterministic/error flows are recorded; provider-backed follow-up and latency remain NOT_RUN/BLOCKED |
+| P0-F06 | VERIFIED | `AGENTS.md` and Phase 0 plan reconciliation | Future instruction changes require a new decision |
+| P0-F07 | PARTIAL | revalidation task packets, IMPLEMENT timeout receipt, direct O1 review receipt | Canonical IMPLEMENT→REVIEW helper timed out before handoff; direct O1 review succeeded through the permitted single-route diagnostic path |
+| P0-F08 | VERIFIED | report, `BASELINE.md`, and Project Brain records | Business corpus, credentials, and personal/group details remain pending |
 
-## Ownership and Decisions
+## Ownership and decisions
 
 - MAIN owns contracts, integration, decisions, Phase reports, staging, commit, and acceptance.
-- IMPLEMENT (MaxPlus) wrote only baseline evidence paths; it did not edit source, stage, commit, push, or deploy.
-- REVIEW (O1) independently inspected the exact worktree read-only after IMPLEMENT and recommended G0 `BLOCKED`.
-- Project Brain was already registered and reused; no duplicate brain was created. It contains no secrets or personal data.
-- The user-required local `main` workflow supersedes generic branch/worktree guidance in the Phase 0 plan.
-- Synthetic fixtures may be used only when explicitly labeled; no business identity or provider credential was invented or stored.
+- IMPLEMENT was authorized to write only its bounded handoff file, but the canonical revalidation route timed out before producing one. MAIN did not fabricate an IMPLEMENT handoff.
+- REVIEW (O1) independently inspected the exact current worktree through direct `dispatch-route.ps1 -Route review` and returned `G0 BLOCKED`.
+- The active `4bac...` route reported by Agent Kit belongs to an unrelated DR-screening worktree and was left untouched.
+- The existing ResultScope Project Brain was reused; no duplicate brain or global configuration change was made.
+- No secrets, API keys, provider credentials, real business data, or personal data were read or recorded.
 
-## Verification Evidence
+## Verification evidence
 
 | Check | Result | Evidence |
 |---|---|---|
-| Repository root, branch, HEAD, status, remotes, worktrees | PASS / 0; local `main` and checkpoint HEAD recorded; source comparison remains against the pinned baseline | `.../phase0-20261001-current/inventory.txt` |
-| Canonical Agent Kit brain | PASS; existing brain reused | `C:\Users\User\.agent-kit\brains\resultscope\brain.json` |
-| Canonical IMPLEMENT→REVIEW route | BLOCKED; prior route had PowerShell compatibility failure; latest helper run `76c54d3593b6499fae703e250d72f962` timed out before IMPLEMENT handoff and therefore did not start REVIEW; explicit O1 invocation previously failed with provider-channel model unavailable | `.../phase0-20261001/agentkit-dispatch-blocker.txt`, `.../phase0-20261001-current/agentkit-fo-implement-timeout-76c54d3593b6499fae703e250d72f962.txt`, `C:\Users\User\.agent-kit\state\orca-receipts\76c54d3593b6499fae703e250d72f962.json` |
-| Earlier `scripts/check.ps1` | BLOCKED; exit 1 because venv Python returned access denied | `.../phase0-20261001-current/check.log` |
-| Fresh `scripts/check.ps1` revalidation | PASS; exit 0; 25 tests passed and compileall passed | `.../phase0-20261001-current/check-revalidation-20261001.log`, `.../phase0-20261001-current/check-final-20261002.log` |
-| Runtime OpenAPI comparison | PASS; route set captured from `app.openapi()` and compared to static inventory | `.../phase0-20261001-current/runtime-openapi-revalidation-20261001.log` |
-| Fresh direct pytest | BLOCKED; exit 103 | `.../phase0-20261001-current/pytest-direct.log` |
-| Fresh compileall | BLOCKED; exit 103 | `.../phase0-20261001-current/compileall-direct.log` |
-| Revalidation with project venv | PASS; pytest 25 passed, exit 0; compileall exit 0 | `.../phase0-20261001-current/revalidation-20261001.log` |
-| Prior baseline pytest/compile/runtime smoke | PASS, 25 tests; historical run before current interpreter failure | `docs/progress/evidence/baseline/phase0-20261001/` |
-| Route/config/UI inventory | PASS; static inventory reconciled with runtime OpenAPI; mounted `/static/*` is outside OpenAPI by design | `.../phase0-20261001-current/route-config-ui-inventory.txt`, `.../runtime-openapi-revalidation-20261001.log` |
-| Browser/manual flows and screenshots | NOT_SUPPORTED / NOT_RUN | `.../phase0-20261001-current/manual-limitations.txt` |
-| Live provider and deployment | NOT_RUN by constraint; no key read | same manual limitations file |
+| Repository root, branch, HEAD, status, remotes, worktrees | PASS | MAIN direct checks; current HEAD `134c9b6...`, local `main`, no application-source changes |
+| Canonical Agent Kit brain | PASS | `C:\Users\User\.agent-kit\brains\resultscope\brain.json`; `brain-status.ps1` reported `FRESH` at the prior HEAD |
+| Required `scripts/check.ps1` | PASS | `check-final-20261002-current.log`; exit 0, 25 passed, compileall passed |
+| Runtime OpenAPI comparison | PASS | `runtime-openapi-revalidation-20261001.log`; runtime route set reconciled with source inventory |
+| Canonical IMPLEMENT→REVIEW helper | BLOCKED | `agentkit-fo-implement-timeout-8cd0746a1d4d4b89a5f241d99d9ef108.txt`; `TIMED_OUT`, exit -1, safe stderr `Access is denied`, no REVIEW stage started |
+| Direct configured O1 REVIEW diagnostic | PASS / recommendation BLOCKED | `agentkit-fo-review-b70d22ee0624499a8092b0c858ee3ad5.txt`; exit 0, explicit G0 BLOCKED recommendation |
+| Desktop intake and out-of-scope UI | PASS | `desktop-home-20261002.png`, `desktop-out-of-scope-20261002.png`, manual record |
+| New-analysis reset | PASS | Manual record; local `POST /api/v1/chat/reset` returned HTTP 200 and intake state reset |
+| In-scope lab prompt | PASS for deterministic/error path | HbA1c value extraction and missing-key error recorded; live provider narrative NOT_RUN |
+| Lab follow-up | BLOCKED / PARTIAL | Request sent, but no-key path rendered outside-lab response; provider-backed contextual follow-up NOT_RUN |
+| Narrow mobile viewport | PARTIAL | `mobile-analysis-20261002.png`; 390x844 capture with no console messages, but pipeline rail text clips |
+| B01 business RAG | NOT_RUN | No approved business corpus or RAG route in Phase 0 scope |
+| B02 Vision | PASS as baseline limitation | No upload control or upload route; no Vision implementation started |
+| B03 output/session hardening comparison | NOT_RUN | No before/after security evaluation was authorized or run |
+| Live provider and Vercel deployment | NOT_RUN | No key read, provider called, deployment made, or remote state changed |
 
-## REVIEW Findings
+## Independent REVIEW findings
 
-O1 independently confirmed:
+The direct O1 review completed successfully and recommended `G0 BLOCKED`:
 
-1. High: the earlier runtime baseline failed while the prior report claimed P0-F03 verified; current revalidation now passes and evidence is timestamped separately.
-2. High: manual flows, screenshots, and B01/B03 artifacts remain missing or not run; runtime OpenAPI comparison is now present.
-3. Medium: prior claims of complete reconciliation/ownership exceeded available artifact detail; this report now points to packets and explicit constraints.
+1. **High:** The live no-key flow did not establish a provider-backed laboratory context; the follow-up `Should I be concerned?` rendered an outside-lab response. A successful provider-backed follow-up remains NOT_RUN and the observed scope/history behavior needs a future product decision or fix.
+2. **High:** The canonical IMPLEMENT→REVIEW helper timed out before producing an IMPLEMENT handoff. The direct review was a separate diagnostic review, not evidence that the helper chain completed.
+3. **Medium:** The original report/baseline claims that browser evidence was unavailable were stale after this revalidation; they were corrected in this report and the limitation record.
+4. **Medium:** The 390px capture shows clipped/overflowed pipeline-rail text. The record now reports this as PARTIAL rather than claiming complete mobile layout success.
 
-Full independent review output was returned by the configured O1 account in the orchestration session; the repository evidence paths above preserve the inspectable facts without storing a transcript.
+The O1 worker also reported that its own shell could not independently launch git/check commands. MAIN therefore treats its direct current-state checks and the current check log as authoritative for HEAD/status/test evidence, while retaining the O1 findings about the rendered evidence and gate decision.
 
-Fresh O1 re-review of the updated evidence was attempted in read-only mode but was not available: the configured `gpt-6-sol` model returned `invalid_request_error` for the selected provider channel. No review claim is made for that failed invocation. The earlier independent O1 review remains the basis for the `BLOCKED` recommendation.
+## Blockers and limitations
 
-The latest canonical helper dispatch was also recorded as `TIMED_OUT` with exit `-1`; its lifecycle shows cleanup completed, but no IMPLEMENT handoff was produced and REVIEW was not started. No new review claim is made for this failed route.
+- Provider-backed lab explanation and contextual follow-up are blocked by the absent `LLM_API_KEY`; no credential was read or invented.
+- The no-key follow-up observation is outside the Phase 0 implementation scope and remains a future product/test item rather than an unapproved source change.
+- Narrow mobile layout has a real pipeline-rail clipping issue at 390px; no UI redesign was started in Phase 0.
+- Canonical IMPLEMENT dispatch remains incomplete because the worker timed out with `Access is denied`; no worker handoff exists to claim.
+- B01 and B03 are intentionally NOT_RUN because approved business data and a Phase 0 security-hardening comparison are not present.
+- Deployment, live provider, credentials, and real business data remain NOT_RUN.
 
-## Blockers
+## Gate decision
 
-- An earlier full `scripts/check.ps1` run failed because the venv interpreter was temporarily inaccessible; the current revalidation passes. Do not delete or recreate the project venv without owner authorization.
-- No browser automation capability is available; desktop/mobile screenshots and interactive acceptance flows are therefore `NOT_SUPPORTED`/`NOT_RUN`.
-- Agent Kit worker dispatch remains incomplete: the legacy route has a PowerShell/runtime compatibility issue, current IMPLEMENT attempts timed out/canceled before handoff, and the configured O1 model was unavailable on the selected provider channel. Global files were not changed.
-- The latest FO receipt is `76c54d3593b6499fae703e250d72f962`; it records `TIMED_OUT`, exit `-1`, and safe stderr `Access is denied`. See the repository evidence record for the non-secret receipt summary.
-- Approved business source data, legal business name, credentials, provider budget, and human contribution details are not present and remain pending.
+G0: **BLOCKED**. Current local tests, route/OpenAPI reconciliation, desktop/out-of-scope/reset/missing-key evidence, and the direct O1 review are recorded. The gate cannot pass because the required IMPLEMENT handoff did not complete, the provider-backed lab follow-up is unavailable and showed an outside-lab response under the no-key path, and the narrow mobile capture has a documented clipping issue.
 
-## Gate Decision
+## Evidence paths
 
-G0: **BLOCKED**. Runtime checks and OpenAPI reconciliation now pass, but required manual/browser evidence remains unavailable and the configured Agent Kit worker dispatch cannot run non-interactively in this environment. No Phase 1 work was started.
-
-## Evidence Paths
-
-- Plan source: `docs/final-project-plan/00_START_HERE.md`, `01_MASTER_PLAN.md`, `02_SOURCE_AUDIT_AND_RUBRIC.md`, `03_FO_WORKFLOW_AND_LOCAL_SETUP.md`, `phases/PHASE_0_BASELINE.md`, `templates/PHASE_REPORT_TEMPLATE.md`
-- Phase report: `docs/progress/PHASE_0_REPORT.md`
-- Baseline evidence: `docs/progress/evidence/baseline/phase0-20261001/` and `docs/progress/evidence/baseline/phase0-20261001-current/`
-- Task packets: `docs/progress/TASK_PACKET_PHASE_0_IMPLEMENT.txt`, `docs/progress/TASK_PACKET_PHASE_0_REVIEW.txt`
-- Latest FO receipt summary: `docs/progress/evidence/baseline/phase0-20261001-current/agentkit-fo-implement-timeout-76c54d3593b6499fae703e250d72f962.txt`
-- Latest required check: `docs/progress/evidence/baseline/phase0-20261001-current/check-final-20261002.log`
-- Brain: `C:\Users\User\.agent-kit\brains\resultscope\`
+- Plan source: `docs/final-project-plan/00_START_HERE.md`, `01_MASTER_PLAN.md`, `02_SOURCE_AUDIT_AND_RUBRIC.md`, `03_FO_WORKFLOW_AND_LOCAL_SETUP.md`, `phases/PHASE_0_BASELINE.md`, `07_EVALUATION_AND_SUBMISSION.md`
+- Reports: `docs/progress/BASELINE.md`, `docs/progress/PHASE_0_REPORT.md`
+- Browser/manual record: `docs/progress/evidence/baseline/phase0-20261001-current/manual-browser-20261002.md`
+- Browser limitation summary: `docs/progress/evidence/baseline/phase0-20261001-current/manual-limitations.txt`
+- Screenshots: `desktop-home-20261002.png`, `desktop-out-of-scope-20261002.png`, `mobile-analysis-20261002.png`
+- Current check: `check-final-20261002-current.log`
+- FO IMPLEMENT evidence: `agentkit-fo-implement-timeout-8cd0746a1d4d4b89a5f241d99d9ef108.txt`
+- FO REVIEW evidence: `agentkit-fo-review-b70d22ee0624499a8092b0c858ee3ad5.txt`
+- Task packets: `TASK_PACKET_PHASE_0_REVALIDATION_20261002.txt`, `TASK_PACKET_PHASE_0_REVIEW_20261002.txt`
+- Project Brain: `C:\Users\User\.agent-kit\brains\resultscope\`

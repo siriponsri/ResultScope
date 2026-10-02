@@ -1,0 +1,11 @@
+# REVIEW PACKET: ResultScope Phase 0 revalidation
+
+- Objective: Independently review the exact current ResultScope main worktree after IMPLEMENT revalidation and determine whether G0 can pass or must remain blocked.
+- Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope
+- Selected Cell: 11-code-review and 10-testing
+- Primary Agent: REVIEW (O1)
+- Route Class: planning-review
+- Scope: Check Phase 0 requirements, current browser/manual evidence, test claims, secret safety, owner constraints, B01/B02/B03 status, and whether any Phase 1 work began.
+- Do Not Touch: all files; no source edits, no evidence edits, no staging, no commit, no push, no deploy.
+- Acceptance Criteria: Return findings ordered by severity with exact file references, distinguish PASS/PARTIAL/NOT_RUN/BLOCKED, verify the candidate revision and worktree state, and provide an explicit G0 PASS or BLOCKED recommendation. Treat the IMPLEMENT handoff as evidence to inspect, not as approval.
+- Evidence: Inspect current files and git state; do not rely only on IMPLEMENT's message. No provider credentials or external services may be used.

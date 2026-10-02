@@ -1,0 +1,18 @@
+# TASK_PACKET: ResultScope Phase 0 revalidation handoff
+
+- Objective: Independently revalidate the current Phase 0 evidence after the browser/manual baseline capture and produce a bounded IMPLEMENT handoff for REVIEW.
+- Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope
+- Selected Cell: 10-testing, with 02-repository-analysis as needed
+- Primary Agent: IMPLEMENT (MaxPlus)
+- Route Class: implementation
+- Relevant Skills: repository-navigation, test-engineering
+- Tool Capability Needs: repository, code-navigation, shell, testing; browser evidence already captured by MAIN
+- Base Revision: 134c9b6bbb0f2f74c1c14687b2264ea0ba121104
+- Branch: main; owner requires no branch/worktree changes
+- Scope: Inspect current Phase 0 plan/report/evidence, verify no Phase 1 work or secrets are present, and record a compact handoff.
+- Allowed writes: docs/progress/evidence/baseline/phase0-20261001-current/IMPLEMENT_HANDOFF_20261002.md only.
+- Do Not Touch: application source, tests, AGENTS.md, plan documents, PHASE_0_REPORT.md, BASELINE.md, .env, credentials, runtime DB, global Agent Kit files, branches/worktrees, remotes, staging, commits, or deployment.
+- Acceptance Criteria: Handoff states the inspected revision, exact evidence files, any contradictions, test evidence relied upon, unresolved blockers, and whether the candidate is ready for independent REVIEW. Do not claim browser or provider evidence beyond the current evidence file.
+- Tests / Evidence: Read-only inspection first; do not rerun expensive or provider-backed checks. If a safe local check is run, record its exact exit code and path. Mark unavailable checks NOT_RUN/BLOCKED.
+- Dependencies: docs/final-project-plan/phases/PHASE_0_BASELINE.md, docs/progress/PHASE_0_REPORT.md, docs/progress/BASELINE.md, current evidence directory, and AGENTS.md.
+- Handoff Target: MAIN, then independent REVIEW of the exact resulting worktree.
