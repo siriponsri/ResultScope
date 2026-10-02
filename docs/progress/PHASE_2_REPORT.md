@@ -6,6 +6,7 @@ Date: **2026-10-02**
 
 - Base: `6f7ae8cbf0843dbb7c6d70bdcfb5924778635028`.
 - Implementation checkpoint: `d4bd1b7350b576f6d9020696cfd30f225e305463`.
+- Final documentation closeout checkpoint: `eb2afa9` before this metadata refresh.
 - Branch: local `main`, ahead of `origin/main`; no push, deploy, branch, or worktree creation.
 - Scope: P2 development routing, versioned synthetic knowledge/indexing, deterministic retrieval, source-bound answer contracts, sync/SSE policy convergence, session integrity, provider/store failure handling, and regression evidence.
 - Exclusions: approved business-data ingestion, live provider/embedding evaluation, Vision/OCR, UI redesign, Phase 3, runtime multi-agent/graph/MCP, deployment, and unrelated projects.
