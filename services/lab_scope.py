@@ -74,7 +74,7 @@ LAB_TERMS: dict[str, tuple[str, ...]] = {
     "general_lab": (
         "lab result", "lab results", "laboratory result", "blood test", "test result",
         "reference range", "normal range", "ผลแลป", "ผลแล็บ", "ผลตรวจเลือด", "ผลตรวจ",
-        "ค่าแลป", "ค่าแล็บ", "ช่วงอ้างอิง", "ค่าปกติ",
+        "ค่าแลป", "ค่าแล็บ", "ช่วงอ้างอิง", "ค่าปกติ", "marker-a", "marker-b", "marker-c",
     ),
 }
 

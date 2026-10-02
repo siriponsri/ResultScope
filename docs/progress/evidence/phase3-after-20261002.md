@@ -10,7 +10,7 @@ Candidate base: `f9d27dd6cea707783262ddb8c237193c90f9bd0b`
 | Acceptance area | Status | Evidence |
 |---|---|---|
 | Image and Vision focused tests | **PASS** | `.venv\\Scripts\\python.exe -m pytest tests/test_phase3_images.py tests/test_phase3_vision_client.py -q` — 16 passed. |
-| Full regression | **PASS** | `.venv\\Scripts\\python.exe -m pytest -q` — 126 passed, one existing Starlette/httpx deprecation warning. |
+| Full regression | **PASS** | `.venv\\Scripts\\python.exe -m pytest -q` — 127 passed, one existing Starlette/httpx deprecation warning. |
 | Project check | **PASS** | `powershell -ExecutionPolicy Bypass -File .\\scripts\\check.ps1` — Checks passed. |
 | JavaScript syntax | **PASS** | `node --check static/js/chat.js`. |
 | Whitespace | **PASS** | `git diff --check`. |
@@ -31,6 +31,21 @@ Playwright was installed outside the repository at `C:\Users\User\.agent-kit\too
 | Local mocked discard | **PASS** | Browser assertion confirmed `#image-review` returned to hidden state after discard. |
 
 The mocked browser run used a local OpenAI-compatible response on `127.0.0.1:8022` and app port `8012`. It did not contact a live provider.
+
+## Repository-required manual checks
+
+Using a separate local synthetic app on `127.0.0.1:8013` and a local mock OpenAI-compatible endpoint on `127.0.0.1:8023`:
+
+| Scenario | Status | Evidence |
+|---|---|---|
+| In-scope synthetic lab prompt | **PASS** | `Marker-A 12.5 demo-unit (10-15)` rendered an integrated result with `Sources: DEMO-READING`; exactly one mock provider request was observed. |
+| Lab follow-up | **PASS** | `Why does that matter?` rendered `Contextual follow-up` with `Sources: DEMO-READING`; one additional mock provider request was observed. |
+| New-analysis reset | **PASS** | Intake view returned and message input cleared after `New analysis`. |
+| Out-of-scope prompt | **PASS** | `Help me write Python` rendered the outside-lab deterministic response and did not increment the mock provider request count. |
+| Missing API key | **PASS** | Separate app on `127.0.0.1:8014` displayed `LLM_API_KEY is not configured...` in the visible error banner. |
+| Vercel environment assumption | **PASS** | With `VERCEL=1`, `STORAGE_BACKEND=auto`, and no Upstash values, imports selected `UnavailableExtractionStore` for image extraction and `MemoryConversationStore` for conversations. |
+
+The first manual probe used a generic `Hb` prompt and correctly abstained because the synthetic education corpus is intentionally about `Marker-A/B/C`; that was not counted as a passing grounded prompt. The rerun used the corpus-supported synthetic marker and passed.
 
 ## Provider and review boundaries
 

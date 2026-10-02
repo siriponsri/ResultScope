@@ -34,6 +34,15 @@ def test_accepts_uncommon_marker_like_value_pattern():
     assert decision.allowed is True
 
 
+def test_synthetic_image_markers_retain_lab_follow_up_context():
+    history = [{"role": "user", "content": "Marker-A 12.5 demo-unit (10-15)"}]
+
+    decision = classify_lab_scope("Why does that matter?", history)
+
+    assert decision.allowed is True
+    assert decision.reason == "lab_follow_up"
+
+
 def test_python_version_is_not_misread_as_lab_value():
     decision = classify_lab_scope("Python 3.13 ใช้กับ FastAPI ได้ไหม")
     assert decision.allowed is False

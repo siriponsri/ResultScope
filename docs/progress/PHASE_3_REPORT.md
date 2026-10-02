@@ -37,11 +37,12 @@ No OCR framework, remote image fetch, authentication, patient profile, diagnosis
 
 See [`evidence/phase3-after-20261002.md`](evidence/phase3-after-20261002.md) for exact commands and browser artifacts.
 
-- Full pytest: **126 passed**, one existing Starlette/httpx deprecation warning.
+- Full pytest: **127 passed**, one existing Starlette/httpx deprecation warning.
 - `scripts/check.ps1`: **PASS**.
 - `node --check static/js/chat.js`: **PASS**.
 - `git diff --check`: **PASS**.
 - Local Playwright with system Chrome: desktop/mobile intake and mocked review/correction/confirmation/discard **PASS**.
+- Repository-required manual checks: in-scope synthetic prompt, lab follow-up, reset, out-of-scope provider bypass, missing-key error, and Vercel storage assumptions **PASS** with local/mock evidence.
 - Playwright package install: **PASS** outside repo. Chromium bundle download: **FAILED at CDN**, so system Chrome was used.
 
 ## Orchestration and limitations
