@@ -1,0 +1,18 @@
+{
+  "schema_version": "service-catalog-v1",
+  "corpus_version": "resultscope-lab-demo-pending-v1",
+  "business_id": "resultscope-lab-demo",
+  "release_eligible": false,
+  "release_status": "PENDING_SOURCE",
+  "services": [],
+  "service_field_contract": {
+    "required": ["service_id", "name_th", "aliases", "description", "price", "currency", "specimen", "preparation", "result_turnaround", "source_id", "version"],
+    "unknown_value": null,
+    "price_rule": "Use null until an approved source provides a nonnegative amount and currency."
+  },
+  "blocking_reasons": [
+    "No owner-approved public service source is present.",
+    "A real service count of at least 15 cannot be claimed from missing data.",
+    "Synthetic fixtures are stored separately and are not release services."
+  ]
+}

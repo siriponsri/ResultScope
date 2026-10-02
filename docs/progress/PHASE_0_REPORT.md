@@ -10,7 +10,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 - Final evidence checkpoint before this metadata normalization: `576977535f858ef71287361e255d42976eba8f42`; MAIN verifies the final HEAD with `git rev-parse HEAD`.
 - Current worktree: MAIN verified clean before this evidence update; no application source changed after the pinned source baseline
 - Current evidence changes: documentation, task packets, browser screenshots, and evidence logs only
-- Phase 1: not started
+- Phase 1: owner-authorized progression started after bounded closeout reconciliation; no Phase 1 artifact was present at the historical G0 checkpoint
 - Operating constraint: local `main`; no branch/worktree creation, push, deploy, or global Agent Kit change
 - Account independence: MAIN/IMPLEMENT are MaxPlus and REVIEW is O1; configured account independence is preserved
 
@@ -53,7 +53,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 | Narrow mobile viewport | PARTIAL | `mobile-analysis-20261002.png`; 390x844 capture with no console messages, but pipeline rail text clips |
 | B01 business RAG | NOT_RUN | No approved business corpus or RAG route in Phase 0 scope |
 | B02 Vision | PASS as baseline limitation | No upload control or upload route; no Vision implementation started |
-| B03 output/session hardening comparison | NOT_RUN | No before/after security evaluation was authorized or run |
+| B03 output/session hardening comparison | NOT_RUN | Required synthetic-local before inputs and transport trace were not captured in Phase 0; no external or production security testing was attempted |
 | Live provider and Vercel deployment | NOT_RUN | No key read, provider called, deployment made, or remote state changed |
 
 ## Independent REVIEW findings
@@ -79,6 +79,16 @@ The O1 worker also reported that its own shell could not independently launch gi
 ## Gate decision
 
 G0: **BLOCKED**. Current local tests, route/OpenAPI reconciliation, desktop/out-of-scope/reset/missing-key evidence, the supported contextual follow-up path, and the direct O1 review are recorded. The gate remains blocked by the incomplete canonical IMPLEMENT handoff, the narrow mobile pipeline-rail clipping issue, and remaining NOT_RUN items including live-provider narrative, B01, and B03.
+
+## Phase 0 closeout reconciliation — 2026-10-02
+
+This bounded note preserves the historical gate and records the controlled progression into Phase 1. The substantive Phase 0 evidence checkpoint was `576977535f858ef71287361e255d42976eba8f42`; subsequent metadata/follow-up documentation commits were observed as `1612cc4` and current HEAD `4a95899c39b5c045a4dd46576d98e4bf4ee74ae0`. MAIN verified the current HEAD directly. Before this Phase 1 task packet was created, the Project Brain reported `FRESH` with brain/current HEAD both `4a95899c39b5c045a4dd46576d98e4bf4ee74ae0`; the post-packet dirty worktree is consequently reported `STALE` until final verification and handoff.
+
+G0 remains **BLOCKED**. Owner-authorized progression is limited to Phase 1 business documentation, source metadata, synthetic fixtures, policy, evaluation cases, and validation. G1-data remains **BLOCKED** until real owner-approved sources arrive. The mobile pipeline-rail clipping is backlog P5, and the uncovered `Should I be concerned?` wording remains backlog P2; neither is changed here.
+
+B01 remains **NOT_RUN** because no approved business corpus or business-RAG route existed in Phase 0. B03 remains **NOT_RUN** because the required synthetic-local before inputs and transport trace were not captured; no external or production security testing was attempted. This corrects the earlier shorthand without creating a new prohibition on the synthetic-local baseline work described by the plan.
+
+P0-F06 is supported by `AGENTS.md` lines 9–18 (deployment, provider portability, secret, scope, safety, units, local setup, and test constraints), lines 33–43 (design boundary), and the architecture direction beginning at line 45, together with verified Project Brain decision `RS-DEC-003`. The direct configured O1 review completed, but its worker could not independently run git/check commands; MAIN's direct checks and recorded check log remain authoritative for those facts. Full details are in `docs/progress/evidence/baseline/phase0-20261001-current/phase0-closeout-reconciliation-20261002.md`.
 
 ## Evidence paths
 

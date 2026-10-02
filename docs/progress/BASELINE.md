@@ -28,7 +28,7 @@ Root deployment assumptions remain unchanged: `main.py` is present, while `verce
 - B01 business RAG: NOT_RUN; no approved business corpus or RAG route exists in Phase 0 scope.
 - B02 Vision: verified baseline limitation; no upload route/control and no Vision implementation started.
 - B03 output/session hardening comparison: NOT_RUN.
-- No Phase 1 implementation was started.
+- No Phase 1 implementation was present at the historical G0 checkpoint; owner-authorized Phase 1 documentation/corpus work now proceeds under a separate report while G0 remains BLOCKED.
 
 ## Ownership and limitations
 
@@ -37,3 +37,7 @@ MAIN owns integration and acceptance. The canonical IMPLEMENT→REVIEW helper wa
 The existing Project Brain at `C:\Users\User\.agent-kit\brains\resultscope` was reused. No branch/worktree, push, deploy, credential access, global configuration change, or unrelated-worktree mutation was performed.
 
 See `docs/progress/PHASE_0_REPORT.md` for the gate decision, blocker register, evidence index, and exact review findings.
+
+## Bounded closeout reconciliation
+
+The substantive Phase 0 evidence checkpoint was `576977535f858ef71287361e255d42976eba8f42`; metadata/follow-up commits `1612cc4` and `4a95899c39b5c045a4dd46576d98e4bf4ee74ae0` were then observed in the current local history. The Project Brain was `FRESH` against `4a95899c39b5c045a4dd46576d98e4bf4ee74ae0` before the current Phase 1 task packet made the worktree dirty. G0 remains BLOCKED. B01 is NOT_RUN because no approved business corpus existed; B03 is NOT_RUN because synthetic-local before inputs and transport trace were not captured, not because such local baseline work is prohibited. Mobile clipping and the uncovered `Should I be concerned?` wording remain backlog items. See `docs/progress/evidence/baseline/phase0-20261001-current/phase0-closeout-reconciliation-20261002.md`.

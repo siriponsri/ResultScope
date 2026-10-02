@@ -1,0 +1,48 @@
+{
+  "schema_version": "service-fixture-v1",
+  "fixture_status": "SYNTHETIC_DEVELOPMENT_ONLY",
+  "release_eligible": false,
+  "source_id": "SRC-SYNTHETIC-SERVICE-FIXTURE",
+  "business_id": "resultscope-lab-demo",
+  "services": [
+    {
+      "service_id": "SYN-SVC-001",
+      "name_th": "ตัวอย่างตรวจสุขภาพพื้นฐาน (สังเคราะห์)",
+      "aliases": ["synthetic basic panel"],
+      "description": "Synthetic fixture only; not a real offering.",
+      "price": null,
+      "currency": null,
+      "specimen": "synthetic example",
+      "preparation": "synthetic example",
+      "result_turnaround": "synthetic example",
+      "source_id": "SRC-SYNTHETIC-SERVICE-FIXTURE",
+      "version": "synthetic-services-v1"
+    },
+    {
+      "service_id": "SYN-SVC-002",
+      "name_th": "ตัวอย่างตรวจสารชีวเคมี (สังเคราะห์)",
+      "aliases": ["synthetic chemistry panel"],
+      "description": "Synthetic fixture only; not a real offering.",
+      "price": null,
+      "currency": null,
+      "specimen": "synthetic example",
+      "preparation": "synthetic example",
+      "result_turnaround": "synthetic example",
+      "source_id": "SRC-SYNTHETIC-SERVICE-FIXTURE",
+      "version": "synthetic-services-v1"
+    },
+    {
+      "service_id": "SYN-SVC-003",
+      "name_th": "ตัวอย่างตรวจสุขภาพประจำปี (สังเคราะห์)",
+      "aliases": ["synthetic annual check"],
+      "description": "Synthetic fixture only; not a real offering.",
+      "price": null,
+      "currency": null,
+      "specimen": "synthetic example",
+      "preparation": "synthetic example",
+      "result_turnaround": "synthetic example",
+      "source_id": "SRC-SYNTHETIC-SERVICE-FIXTURE",
+      "version": "synthetic-services-v1"
+    }
+  ]
+}

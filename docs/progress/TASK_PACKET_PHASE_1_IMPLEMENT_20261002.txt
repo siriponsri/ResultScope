@@ -1,0 +1,54 @@
+# TASK_PACKET: ResultScope Phase 1 business knowledge foundation
+
+- Objective: Complete the non-blocked Phase 1 business knowledge foundation (P1-F01 through P1-F07) for a health-lab prototype without inventing business facts. Preserve the historical Phase 0 G0 BLOCKED decision and leave G1-data BLOCKED until owner-approved sources arrive.
+- Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope
+- Base revision: 4a95899c39b5c045a4dd46576d98e4bf4ee74ae0
+- Branch: main; owner explicitly requires no branch/worktree creation, push, deploy, or source/runtime changes.
+- Selected cells: 06-data, 10-testing, 15-documentation; 02-repository-analysis as needed.
+- Primary agent: IMPLEMENT (MaxPlus), direct sequential background dispatch into the owner-authorized local main worktree.
+- Route class: implementation.
+- Review target: fresh REVIEW (configured O1, read-only) on the exact integrated candidate.
+- Relevant skills: data-contracts, implementation, test-engineering, technical-writing.
+- Tool capability needs: repository, code-navigation, shell, testing; no provider, browser, OCR, RAG, or external source access.
+
+## Allowed writes
+
+- `docs/business/BRIEF.md`
+- `docs/business/BOT_POLICY.md`
+- `docs/business/OWNER_QUESTIONS.md`
+- `knowledge/business.md`
+- `knowledge/services.json`
+- `knowledge/fixtures/services.synthetic.json`
+- `knowledge/policies/FAQ.md`
+- `knowledge/source_manifest.json`
+- `evaluation/cases.jsonl`
+- `validation/__init__.py`
+- `validation/validate_corpus.py`
+- `tests/test_corpus_validation.py`
+- `docs/progress/PHASE_1_IMPLEMENT_HANDOFF.md`
+
+The worker may create the listed parent directories. It must not stage or commit files; MAIN owns diff review, staging, and the local checkpoint commit.
+
+## Required behavior
+
+1. Business brief separates confirmed facts from pending owner facts. The confirmed business type is one health laboratory; the working name `ResultScope Lab Demo` is development-only. Do not invent a real lab name, address, phone, hours, prices, policies, or approved educational content.
+2. Source manifest includes stable IDs, origin, permission, approval/status, version, retrieval/effective metadata, checksum where available, PII classification, and release eligibility. Pending owner sources may have null checksum only with an explicit pending reason. Synthetic fixtures must be marked synthetic, development-only, not approved, and never release-eligible.
+3. Release `knowledge/services.json` is a schema-safe, source-empty/pending catalog until approved data exists. Synthetic service fixtures are separate and visibly synthetic; do not pad either set to claim 15 real services or five source pages.
+4. FAQ contains exactly the ten Phase 1 topics from `PHASE_1_BUSINESS_KB.md`; every unsupported business answer must be an explicit `PENDING_SOURCE`/unknown contract rather than a fabricated fact.
+5. Bot policy has testable must-do and must-not rules: Thai, source citations when facts exist, abstain when unsupported, preserve units, inspect OCR later; no invented prices/discounts/policies, cross-user data, diagnosis, prescribing/dose changes/treatment plans, payment or booking claims.
+6. Evaluation JSONL freezes Q01-Q10 and at least five holdout paraphrases. Cases without approved sources use `PENDING_SOURCE`, empty expected source IDs, and abstention expectations. Do not use model output as ground truth.
+7. Validation checks unique IDs, valid source references, manifest metadata and checksums, nonnegative numeric prices when present, no obvious PII, duplicate service IDs/names, release exclusion of draft/pending/synthetic sources, and JSONL case/reference integrity. It must pass the current empty/pending release corpus and fail representative invalid inputs in tests.
+8. Handoff records changed files, validation/test commands and results, exact base/current HEAD and status, G1-data verdict, owner questions, limitations, and no claims of approved corpus or Phase 1 completion.
+
+## Exclusions
+
+- Do not edit application source, existing tests unrelated to this task, AGENTS.md, Phase 0 report/baseline, Project Brain, global Agent Kit, `.env`, credentials, runtime DB, or deployment configuration.
+- Do not implement runtime RAG, retrieval/indexing, API routes, Vision/OCR, UI redesign, authentication, billing, patient profiles, or Phase 2 behavior.
+- Do not read provider keys, real business data, private uploads, or external systems.
+- Do not claim G1-data PASS. Missing owner-approved sources are a blocker for quantity/provenance approval, not a reason to fabricate records.
+
+## Evidence and acceptance
+
+- Run focused validation tests with the project `.venv` if available; do not run provider-backed checks.
+- Record exact commands and exit codes in the handoff. `scripts/check.ps1` is MAIN-owned final verification and is NOT the worker's completion claim.
+- End worker state at `READY_FOR_REVIEW`, not VERIFIED or INTEGRATED.
