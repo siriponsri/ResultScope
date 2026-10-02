@@ -7,7 +7,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 - Project Brain used: `C:\Users\User\.agent-kit\brains\resultscope`
 - Plan documents: `docs/final-project-plan/`
 - Pinned source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
-- Current HEAD: `134c9b6bbb0f2f74c1c14687b2264ea0ba121104` on local `main`
+- Final evidence checkpoint before this metadata normalization: `576977535f858ef71287361e255d42976eba8f42`; MAIN verifies the final HEAD with `git rev-parse HEAD`.
 - Current worktree: MAIN verified clean before this evidence update; no application source changed after the pinned source baseline
 - Current evidence changes: documentation, task packets, browser screenshots, and evidence logs only
 - Phase 1: not started
@@ -40,7 +40,7 @@ Status: **BLOCKED** (revalidated 2026-10-02)
 
 | Check | Result | Evidence |
 |---|---|---|
-| Repository root, branch, HEAD, status, remotes, worktrees | PASS | MAIN direct checks; current HEAD `134c9b6...`, local `main`, no application-source changes |
+| Repository root, branch, HEAD, status, remotes, worktrees | PASS | MAIN direct checks; final HEAD verified on local `main`, with the substantive evidence checkpoint recorded as `5769775...`; no application-source changes |
 | Canonical Agent Kit brain | PASS | `C:\Users\User\.agent-kit\brains\resultscope\brain.json`; `brain-status.ps1` reported `FRESH` at the prior HEAD |
 | Required `scripts/check.ps1` | PASS | `check-final-20261002-current.log`; exit 0, 25 passed, compileall passed |
 | Runtime OpenAPI comparison | PASS | `runtime-openapi-revalidation-20261001.log`; runtime route set reconciled with source inventory |

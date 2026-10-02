@@ -6,7 +6,7 @@ Status: **BLOCKED for G0; revalidated 2026-10-02.**
 
 - Root: `C:\Users\User\Desktop\myProject\ResultScope`
 - Branch: local `main`
-- Current HEAD: `134c9b6bbb0f2f74c1c14687b2264ea0ba121104`
+- Final evidence checkpoint before metadata normalization: `576977535f858ef71287361e255d42976eba8f42`; verify the final HEAD with `git rev-parse HEAD`.
 - Source baseline: `78ae247d671d507cbf68225aa87a73621a7872e1`
 - Remote state: not changed; no push or deploy occurred.
 - No application source was changed after the pinned source baseline. Current changes are documentation, evidence, task packets, and screenshots only.
