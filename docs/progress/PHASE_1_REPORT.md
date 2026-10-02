@@ -66,3 +66,40 @@ No application source, FastAPI route, runtime store, LLM client, UI asset, `.env
 ## Closeout status
 
 The scoped Phase 1 foundation is ready for owner review and local checkpointing, with G1-data explicitly blocked. A future phase may consume this schema only after owner sources are approved and the same validator passes against the approved corpus.
+
+## Dated correction addendum — 2026-10-02
+
+This addendum records a targeted correction after review of base checkpoint `68b6e256ac074c0714e39aa5c0edd5d69ce936c9`. The implementation and verification claims above describe that earlier checkpoint; the P1-F07 summary and validator behavior are superseded by the evidence below. The historical Phase 0 report and G0 decision were not changed.
+
+### Current gate states
+
+- Structural validation: **PASS**. The pending/development corpus is structurally valid; this result does not imply release readiness.
+- Release readiness / G1-data: **BLOCKED**. The working corpus still has zero release-eligible sources and zero release services. Owner-approved source material and the service/policy/education facts remain absent.
+- Historical G0: **BLOCKED**, unchanged.
+- Independent review of this correction: **NOT_RUN**. The configured roles use MAIN/IMPLEMENT MaxPlus and REVIEW O1, but no independent reviewer inspected this candidate. The accounts are configured separately; actual independent inspection is not established.
+
+### Corrections made
+
+- Parseable empty, null, or non-object manifests and malformed nested records now produce validation errors. Path, URL, enum, and record type failures are guarded and return errors rather than raising unhandled exceptions.
+- A local source origin must resolve to an existing file inside the repository root and match its SHA-256. HTTPS origins require `snapshot_path` to an in-root local snapshot; the checksum is verified against those snapshot bytes. A URL or checksum without verifiable local content is insufficient.
+- Structural validation and release readiness are separate. FAQ entries may transition from `PENDING_SOURCE` to `APPROVED_SOURCE`. Release readiness requires approved public-business source provenance, source-category references, all ten source-backed FAQ entries, and either at least 15 distinct services or five distinct verified source snapshots. Project instructions, planning references, and synthetic sources cannot be release evidence.
+- PII detection remains active. Only top-level `public_business_email` and `public_business_phone` fields are exempt, and only when the linked source is owner-approved, public, release-eligible, and classified `public_business_contact`. Contacts elsewhere or without that provenance remain rejected.
+- Q09 now contains separate prior user/assistant messages and a distinct follow-up question. The evaluation source checksum was updated to match the new JSONL bytes.
+- Release-positive fixtures are generated only inside isolated temporary test roots; the working synthetic service fixture remains development-only and non-release.
+
+### Verification
+
+- `rtk .\\.venv\\Scripts\\python.exe -m pytest -q tests\\test_corpus_validation.py`: **PASS**, 40 passed.
+- `rtk proxy powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\\scripts\\check.ps1`: **PASS**, 65 passed; compile check passed. One existing Starlette/httpx deprecation warning remains.
+- `rtk .\\.venv\\Scripts\\python.exe validation\\validate_corpus.py`: **PASS** for structural validation; release readiness is reported **BLOCKED**.
+- `rtk .\\.venv\\Scripts\\python.exe validation\\validate_corpus.py --mode release`: structural validation **PASS**, release readiness **BLOCKED**, exit code 1 as required for that mode.
+- Isolated tests demonstrate passing release paths using synthetic test-only evidence for both the 15-service and five-snapshot quantity alternatives. These test records are not business evidence and do not alter G1-data.
+- `git diff --check`: **PASS**. The working-tree change list is limited to the validator, its focused tests, Q09/checksum, this addendum, and the two correction dispatch packets; MAIN owns staging and the local checkpoint.
+
+### FO dispatch limitation
+
+The standard `run-implementation-review.ps1` path was invoked once for the correction and failed in `dispatch-route.ps1` before any route or worker started: the loaded PowerShell/.NET runtime does not provide `System.IO.Path.IsPathFullyQualified`. No IMPLEMENT or REVIEW receipt was created, no global Agent Kit or account setting was changed, and the failing launcher was not retried. MAIN completed only the explicitly authorized local correction and non-independent self-audit. A functioning independent REVIEW remains outstanding.
+
+### Remaining blockers and exclusions
+
+Owner answers and approved public sources are still required before G1-data can pass. No application/runtime behavior, RAG, Vision/OCR, UI, or Phase 2 work was started. Nothing was pushed or deployed.

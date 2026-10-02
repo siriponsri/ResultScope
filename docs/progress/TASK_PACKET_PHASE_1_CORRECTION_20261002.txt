@@ -1,0 +1,33 @@
+# TASK_PACKET: Targeted Phase 1 corpus-validation correction
+
+- Objective: Fix the five review findings in the Phase 1 validator/evaluation contract without starting Phase 2. Preserve G0 BLOCKED and current G1-data BLOCKED.
+- Repository / Worktree: C:\Users\User\Desktop\myProject\ResultScope; existing local main only; no branch/worktree creation.
+- Base revision: 68b6e256ac074c0714e39aa5c0edd5d69ce936c9.
+- Selected cells: 06-data (primary), 10-testing, 15-documentation; fresh 11-code-review after implementation.
+- Primary agent: IMPLEMENT (MaxPlus), sequential FO dispatch. MAIN owns inspection, staging, commit, report and Brain integration.
+- Route class: implementation; REVIEW route: configured O1, read-only.
+- Relevant skills: data-contracts, implementation, test-engineering; reviewer uses code-review.
+- Tool capabilities: local repository, shell, Python/pytest; no provider, browser, OCR, RAG, or external business source access.
+
+## Scope
+
+- Correct structural validation for malformed top-level/nested JSON records.
+- Separate structural/development corpus validation from release readiness.
+- Verify release provenance against local snapshot bytes, enforcing root containment, existence and SHA-256; URL origins require an explicit local snapshot.
+- Permit a release-ready path only for owner-approved public business sources, valid FAQ/service coverage and required quantity evidence; reject project/planning/synthetic evidence.
+- Replace blanket contact-pattern rejection with explicit public-business-contact field and provenance policy.
+- Make Q09 a real multi-turn case with prior messages and a distinct follow-up question.
+- Add isolated synthetic release-mode tests; do not alter working synthetic fixtures into approved data.
+- Append a dated correction/evidence note to PHASE_1_REPORT.md, preserving earlier historical claims and G0/G1 verdicts.
+
+## Do not touch
+
+- Application/runtime source, `.env`, credentials, runtime database, deployment, remote state, global Agent Kit/account settings, Phase 0 history, unrelated worktrees.
+- Do not begin RAG, Vision/OCR, UI work or Phase 2. Do not claim current corpus G1-data PASS.
+- Do not stage, commit, push, or deploy; MAIN alone stages and commits after review.
+
+## Acceptance
+
+- Regression tests cover []/null/non-object manifests, malformed nested values, missing/escaping/mismatched local origins, URL without snapshot, pending-vs-release status, rejected project/planning/synthetic release evidence, approved release fixture, public contact positive cases and personal contact negative cases, and Q09 history/follow-up shape.
+- Focused corpus tests and `scripts/check.ps1` pass; diff check passes.
+- Worker stops at READY_FOR_REVIEW with changed files and actual evidence; no commit.
