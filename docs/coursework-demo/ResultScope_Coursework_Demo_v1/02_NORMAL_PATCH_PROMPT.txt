@@ -1,0 +1,13 @@
+Phase 2 ปิด goal แล้ว ให้ integrate ชุดข้อมูลที่ docs/coursework-demo/ResultScope_Coursework_Demo_v1/ แบบ targeted patch อ่าน 00_README_TH.md, 01_INTEGRATION.md และรายงาน Phase 2 ก่อนลงมือ
+
+ทำบน main local ตรวจ HEAD/status และรักษางานเดิม ไม่สร้าง branch/worktree ไม่ push/deploy MAIN เป็นผู้ commit
+
+ใช้ชุดพร้อมแล็บเป็น canonical synthetic coursework data เพิ่มหรือ reuse explicit coursework_demo mode ตาม architecture จริง แยก corpus/index/cache จาก release ให้ server คุม mode มี banner และ metadata ว่าเป็นข้อมูลสมมติ ห้ามเปลี่ยน synthetic เป็นข้อมูลร้านจริงหรือ fallback release มายัง demo โดยเงียบ
+
+map exchange schema ให้ตรง validator ล่าสุด รักษา source IDs/version/provenance และ null ที่ขาดข้อมูล index เฉพาะ corpus paths ใน manifest ไม่ index evaluation/expected answers/instructions ภาพเก็บไว้สำหรับ Phase 3 ไม่เริ่ม Vision ใน patch นี้
+
+รัน structural checks, 10 mandatory text cases และ mode isolation/citation/abstention/Q09 multi-turn regression แยก mocked กับ live results ไม่มี credentials ให้ live NOT_RUN ห้ามแต่งผลผ่าน ไม่แก้เฉลยให้ตามคำตอบโมเดล
+
+คง G0/G1-data historical blockers แยก demo_data_ready, real_business_data_ready และ instructor_acceptance ซึ่งยัง pending ตรวจ REVIEW ตามเครื่องมือจริง ไม่อ้าง review approval หาก worker ไม่ได้ตรวจ
+
+เขียนรายงาน patch พร้อม tests/evidence/limitations ทำ local checkpoint และอัปเดต Brain จบเฉพาะ data integration ไม่เริ่ม Phase 3 และไม่อ้างว่าส่งการบ้านครบแล้ว

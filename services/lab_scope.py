@@ -29,7 +29,7 @@ LAB_TERMS: dict[str, tuple[str, ...]] = {
         "liver function", "lft", "ค่าตับ",
     ),
     "glucose": (
-        "glucose", "fbs", "fasting blood sugar", "hba1c", "a1c", "ogtt", "น้ำตาล",
+        "glucose", "fbs", "fpg", "fasting blood sugar", "hba1c", "a1c", "ogtt", "น้ำตาล",
     ),
     "lipid": (
         "cholesterol", "ldl", "hdl", "triglyceride", "non-hdl", "lipid profile", "ไขมัน",

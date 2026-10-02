@@ -39,6 +39,8 @@ class ChatResponse(BaseModel):
     corpus_mode: str
     corpus_version: str | None = None
     demo: bool
+    data_class: str
+    demo_notice: str | None = None
     retrieval_reason: str = "not_run"
     retrieval_latency_ms: float = 0.0
 
@@ -106,6 +108,8 @@ def _response_model(intent: IntentDecision, result: AnswerResult) -> ChatRespons
         corpus_mode=result.corpus_mode,
         corpus_version=result.corpus_version,
         demo=result.demo,
+        data_class=meta["data_class"],
+        demo_notice=meta["demo_notice"],
         retrieval_reason=result.retrieval_reason,
         retrieval_latency_ms=result.retrieval_latency_ms,
     )
@@ -147,6 +151,8 @@ async def get_product():
         "owner": settings.OWNER_NAME,
         "lab_only": True,
         "storage": settings.STORAGE_BACKEND,
+        "data_class": "synthetic" if settings.KNOWLEDGE_MODE == "synthetic" else "release",
+        "demo_notice": "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" if settings.KNOWLEDGE_MODE == "synthetic" else None,
     }
 
 

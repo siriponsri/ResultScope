@@ -13,15 +13,21 @@ BUSINESS_HINTS = (
     "how much", "service", "package", "panel", "book", "booking", "appointment",
     "walk-in", "walk in", "turnaround", "refund", "cancel", "address", "location",
     "contact", "เวลาเปิด", "เปิดกี่โมง", "ราคา", "ค่าบริการ", "แพ็กเกจ", "บริการ",
-    "จอง", "walk-in", "เตรียมตัว", "รับผล", "คืนเงิน", "ยกเลิก", "ที่อยู่", "ติดต่อ",
+    "จอง", "walk-in", "เตรียมตัว", "รับผล", "คืนเงิน", "ยกเลิก", "ที่อยู่", "ติดต่อ", "ตรวจ",
+    "เปิด", "วันเสาร์", "วันอาทิตย์", "วันหยุด", "ผลจะออก", "กี่ชั่วโมง", "ส่งผล", "ส่วนลด", "ลดให้",
+    "เท่าไร", "กี่บาท", "บาท", "รวม",
 )
 UNSAFE_HINTS = (
     "diagnose", "diagnosis", "prescribe", "prescription", "change my dose", "stop my medication",
     "วินิจฉัย", "สั่งยา", "ปรับยา", "หยุดยา", "เพิ่มยา", "ลดขนาดยา",
 )
 LAB_TERM_HINTS = (
-    "hb", "hba1c", "cbc", "ferritin", "creatinine", "egfr", "cholesterol", "triglyceride",
+    "hb", "hba1c", "cbc", "fpg", "ferritin", "creatinine", "egfr", "cholesterol", "triglyceride",
     "alt", "ast", "tsh", "platelet", "ผลตรวจ", "ค่าเลือด", "ค่าแล็บ", "ผลแล็บ",
+)
+MIXED_ANALYSIS_HINTS = (
+    "result", "mean", "explain", "interpret", "high", "low", "normal",
+    "ผลตรวจ", "ผลแล็บ", "หมายความ", "อธิบาย", "แปลผล", "สูง", "ต่ำ",
 )
 
 
@@ -54,7 +60,12 @@ def route_intent(message: str, history: list[dict[str, str]] | None = None) -> I
     if _contains_hint(message, UNSAFE_HINTS):
         return IntentDecision("unsafe", "unsafe_medical_request", False, scope)
     if has_business and has_lab:
-        return IntentDecision("mixed", "mixed_business_and_lab", True, scope)
+        # A service/catalog question may mention a test name (e.g. CBC price)
+        # without becoming a mixed clinical interpretation request. Keep the
+        # mixed route for questions that explicitly ask to interpret a result.
+        if _contains_hint(message, MIXED_ANALYSIS_HINTS):
+            return IntentDecision("mixed", "mixed_business_and_lab", True, scope)
+        return IntentDecision("business", "business_faq", True, scope)
     if has_business:
         return IntentDecision("business", "business_faq", True, scope)
     if scope.allowed:

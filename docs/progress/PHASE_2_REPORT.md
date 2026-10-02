@@ -66,3 +66,43 @@ Configured accounts are distinct (`MAIN/IMPLEMENT=MaxPlus`, `REVIEW=O1`), so no 
 - Restore an inspectable authorized O1 review path before claiming independent review. Do not treat a future receipt as approval unless the worker inspected this exact candidate.
 - Run live provider/embedding evaluation only after explicit authorization and credential-safe handling.
 - Do not start Phase 3, Vision/OCR, UI redesign, runtime RAG deployment, or release publication from this checkpoint.
+
+## Dated coursework demo integration addendum — 2026-10-02
+
+This addendum records the owner-authorized local integration from base checkpoint `21f14f541a99f7271f99810390ba21bea550dd59`. It does not revise the historical G0 or G1-data claims above.
+
+### Scope and source audit
+
+- The checked package `docs/coursework-demo/ResultScope_Coursework_Demo_v1/` contains 19 files including its checksum list; the 18 files listed by `CHECKSUMS.json` were verified with **18/18 SHA-256 values matched**. `CHECKSUMS.json` is not self-hashed. The four `SOURCE_MANIFEST.json` canonical corpus sources were separately verified before loading.
+- Only `corpus/01_BUSINESS.md`, `corpus/02_POLICIES.md`, `corpus/03_READING_GUIDE.md`, and `corpus/04_SERVICES.md` are indexed. `corpus/services.json` is checked for checksum/schema/equivalence only; it is not indexed as a second service source.
+- README, integration prompt, source manifest, evaluation questions/expected answers/holdouts/safety cases, checksum file, and all images remain outside the index. Vision/OCR and Phase 3 were not started.
+
+### Implementation and gates
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Historical G0 | **BLOCKED** | Preserved from earlier reports. |
+| Working-corpus structural validation | **PASS** | Existing `validation/validate_corpus.py`; demo loader adds manifest/path/checksum/representation checks. |
+| Coursework demo readiness | **PASS for isolated local synthetic demo** | `promptlab-synthetic-v1`; 15 services plus business/policy/reading records; isolated synthetic index has 21 records. |
+| Instructor acceptance | **PENDING** | Demo README states fictional-business acceptance remains pending instructor confirmation. |
+| Real-business release readiness / G1-data | **BLOCKED** | Release source/catalog gates remain unchanged; release index build exits 1 and never falls back to demo. |
+| Live provider/embedding | **NOT_RUN** | The evaluator uses a local mocked provider and makes no live call. |
+| Independent REVIEW | **NOT_RUN** | The configured IMPLEMENT run stalled after source inspection, was stopped once, produced no handoff, and no REVIEW route was started. |
+
+### Behavior and evidence
+
+- Existing `synthetic` routing/index/session/cache behavior is reused. Demo metadata identifies `data_class=synthetic`, corpus version, and the Thai notice `ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง` in API responses and the page header.
+- Citations resolve to `DEMO-BUSINESS`, `DEMO-POLICIES`, `DEMO-READING`, or `DEMO-SERVICES` with the verified source version/checksum and record/chunk IDs. Null preparation/specimen/turnaround fields abstain instead of being invented; unknown services abstain before provider invocation.
+- Q09 is evaluated as two prior turns plus a separate final follow-up question. Retrieval uses the stored history for that contextual follow-up and does not rely on a textual “after asking A” marker.
+- Retrieval-only plus mocked coursework evaluation: **10/10 mandatory and 5/5 holdout**. This is not live-provider or production-quality evidence.
+- `.venv\\Scripts\\python.exe -m pytest -q`: **110 passed**, one existing Starlette/httpx deprecation warning.
+- `scripts/check.ps1`: **PASS**, compile check and 110 tests.
+- `scripts/build_index.py --mode synthetic`: **PASS**, 21 records, `demo=true`, output `data/indexes/synthetic-promptlab-synthetic-v1.json`.
+- `scripts/build_index.py --mode release`: **BLOCKED**, exit 1, `release_not_ready`.
+- `git diff --check`: **PASS**; line-ending warnings are Git normalization notices only.
+
+### FO limitation and exclusions
+
+The canonical FO helper was invoked once with the bounded IMPLEMENT and fresh O1 REVIEW packets. IMPLEMENT run `f8b777b32222428696b4dc51ce6bc977` stalled after reading repository/source context, made no worktree changes, and was stopped through `stop-route.ps1`; no review handoff or independent inspection exists. No receipt is treated as approval, no global Agent Kit/account settings were changed, and the launcher was not retried unchanged. MAIN performed the authorized implementation and local verification only.
+
+No credentials, `.env` values, live provider calls, deployment, push, Vision/OCR, UI redesign, Phase 3, or release approval were performed.

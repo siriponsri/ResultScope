@@ -52,6 +52,7 @@ async def index(request: Request):
             "app_name": settings.APP_NAME,
             "tagline": settings.APP_TAGLINE,
             "owner_name": settings.OWNER_NAME,
+            "demo_notice": "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" if settings.KNOWLEDGE_MODE == "synthetic" else None,
         },
     )
 

@@ -31,6 +31,7 @@ body[data-view="analysis"] .ambient-field { background:
 .brand-copy strong { font-family: var(--font-display); font-size: var(--text-base); font-weight: 750; letter-spacing: -0.02em; }
 .brand-copy span, .header-meta, .app-footer { color: var(--text-on-dark-muted); font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.035em; }
 .header-meta { display: flex; align-items: center; gap: var(--space-lg); }
+.demo-notice { max-width: 24rem; padding: 0.35rem 0.55rem; border: 1px solid rgba(131, 236, 255, 0.55); color: var(--cyan-300); line-height: 1.35; }
 .boundary-status { display: inline-flex; align-items: center; gap: var(--space-xs); }
 .boundary-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan-400); box-shadow: 0 0 16px rgba(64, 223, 244, 0.75); animation: status-breathe 2.6s ease-in-out infinite; }
 .owner-name { padding-left: var(--space-lg); border-left: 1px solid var(--line-dark); }

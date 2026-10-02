@@ -1,0 +1,322 @@
+{
+  "schema": "exchange-v1-not-runtime-schema",
+  "version": "promptlab-synthetic-v1",
+  "business_id": "promptlab-demo",
+  "services": [
+    {
+      "service_id": "SVC-001",
+      "name_th": "ความสมบูรณ์ของเม็ดเลือด",
+      "name_en": "CBC",
+      "aliases": [
+        "CBC",
+        "ความสมบูรณ์ของเม็ดเลือด"
+      ],
+      "price": {
+        "amount": 250,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ความสมบูรณ์ของเม็ดเลือด สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-002",
+      "name_th": "น้ำตาลในเลือด",
+      "name_en": "FPG",
+      "aliases": [
+        "FPG",
+        "น้ำตาลในเลือด"
+      ],
+      "price": {
+        "amount": 120,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง น้ำตาลในเลือด สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-003",
+      "name_th": "ฮีโมโกลบินเอวันซี",
+      "name_en": "HbA1c",
+      "aliases": [
+        "HbA1c",
+        "ฮีโมโกลบินเอวันซี"
+      ],
+      "price": {
+        "amount": 350,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ฮีโมโกลบินเอวันซี สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-004",
+      "name_th": "ชุดไขมันในเลือด",
+      "name_en": "Lipid panel",
+      "aliases": [
+        "Lipid panel",
+        "ชุดไขมันในเลือด"
+      ],
+      "price": {
+        "amount": 450,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ชุดไขมันในเลือด สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-005",
+      "name_th": "ครีอะตินีน",
+      "name_en": "Creatinine",
+      "aliases": [
+        "Creatinine",
+        "ครีอะตินีน"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ครีอะตินีน สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-006",
+      "name_th": "บียูเอ็น",
+      "name_en": "BUN",
+      "aliases": [
+        "BUN",
+        "บียูเอ็น"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง บียูเอ็น สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-007",
+      "name_th": "เอเอสที",
+      "name_en": "AST",
+      "aliases": [
+        "AST",
+        "เอเอสที"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง เอเอสที สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-008",
+      "name_th": "เอแอลที",
+      "name_en": "ALT",
+      "aliases": [
+        "ALT",
+        "เอแอลที"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง เอแอลที สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-009",
+      "name_th": "กรดยูริก",
+      "name_en": "Uric acid",
+      "aliases": [
+        "Uric acid",
+        "กรดยูริก"
+      ],
+      "price": {
+        "amount": 180,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง กรดยูริก สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-010",
+      "name_th": "ปัสสาวะทั่วไป",
+      "name_en": "Urinalysis",
+      "aliases": [
+        "Urinalysis",
+        "ปัสสาวะทั่วไป"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ปัสสาวะทั่วไป สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-011",
+      "name_th": "ทีเอสเอช",
+      "name_en": "TSH",
+      "aliases": [
+        "TSH",
+        "ทีเอสเอช"
+      ],
+      "price": {
+        "amount": 450,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง ทีเอสเอช สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-012",
+      "name_th": "เอฟทีโฟร์",
+      "name_en": "FT4",
+      "aliases": [
+        "FT4",
+        "เอฟทีโฟร์"
+      ],
+      "price": {
+        "amount": 450,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง เอฟทีโฟร์ สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-013",
+      "name_th": "เฟอร์ริติน",
+      "name_en": "Ferritin",
+      "aliases": [
+        "Ferritin",
+        "เฟอร์ริติน"
+      ],
+      "price": {
+        "amount": 550,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง เฟอร์ริติน สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-014",
+      "name_th": "วิตามินบีสิบสอง",
+      "name_en": "Vitamin B12",
+      "aliases": [
+        "Vitamin B12",
+        "วิตามินบีสิบสอง"
+      ],
+      "price": {
+        "amount": 650,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง วิตามินบีสิบสอง สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    },
+    {
+      "service_id": "SVC-015",
+      "name_th": "อัลบูมิน",
+      "name_en": "Albumin",
+      "aliases": [
+        "Albumin",
+        "อัลบูมิน"
+      ],
+      "price": {
+        "amount": 150,
+        "currency": "THB",
+        "includes_demo_service_fee": true
+      },
+      "description": "รายการบริการจำลอง อัลบูมิน สำหรับทดสอบการค้นชื่อและราคา ไม่ใช่ข้อเสนอขายจริง",
+      "preparation": null,
+      "specimen": null,
+      "turnaround": null,
+      "source_id": "DEMO-SERVICES",
+      "data_class": "synthetic",
+      "commercial_release_eligible": false
+    }
+  ]
+}

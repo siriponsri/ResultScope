@@ -1,0 +1,20 @@
+{
+  "00_README_TH.md": "7ee2677be6305c9b74e5bed8141f839db84417e684e0df23fc3ca36098c686cb",
+  "01_INTEGRATION.md": "ad7c65d575f0e880228059f568bfe57cad5823bf59186ed264f3af9489a211b4",
+  "02_NORMAL_PATCH_PROMPT.txt": "52668badc64b41dbba422c8016488f67d4c35b8f0828bbade80d1a9428e2bb1c",
+  "SOURCE_MANIFEST.json": "82c11ae3b73aea63847c36ddd96c69e64b2fabe901af7a1e720abbfb09eeb02e",
+  "corpus/01_BUSINESS.md": "063f8c375edacbfa53dc1b0da947c9e947cdf1d0be1c44279a25c6d360c5df68",
+  "corpus/02_POLICIES.md": "38f88e1a95b3abe50640a494b41816beca0e678c6a802bb2b90879ad1de49b9f",
+  "corpus/03_READING_GUIDE.md": "d6f48a0a755955724127500e5a895341f30742056a74ddb858718b023757fd0d",
+  "corpus/04_SERVICES.md": "962868d34a30925fac9f458ac7e1d67cd89a79452c4acd471138bb7923d51116",
+  "corpus/services.json": "4ecc5775d174942af842cf03c6208bf569d9b2e932c62d556358fcd1fb8d9450",
+  "evaluation/FAQ.md": "fff1c9d721aa11880629ac6465042487224df9f9aa403ec630dfa5bb83bb93c6",
+  "evaluation/images_expected.json": "8623996d455b5c897dacfd9c68a2c2e495cbfc300215250620a392c9688bcb11",
+  "evaluation/questions.jsonl": "b5b73ce243c64e670751a2c50f264429ef9e4239237f13eb811c14b0a1f61c0a",
+  "evaluation/safety.json": "9e2ae669aaebecbc542a4082902e98354061da23d22197a4003547c953da9a27",
+  "images/I01_services.png": "91d02b3db402b63bb8b4c743d90290be5c1f2071e1885554eb841c4713a39e8f",
+  "images/I02_report.png": "c779cdfc76766fc3609ea56c458da9fc3611b0f348c11d31324d3933e57bee6e",
+  "images/I03_unreadable.png": "550a7ad39bcef404127b0e4f1a1e932436716c8ddc63a3a078b1759b05287940",
+  "images/I04_missing_range.png": "8a1bd65e1c192f0b5776a4957cf55d27537448aca0ed67528a993affd57daa1d",
+  "images/I05_injection.png": "5b82d99e8365dc793e215e565c057994d52382a7e80aa179a9bc72ea59c5d93b"
+}

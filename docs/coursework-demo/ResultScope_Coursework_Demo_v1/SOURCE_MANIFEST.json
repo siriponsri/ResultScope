@@ -1,0 +1,44 @@
+{
+  "format": "exchange-v1-not-runtime-schema",
+  "corpus_version": "promptlab-synthetic-v1",
+  "instructor_acceptance": "PENDING",
+  "sources": [
+    {
+      "source_id": "DEMO-BUSINESS",
+      "canonical_path": "corpus/01_BUSINESS.md",
+      "sha256": "063f8c375edacbfa53dc1b0da947c9e947cdf1d0be1c44279a25c6d360c5df68",
+      "version": "promptlab-synthetic-v1",
+      "data_class": "synthetic",
+      "authority": "canonical_within_fictional_demo_only",
+      "commercial_release_eligible": false
+    },
+    {
+      "source_id": "DEMO-POLICIES",
+      "canonical_path": "corpus/02_POLICIES.md",
+      "sha256": "38f88e1a95b3abe50640a494b41816beca0e678c6a802bb2b90879ad1de49b9f",
+      "version": "promptlab-synthetic-v1",
+      "data_class": "synthetic",
+      "authority": "canonical_within_fictional_demo_only",
+      "commercial_release_eligible": false
+    },
+    {
+      "source_id": "DEMO-READING",
+      "canonical_path": "corpus/03_READING_GUIDE.md",
+      "sha256": "d6f48a0a755955724127500e5a895341f30742056a74ddb858718b023757fd0d",
+      "version": "promptlab-synthetic-v1",
+      "data_class": "synthetic",
+      "authority": "canonical_within_fictional_demo_only",
+      "commercial_release_eligible": false
+    },
+    {
+      "source_id": "DEMO-SERVICES",
+      "canonical_path": "corpus/04_SERVICES.md",
+      "sha256": "962868d34a30925fac9f458ac7e1d67cd89a79452c4acd471138bb7923d51116",
+      "version": "promptlab-synthetic-v1",
+      "data_class": "synthetic",
+      "authority": "canonical_within_fictional_demo_only",
+      "commercial_release_eligible": false
+    }
+  ],
+  "services_alternative_representation": "corpus/services.json"
+}

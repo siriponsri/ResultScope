@@ -7,21 +7,26 @@ from services.knowledge import KnowledgeLoadError, load_knowledge_base
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_synthetic_index_is_explicit_and_contains_only_fixture_records():
+def test_synthetic_index_is_explicit_and_contains_demo_records_without_release_data():
     base = load_knowledge_base(ROOT, mode="synthetic", environment="test")
 
     assert base.mode == "synthetic"
     assert base.demo is True
-    assert base.corpus_version == "resultscope-lab-demo-pending-v1"
-    assert {record.data["service_id"] for record in base.records} == {
+    assert base.corpus_version == "promptlab-synthetic-v1"
+    service_ids = {record.data["service_id"] for record in base.records if "service_id" in record.data}
+    assert {"SYN-SVC-001", "SYN-SVC-002", "SYN-SVC-003"}.issubset(service_ids)
+    assert {f"SVC-{index:03d}" for index in range(1, 16)}.issubset(service_ids)
+    assert {record.kind for record in base.records} >= {"service", "business", "policy", "education"}
+    assert {
         "SYN-SVC-001",
         "SYN-SVC-002",
         "SYN-SVC-003",
-    }
+    }.issubset(service_ids)
     assert {source.source_kind for source in base.sources.values()} == {"synthetic"}
     assert all("PENDING_SOURCE" not in record.content for record in base.records)
     assert all("evaluation" not in source.origin for source in base.sources.values())
     assert all("AGENTS.md" not in record.content for record in base.records)
+    assert all("questions.jsonl" not in record.content for record in base.records)
 
 
 def test_synthetic_index_is_rejected_outside_local_development():

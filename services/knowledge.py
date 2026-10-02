@@ -11,6 +11,8 @@ from urllib.parse import urlsplit
 from validation.validate_corpus import validate_corpus, validate_release_readiness
 
 KnowledgeMode = Literal["release", "synthetic"]
+DEMO_NOTICE_TH = "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง"
+DEMO_ROOT_RELATIVE = Path("docs/coursework-demo/ResultScope_Coursework_Demo_v1")
 
 
 class KnowledgeLoadError(Exception):
@@ -55,6 +57,8 @@ class KnowledgeBase:
         return {
             "mode": self.mode,
             "demo": self.demo,
+            "data_class": "synthetic" if self.demo else "release",
+            "demo_notice": DEMO_NOTICE_TH if self.demo else None,
             "corpus_version": self.corpus_version,
             "record_count": len(self.records),
         }
@@ -109,6 +113,7 @@ def _service_content(service: dict[str, Any]) -> str:
     labels = {
         "service_id": "Service ID",
         "name_th": "Thai service name",
+        "name_en": "English service name",
         "aliases": "Aliases",
         "description": "Description",
         "price": "Price",
@@ -122,7 +127,12 @@ def _service_content(service: dict[str, Any]) -> str:
         value = service.get(field)
         if value is None or value == "":
             continue
-        rendered = ", ".join(map(str, value)) if isinstance(value, list) else str(value)
+        if field == "price" and isinstance(value, dict):
+            amount = value.get("amount")
+            currency = value.get("currency")
+            rendered = " ".join(str(part) for part in (amount, currency) if part is not None)
+        else:
+            rendered = ", ".join(map(str, value)) if isinstance(value, list) else str(value)
         parts.append(f"{label}: {rendered}")
     return "\n".join(parts)
 
@@ -177,6 +187,177 @@ def _faq_records(
         record_id = _stable_record_id(corpus_version, source_ids, faq_id, content)
         records.append(KnowledgeRecord(record_id, record_id, corpus_version, source_ids, content, "faq", {"faq_id": faq_id}))
     return records
+
+
+def _demo_source_snapshot(root: Path, demo_root: Path, row: dict[str, Any]) -> SourceProvenance:
+    source_id = row.get("source_id")
+    canonical_path = row.get("canonical_path")
+    version = row.get("version")
+    expected_checksum = row.get("sha256")
+    if not all(isinstance(value, str) and value.strip() for value in (source_id, canonical_path, version, expected_checksum)):
+        raise KnowledgeLoadError("Coursework demo source manifest has invalid source metadata.", "invalid_provenance")
+    if row.get("data_class") != "synthetic" or row.get("commercial_release_eligible") is not False:
+        raise KnowledgeLoadError("Coursework demo source is not explicitly synthetic and non-release.", "invalid_provenance")
+    candidate = (demo_root / canonical_path).resolve()
+    try:
+        candidate.relative_to(demo_root.resolve())
+    except ValueError as exc:
+        raise KnowledgeLoadError("Coursework demo source escapes its allowed root.", "invalid_provenance") from exc
+    if not candidate.is_file():
+        raise KnowledgeLoadError("Coursework demo source snapshot is missing.", "invalid_provenance")
+    digest = hashlib.sha256(candidate.read_bytes()).hexdigest()
+    if digest != expected_checksum:
+        raise KnowledgeLoadError("Coursework demo source snapshot checksum does not match.", "invalid_provenance")
+    return SourceProvenance(
+        source_id,
+        version,
+        expected_checksum,
+        str(candidate.relative_to(root)).replace("\\", "/"),
+        "synthetic",
+    )
+
+
+def _demo_service_records(
+    services: Any, source_map: dict[str, SourceProvenance], corpus_version: str
+) -> list[KnowledgeRecord]:
+    if not isinstance(services, list) or len(services) != 15:
+        raise KnowledgeLoadError("Coursework demo must contain exactly 15 services.", "invalid_corpus")
+    records: list[KnowledgeRecord] = []
+    seen_ids: set[str] = set()
+    for index, raw in enumerate(services):
+        if not isinstance(raw, dict):
+            raise KnowledgeLoadError(f"Coursework demo service {index} is not an object.", "invalid_corpus")
+        service = dict(raw)
+        service_id = service.get("service_id")
+        source_id = service.get("source_id")
+        price = service.get("price")
+        if not isinstance(service_id, str) or not service_id.strip() or service_id in seen_ids:
+            raise KnowledgeLoadError(f"Coursework demo service {index} has an invalid or duplicate service_id.", "invalid_corpus")
+        if source_id != "DEMO-SERVICES" or source_id not in source_map:
+            raise KnowledgeLoadError(f"Coursework demo service {service_id} has an invalid source_id.", "invalid_corpus")
+        if not isinstance(service.get("name_th"), str) or not service["name_th"].strip():
+            raise KnowledgeLoadError(f"Coursework demo service {service_id} has no Thai name.", "invalid_corpus")
+        if not isinstance(price, dict) or not isinstance(price.get("amount"), (int, float)) or isinstance(price.get("amount"), bool):
+            raise KnowledgeLoadError(f"Coursework demo service {service_id} has an invalid price.", "invalid_corpus")
+        if not isinstance(price.get("currency"), str) or not price["currency"].strip():
+            raise KnowledgeLoadError(f"Coursework demo service {service_id} has no currency.", "invalid_corpus")
+        seen_ids.add(service_id)
+        content = _service_content(service)
+        record_id = _stable_record_id(corpus_version, (source_id,), service_id, content)
+        records.append(KnowledgeRecord(record_id, record_id, corpus_version, (source_id,), content, "service", service))
+    return records
+
+
+def _demo_services_from_markdown(path: Path, source_id: str, version: str) -> list[dict[str, Any]]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise KnowledgeLoadError("Coursework demo services source cannot be read.", "invalid_corpus") from exc
+    rows = re.findall(
+        r"(?m)^\|\s*(SVC-\d{3})\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*(\d+(?:\.\d+)?)\s*\|\s*$",
+        text,
+    )
+    services: list[dict[str, Any]] = []
+    for service_id, name_th, name_en, amount in rows:
+        numeric_amount: int | float = float(amount) if "." in amount else int(amount)
+        services.append(
+            {
+                "service_id": service_id,
+                "name_th": name_th.strip(),
+                "name_en": name_en.strip(),
+                "aliases": [name_en.strip(), name_th.strip()],
+                "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+                "price": {"amount": numeric_amount, "currency": "THB"},
+                "preparation": None,
+                "specimen": None,
+                "result_turnaround": None,
+                "source_id": source_id,
+                "version": version,
+            }
+        )
+    return services
+
+
+def _assert_demo_service_equivalence(markdown_services: list[dict[str, Any]], json_services: Any) -> None:
+    if not isinstance(json_services, list) or len(json_services) != len(markdown_services):
+        raise KnowledgeLoadError("Coursework demo service representations differ in size.", "invalid_corpus")
+    markdown_by_id = {service["service_id"]: service for service in markdown_services}
+    json_by_id = {service.get("service_id"): service for service in json_services if isinstance(service, dict)}
+    if set(markdown_by_id) != set(json_by_id):
+        raise KnowledgeLoadError("Coursework demo service representations have different IDs.", "invalid_corpus")
+    for service_id, markdown_service in markdown_by_id.items():
+        json_service = json_by_id[service_id]
+        json_price = json_service.get("price")
+        if (
+            json_service.get("name_th") != markdown_service["name_th"]
+            or json_service.get("name_en") != markdown_service["name_en"]
+            or not isinstance(json_price, dict)
+            or json_price.get("amount") != markdown_service["price"]["amount"]
+            or json_price.get("currency") != "THB"
+        ):
+            raise KnowledgeLoadError(f"Coursework demo service representations differ for {service_id}.", "invalid_corpus")
+
+
+def _demo_document_record(
+    path: Path, source: SourceProvenance, corpus_version: str, kind: str
+) -> KnowledgeRecord:
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise KnowledgeLoadError(f"Coursework demo source cannot be read: {source.source_id}", "invalid_corpus") from exc
+    if not content.strip():
+        raise KnowledgeLoadError(f"Coursework demo source is empty: {source.source_id}", "invalid_corpus")
+    record_id = _stable_record_id(corpus_version, (source.source_id,), source.source_id, content)
+    return KnowledgeRecord(
+        record_id,
+        record_id,
+        corpus_version,
+        (source.source_id,),
+        content,
+        kind,
+        {"document_id": source.source_id},
+    )
+
+
+def _coursework_demo_records(root: Path) -> tuple[str, dict[str, SourceProvenance], list[KnowledgeRecord]]:
+    demo_root = (root / DEMO_ROOT_RELATIVE).resolve()
+    manifest = _read_json(demo_root / "SOURCE_MANIFEST.json", "coursework demo SOURCE_MANIFEST.json")
+    if manifest.get("format") != "exchange-v1-not-runtime-schema":
+        raise KnowledgeLoadError("Coursework demo manifest has an unsupported format.", "invalid_corpus")
+    corpus_version = manifest.get("corpus_version")
+    rows = manifest.get("sources")
+    if not isinstance(corpus_version, str) or not corpus_version.strip() or not isinstance(rows, list) or len(rows) != 4:
+        raise KnowledgeLoadError("Coursework demo manifest has invalid version or source rows.", "invalid_corpus")
+    sources: dict[str, SourceProvenance] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise KnowledgeLoadError("Coursework demo manifest contains a non-object source row.", "invalid_corpus")
+        source = _demo_source_snapshot(root, demo_root, row)
+        if source.source_id in sources:
+            raise KnowledgeLoadError("Coursework demo manifest contains duplicate source IDs.", "invalid_corpus")
+        sources[source.source_id] = source
+
+    services_path = demo_root / "corpus" / "services.json"
+    checksums = _read_json(demo_root / "CHECKSUMS.json", "coursework demo CHECKSUMS.json")
+    expected_services_checksum = checksums.get("corpus/services.json")
+    if not isinstance(expected_services_checksum, str) or hashlib.sha256(services_path.read_bytes()).hexdigest() != expected_services_checksum:
+        raise KnowledgeLoadError("Coursework demo service representation checksum does not match.", "invalid_provenance")
+    service_payload = _read_json(services_path, "coursework demo services.json")
+    if service_payload.get("schema") != "exchange-v1-not-runtime-schema" or service_payload.get("version") != corpus_version:
+        raise KnowledgeLoadError("Coursework demo service representation has an invalid schema or version.", "invalid_corpus")
+    markdown_services = _demo_services_from_markdown(
+        demo_root / "corpus" / "04_SERVICES.md", "DEMO-SERVICES", corpus_version
+    )
+    _assert_demo_service_equivalence(markdown_services, service_payload.get("services"))
+    records = _demo_service_records(markdown_services, sources, corpus_version)
+    records.extend(
+        (
+            _demo_document_record(demo_root / "corpus" / "01_BUSINESS.md", sources["DEMO-BUSINESS"], corpus_version, "business"),
+            _demo_document_record(demo_root / "corpus" / "02_POLICIES.md", sources["DEMO-POLICIES"], corpus_version, "policy"),
+            _demo_document_record(demo_root / "corpus" / "03_READING_GUIDE.md", sources["DEMO-READING"], corpus_version, "education"),
+        )
+    )
+    return corpus_version, sources, records
 
 
 def load_knowledge_base(
@@ -246,11 +427,16 @@ def load_knowledge_base(
     ):
         raise KnowledgeLoadError("Synthetic fixture provenance is invalid.", "invalid_provenance")
     _source_snapshot(resolved_root, source)
-    sources = {fixture_source_id: _provenance(source)}
-    records = _service_records(fixture.get("services", []), sources, corpus_version)
-    if not records:
-        raise KnowledgeLoadError("Synthetic development fixture has no service records.", "invalid_corpus")
-    return KnowledgeBase("synthetic", corpus_version, sources, tuple(records))
+    demo_version, demo_sources, demo_records = _coursework_demo_records(resolved_root)
+    legacy_sources = {fixture_source_id: _provenance(source)}
+    legacy_records = _service_records(fixture.get("services", []), legacy_sources, demo_version)
+    combined_sources = {**legacy_sources, **demo_sources}
+    combined_records = legacy_records + demo_records
+    if not combined_records:
+        raise KnowledgeLoadError("Synthetic development corpus has no service records.", "invalid_corpus")
+    # The coursework pack is the active synthetic namespace. Legacy fixture records
+    # remain available for existing local retrieval evidence but remain non-release.
+    return KnowledgeBase("synthetic", demo_version, combined_sources, tuple(combined_records))
 
 
 def knowledge_base_to_dict(base: KnowledgeBase) -> dict[str, Any]:

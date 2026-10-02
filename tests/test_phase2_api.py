@@ -37,6 +37,16 @@ def test_business_faq_is_allowed_but_abstains_without_a_source(monkeypatch):
     assert response.json()["status"] == "abstained"
     assert response.json()["citations"] == []
     assert response.json()["demo"] is True
+    assert response.json()["data_class"] == "synthetic"
+    assert response.json()["demo_notice"] == "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง"
+
+
+def test_synthetic_mode_shows_demo_notice_on_product_surface(monkeypatch):
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+    response = TestClient(app).get("/")
+
+    assert response.status_code == 200
+    assert "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" in response.text
 
 
 def test_unrelated_and_unsafe_requests_bypass_provider_in_sync_and_stream(monkeypatch):
@@ -98,6 +108,8 @@ def test_sync_and_stream_share_the_same_validated_answer(monkeypatch):
     assert sync.json()["reply"] == answer
     assert sync.json()["status"] == meta["status"] == "answered"
     assert sync.json()["citations"] == meta["citations"]
+    assert sync.json()["data_class"] == meta["data_class"] == "synthetic"
+    assert sync.json()["demo_notice"] == meta["demo_notice"]
 
 
 def test_provider_error_stream_has_no_unvalidated_delta_and_done_once(monkeypatch):

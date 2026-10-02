@@ -1,0 +1,23 @@
+# Task Packet: coursework demo integration
+
+- Objective: Integrate the checked `docs/coursework-demo/ResultScope_Coursework_Demo_v1/` synthetic business/lab corpus into the existing Phase 2 `synthetic` retrieval path on local `main`.
+- Base revision: `21f14f541a99f7271f99810390ba21bea550dd59`.
+- Repository / worktree: `C:\Users\User\Desktop\myProject\ResultScope`, local `main`; do not create a branch/worktree.
+- Primary agent: IMPLEMENT (MaxPlus); MAIN owns integration, staging, commit, report, and Brain updates.
+- Route class: implementation; independent REVIEW (O1, read-only) follows only if IMPLEMENT produces an inspectable handoff.
+- Relevant skills: implementation, test-engineering, data-contracts.
+- Scope: `services/knowledge.py`, `scripts/` demo evaluation/index entrypoints as needed, `tests/`, isolated demo index/evidence, and tightly related schema/config/API metadata changes.
+- Do not touch: `.env`/secrets; release-approved corpus semantics; `knowledge/services.json` as approved data; historical G0/G1 claims; UI/Vision/OCR/Phase 3; deployment/push; global Agent Kit settings; unrelated untracked files.
+- Data inputs: only the four manifest canonical sources under `docs/coursework-demo/ResultScope_Coursework_Demo_v1/corpus/`; use `04_SERVICES.md` or `corpus/services.json` once, not both. The supplied manifest SHA-256 values must be checked before loading.
+- Required behavior:
+  - Reuse the existing `synthetic` mode; keep demo corpus/index/cache namespace and corpus version separate from `release`.
+  - Load the 15 synthetic services plus business/policy/reading records with source IDs, manifest version, checksum, and local snapshot provenance.
+  - Release loading remains fail-closed and never falls back to demo data.
+  - Response metadata must identify synthetic/demo data and expose Thai disclaimer text: `ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง`.
+  - Do not index README, integration prompt, manifest, evaluation, expected answers, holdouts, safety cases, or images.
+  - Preserve null preparation/specimen/turnaround as unknown; no invented preparation/turnaround answers.
+  - Preserve Q09 as actual prior history plus a separate follow-up; route/retrieve with history.
+- Required regression coverage: namespace isolation; release fail-closed; source/version citations; unknown-service/unknown-fact abstention; Q09 multi-turn; 15-service/source/checksum contract; no evaluation/instruction/image leakage; mandatory/holdout evaluation read-only harness.
+- Evidence boundaries: retrieval-only and mocked provider results may be PASS; live-provider evidence is NOT_RUN unless an actual live call is authorized and made. Do not claim end-to-end/live quality.
+- Commands: focused pytest; demo index/evaluation scripts; `powershell -ExecutionPolicy Bypass -File .\\scripts\\check.ps1`; `git diff --check`.
+- Handoff: report changed files, tests/results, candidate HEAD, remaining blockers, and any unrun review/live checks. Do not stage or commit.
