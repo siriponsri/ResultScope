@@ -177,6 +177,7 @@ def _validated_result(
     analysis: Any,
     confirmed_extraction: dict[str, Any] | None,
     request_id: str,
+    started_at: float,
 ) -> AnswerResult:
     try:
         validate_answer_result(
@@ -187,10 +188,7 @@ def _validated_result(
             confirmed_extraction,
         )
     except OutputValidationError:
-        logger.warning(
-            "Chat output rejected by deterministic validation",
-            extra={"event": "chat_request", "request_id": request_id, "outcome": "output_rejected"},
-        )
+        _audit_event(request_id, "output_rejected", started_at, result=result)
         return answer_service.fail_closed_result(result)
     return result
 
@@ -433,7 +431,7 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
             history = _bounded_history(await conversation_store.get(session_id))
             confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
             intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
-            result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id)
+            result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id, started_at)
             await _persist_turn(session_id, history, chat_request.message, result)
     except ExtractionRequestError as exc:
         _audit_event(request_id, exc.code, started_at)
@@ -486,7 +484,7 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
                 history = _bounded_history(await conversation_store.get(session_id))
                 confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
                 intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
-                result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id)
+                result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id, started_at)
                 await _persist_turn(session_id, history, chat_request.message, result)
                 _audit_result(request_id, result, started_at)
                 if analysis.scope.allowed:
