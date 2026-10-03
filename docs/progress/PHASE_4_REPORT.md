@@ -3,7 +3,7 @@
 สถานะ: DOCUMENTED LOCAL CLOSEOUT; local controls and fallback remediation verified, independent O1/O2 gate unavailable
 
 - Phase / date / MAIN / IMPLEMENT / REVIEW: Phase 4 / 2026-10-03 / MaxPlus / MaxPlus (dispatch timed out; MAIN completed bounded fallback) / O1 configured but unavailable at final review; O2 owner-authorized fallback also unavailable
-- Baseline SHA / final implementation SHA / documentation closeout parent: `80e7a5986141d96db0d52f1c0a8f629476e6543c` / `45acba9` / `428a1de`
+- Baseline SHA / final implementation SHA / final documentation closeout HEAD: `80e7a5986141d96db0d52f1c0a8f629476e6543c` / `45acba9` / `6534ad8`
 - Corpus version / prompt-policy version / model-provider: synthetic `promptlab-synthetic-v1` for tests; deterministic rulebook `2026.08`; provider calls mocked or unavailable only
 - Scope completed / deferred: Phase 4 trust/output/session/resource/rendering controls completed locally; live-provider quality, external guard, authentication, and Phase 5 deferred
 
@@ -108,6 +108,7 @@ BLOCKED; G3 remains NOT_CLAIMED. Phase 5 was not started.
 
 The implementation remains locally integrated and this report records the
 fallback findings as locally remediated, not independently approved. The next
-action is a fresh independent O1/O2 review of `45acba9` when a functioning
-route is available. Project Brain refresh and this documentation commit remain
+action is a fresh independent O1/O2 review of the final local HEAD (whose
+application tree is the `45acba9` candidate) when a functioning route is
+available. Project Brain refresh and this documentation commit remain
 local-only. No push or deployment is authorized.
