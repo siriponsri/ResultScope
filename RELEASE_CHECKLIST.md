@@ -22,7 +22,7 @@
 | Public-reference runtime integration | PASS แบบ offline/local | `PUBLIC_REFERENCE_ENABLED=true` ใช้ adapter, citation allowlist, no-hit/corrupt abstention และ sync/SSE parity; ไม่ใช่ business approval |
 | Phase 5 first-use UX | PASS แบบ mocked/local | หน้า home จริงมี question/upload, OCR correction, retry/reset และ browser evidence; human comprehension และ live quality ยัง NOT_RUN |
 | Phase 6 documented local closeout | PASS แบบเอกสาร/หลักฐาน local | รายงานนี้และ `docs/progress/PHASE_6_REPORT.md`; submission, deployment และ production readiness ไม่ได้ทำ |
-| Full project test suite | PASS | `195 passed`, 1 existing Starlette/httpx warning บน candidate `eb0b428` |
+| Full project test suite | PASS | `195 passed`, 1 existing Starlette/httpx warning บน candidate `2215bfb245a32f12e0e63c0f2d64bf8e7edc8fd1` |
 | `scripts/check.ps1` | PASS | exit 0; includes `195 passed` and one existing warning |
 | Independent O1/O2 review | NOT_RUN | runtime/account ยังไม่พร้อม จึงไม่มี approval claim |
 | Live provider verification | NOT_RUN | ไม่มี key จริงตาม owner instruction และไม่มี external call |
