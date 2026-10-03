@@ -34,10 +34,23 @@ class ConversationStore(ABC):
     async def clear(self, session_id: str) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    async def save_reset_recovery(self, session_id: str, payload: dict[str, Any]) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_reset_recovery(self, session_id: str) -> dict[str, Any] | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def clear_reset_recovery(self, session_id: str) -> None:
+        raise NotImplementedError
+
 
 class MemoryConversationStore(ConversationStore):
     def __init__(self) -> None:
         self._data: dict[str, tuple[float, list[dict[str, str]]]] = {}
+        self._reset_recovery: dict[str, dict[str, Any]] = {}
 
     def _prune(self) -> None:
         now = time.time()
@@ -55,6 +68,18 @@ class MemoryConversationStore(ConversationStore):
 
     async def clear(self, session_id: str) -> None:
         self._data.pop(session_id, None)
+
+    async def save_reset_recovery(self, session_id: str, payload: dict[str, Any]) -> None:
+        self._reset_recovery[session_id] = json.loads(json.dumps(payload, ensure_ascii=False))
+
+    async def get_reset_recovery(self, session_id: str) -> dict[str, Any] | None:
+        payload = self._reset_recovery.get(session_id)
+        if not payload or payload.get("state") != "pending":
+            return None
+        return json.loads(json.dumps(payload, ensure_ascii=False))
+
+    async def clear_reset_recovery(self, session_id: str) -> None:
+        self._reset_recovery.pop(session_id, None)
 
 
 class SQLiteConversationStore(ConversationStore):
@@ -84,6 +109,15 @@ class SQLiteConversationStore(ConversationStore):
                     history_json TEXT NOT NULL,
                     updated_at INTEGER NOT NULL,
                     expires_at INTEGER NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS reset_recovery (
+                    session_id TEXT PRIMARY KEY,
+                    payload_json TEXT NOT NULL,
+                    updated_at INTEGER NOT NULL
                 )
                 """
             )
@@ -132,6 +166,42 @@ class SQLiteConversationStore(ConversationStore):
             conn.execute("DELETE FROM conversations WHERE session_id = ?", (session_id,))
             conn.commit()
 
+    async def save_reset_recovery(self, session_id: str, payload: dict[str, Any]) -> None:
+        now = int(time.time())
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO reset_recovery(session_id, payload_json, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(session_id) DO UPDATE SET
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (session_id, json.dumps(payload, ensure_ascii=False), now),
+            )
+            conn.commit()
+
+    async def get_reset_recovery(self, session_id: str) -> dict[str, Any] | None:
+        with self._lock, self._connect() as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM reset_recovery WHERE session_id = ?",
+                (session_id,),
+            ).fetchone()
+        if not row:
+            return None
+        try:
+            payload = json.loads(row[0])
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ConversationStoreError("Conversation reset recovery is unavailable.") from exc
+        if not isinstance(payload, dict) or payload.get("state") != "pending":
+            return None
+        return payload
+
+    async def clear_reset_recovery(self, session_id: str) -> None:
+        with self._lock, self._connect() as conn:
+            conn.execute("DELETE FROM reset_recovery WHERE session_id = ?", (session_id,))
+            conn.commit()
+
 
 class UpstashConversationStore(ConversationStore):
     """Tiny Redis-over-HTTP adapter requiring no extra dependency.
@@ -147,6 +217,9 @@ class UpstashConversationStore(ConversationStore):
 
     def _key(self, session_id: str) -> str:
         return f"resultscope:session:{session_id}"
+
+    def _reset_key(self, session_id: str) -> str:
+        return f"resultscope:reset-recovery:{session_id}"
 
     async def _command(self, command: list[Any]) -> Any:
         async with httpx.AsyncClient(timeout=8.0) as client:
@@ -189,6 +262,40 @@ class UpstashConversationStore(ConversationStore):
         except Exception:
             logger.warning("Upstash conversation reset failed")
             raise ConversationStoreError("Conversation history could not be reset.") from None
+
+    async def save_reset_recovery(self, session_id: str, payload: dict[str, Any]) -> None:
+        try:
+            await self._command(
+                [
+                    "SETEX",
+                    self._reset_key(session_id),
+                    max(1, settings.SESSION_TTL_SECONDS),
+                    json.dumps(payload, ensure_ascii=False),
+                ]
+            )
+        except Exception:
+            logger.warning("Upstash reset recovery write failed")
+            raise ConversationStoreError("Conversation reset recovery is unavailable.") from None
+
+    async def get_reset_recovery(self, session_id: str) -> dict[str, Any] | None:
+        try:
+            raw = await self._command(["GET", self._reset_key(session_id)])
+            if not raw:
+                return None
+            payload = json.loads(raw)
+            if not isinstance(payload, dict) or payload.get("state") != "pending":
+                return None
+            return payload
+        except Exception:
+            logger.warning("Upstash reset recovery read failed")
+            raise ConversationStoreError("Conversation reset recovery is unavailable.") from None
+
+    async def clear_reset_recovery(self, session_id: str) -> None:
+        try:
+            await self._command(["DEL", self._reset_key(session_id)])
+        except Exception:
+            logger.warning("Upstash reset recovery clear failed")
+            raise ConversationStoreError("Conversation reset recovery could not be cleared.") from None
 
 
 def build_store() -> ConversationStore:

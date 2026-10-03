@@ -11,11 +11,12 @@ from main import app
 from routers import chat as chat_router
 from routers import images as images_router
 from services import answer_service
+from services.answer_service import AnswerResult, Citation
 from services.deterministic_engine import analyze_message
 from services.extraction_store import ExtractionStoreError, MemoryExtractionStore, UpstashExtractionStore
 from services.intent_router import route_intent
 from services.knowledge import load_knowledge_base
-from services.output_validation import OutputValidationError, validate_provider_text
+from services.output_validation import OutputValidationError, validate_answer_result, validate_provider_text
 from services.request_limits import request_rate_limiter
 from services.store import ConversationStoreError, MemoryConversationStore
 from services.vision_client import VisionExtractionPayload
@@ -137,6 +138,111 @@ def test_output_controls_reject_forged_citations_unsupported_numbers_and_unsafe_
         analyze_message("HbA1c 9.2%"),
         "lab",
     )
+
+
+def test_lab_output_cannot_claim_business_facts_or_external_attribution():
+    base = load_knowledge_base(mode="synthetic", environment="test")
+    query = "Marker-A 12 demo-unit (10-15)"
+    items = tuple(answer_service.retrieve(query, base).items)
+    analysis = analyze_message(query)
+
+    with pytest.raises(OutputValidationError):
+        validate_provider_text("The price is not confirmed.", query, items, analysis, "lab")
+    with pytest.raises(OutputValidationError):
+        validate_provider_text("We accept Visa and offer home collection.", query, items, analysis, "lab")
+    with pytest.raises(OutputValidationError):
+        validate_provider_text("Source: PubMed.", query, items, analysis, "lab")
+    with pytest.raises(OutputValidationError):
+        validate_provider_text("From PubMed.", query, items, analysis, "lab")
+
+
+def test_chat_sync_and_sse_expose_safe_request_audit_metadata(monkeypatch, caplog):
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+
+    async def safe_answer(*args, **kwargs):
+        return "A grounded laboratory explanation."
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", safe_answer)
+    client = TestClient(app)
+    with caplog.at_level("INFO", logger="routers.chat"):
+        sync = client.post(
+            "/api/v1/chat",
+            json={"message": "Marker-A 12 demo-unit (10-15)"},
+            headers={"X-Request-ID": "audit-test-1"},
+        )
+        stream = client.post(
+            "/api/v1/chat/stream",
+            json={"message": "Marker-A 12 demo-unit (10-15)"},
+            headers={"X-Request-ID": "audit-test-2"},
+        )
+
+    assert sync.status_code == 200
+    assert sync.json()["request_id"] == "audit-test-1"
+    assert sync.headers["x-request-id"] == "audit-test-1"
+    events = _events(stream)
+    metadata = next(event["response_meta"] for event in events if "response_meta" in event)
+    assert metadata["request_id"] == "audit-test-2"
+    assert stream.headers["x-request-id"] == "audit-test-2"
+    audit_records = [record for record in caplog.records if record.__dict__.get("event") == "chat_request"]
+    assert {record.request_id for record in audit_records} >= {"audit-test-1", "audit-test-2"}
+    assert all("Marker-A" not in record.getMessage() for record in audit_records)
+
+
+def test_reset_exposes_request_audit_metadata(monkeypatch):
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    client = TestClient(app)
+    response = client.post("/api/v1/chat/reset", headers={"X-Request-ID": "reset-test-1"})
+
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "request_id": "reset-test-1"}
+    assert response.headers["x-request-id"] == "reset-test-1"
+
+
+def test_citations_must_match_a_current_retrieved_record_tuple():
+    base = load_knowledge_base(mode="synthetic", environment="test")
+    query = "Tell me about Marker-A"
+    items = tuple(answer_service.retrieve(query, base).items)
+    item = items[0].record
+    source_id = item.source_ids[0]
+    result = AnswerResult(
+        status="answered",
+        text="A grounded laboratory explanation.",
+        intent="lab",
+        citations=(
+            Citation(
+                source_id=source_id,
+                version="promptlab-synthetic-v1",
+                checksum="not-used-by-this-boundary-test",
+                origin="synthetic",
+                source_kind="education",
+                record_id="not-the-retrieved-record",
+                chunk_id="not-the-retrieved-chunk",
+            ),
+        ),
+        validation_items=items,
+    )
+
+    with pytest.raises(OutputValidationError):
+        validate_answer_result(result, query, items, analyze_message(query))
+
+
+@pytest.mark.parametrize(
+    "text",
+    (
+        "You could have diabetes.",
+        "This result raises concern for diabetes.",
+        "The findings are suggestive of diabetes.",
+        "Possible kidney disease should be considered.",
+    ),
+)
+def test_hedged_diagnosis_output_is_rejected(text):
+    base = load_knowledge_base(mode="synthetic", environment="test")
+    query = "Marker-A 12 demo-unit (10-15)"
+    items = tuple(answer_service.retrieve(query, base).items)
+
+    with pytest.raises(OutputValidationError):
+        validate_provider_text(text, query, items, analyze_message(query), "lab")
 
 
 def test_business_numbers_are_derived_from_canonical_records_only():
@@ -629,7 +735,7 @@ def test_reset_rollback_failure_keeps_session_quarantined_until_recovery(monkeyp
 
     assert recovered.status_code == 200
     assert asyncio.run(conversation_store.get(session_id)) == history
-    assert session_id not in chat_router._pending_reset_recovery
+    assert asyncio.run(conversation_store.get_reset_recovery(session_id)) is None
 
 
 def test_sync_and_sse_share_fail_closed_output_validation(monkeypatch):

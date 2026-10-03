@@ -14,6 +14,23 @@ SOURCE_ATTRIBUTION_PATTERN = re.compile(
     r"อ้างอิง|ข้อมูลจาก|จาก)\s*(?:is|are|คือ|ได้แก่|:)?\s*((?:SRC|DEMO)-[A-Z0-9_-]+)\b",
     re.IGNORECASE,
 )
+SOURCE_CUE_PATTERN = re.compile(
+    r"\b(?:source|sources|citation|citations|reference|references)\b|"
+    r"แหล่ง(?:ที่มา|ข้อมูล)?|อ้างอิง|ข้อมูลจาก",
+    re.IGNORECASE,
+)
+UNBRACKETED_SOURCE_CUE_PATTERN = re.compile(
+    r"\b(?:according\s+to|as\s+reported\s+by|from)\s+"
+    r"[A-Z][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)*(?:\s+[A-Z][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)*)*\b",
+    re.IGNORECASE,
+)
+SOURCE_NON_ATTRIBUTION_PATTERN = re.compile(
+    r"\b(?:source|sources|citation|citations|reference|references)\b\s+"
+    r"(?:does not|do not|is not|are not|was not|were not|is unavailable|are unavailable|"
+    r"not available|not provided|not specified)\b|"
+    r"(?:ไม่มี|ไม่พบ|ยังไม่มี)\s*(?:แหล่ง|ข้อมูลอ้างอิง|ข้อมูลจาก)",
+    re.IGNORECASE,
+)
 UNSAFE_OUTPUT_PATTERN = re.compile(
     r"\b(?:diagnos\w*|prescri\w*|change your dose|stop your medication)\b|"
     r"วินิจฉัย|สั่งยา|ปรับยา|หยุดยา",
@@ -60,6 +77,29 @@ UNSUPPORTED_DIAGNOSIS_PATTERN = re.compile(
     r"(?:ผล(?:ตรวจ)?|ผลนี้|ค่านี้)[^.!?\n]{0,40}(?<!ไม่)(?<!ไม่ได้)"
     r"(?:ยืนยัน|บ่งชี้|แสดง|หมายความว่า|แปลว่า)(?:ว่า)?[^.!?\n]{0,20}"
     r"(?:เป็น)?(?:โรค)?(?:มะเร็ง|เบาหวาน|โลหิตจาง|โรคไต|โรคตับ|โรคหัวใจ|เอชไอวี|hiv)",
+    re.IGNORECASE,
+)
+HEDGED_DIAGNOSIS_PATTERN = re.compile(
+    r"\b(?:"
+    r"you\s+(?:could|may|might)\s+have\s+|"
+    r"(?:this|the|these)\s+(?:result|results|finding|findings)?\s*"
+    r"(?:raises?\s+(?:a\s+)?concern\s+for|is\s+suggestive\s+of|"
+    r"are\s+suggestive\s+of|suggests?|may\s+indicate|might\s+indicate|"
+    r"could\s+indicate|is\s+indicative\s+of|are\s+indicative\s+of)\s+|"
+    r"(?:possible|suspected)\s+)"
+    r"(?:cancer|diabetes|anemia|anaemia|diabetic|leukemia|tumou?r|hiv|"
+    r"kidney\s+(?:failure|disease)|renal\s+(?:failure|disease)|"
+    r"liver\s+(?:failure|disease)|heart\s+(?:failure|disease|attack)|"
+    r"sepsis|an\s+infection|a\s+disease|a\s+disorder|a\s+syndrome)\b",
+    re.IGNORECASE,
+)
+LAB_BUSINESS_CLAIM_PATTERN = re.compile(
+    r"\b(?:price|cost|discount|promotion|refund|opening\s+hours?|business\s+hours?|"
+    r"booking|appointment|walk[- ]?in|turnaround(?:\s+time)?|result\s+time|"
+    r"home\s+collection|credit\s+cards?|visa|mastercard|payment|free|complimentary|"
+    r"doctor|nurse|pharmacist|staff)\b|"
+    r"ราคา|ค่าบริการ|ส่วนลด|โปรโมชั่น|โปรโมชัน|คืนเงิน|เวลาเปิด|เวลาบริการ|"
+    r"จอง|นัดหมาย|คิวว่าง|รับบัตรเครดิต|เก็บตัวอย่างถึงบ้าน|ฟรี|แพทย์|หมอ|พยาบาล|บุคลากร",
     re.IGNORECASE,
 )
 LAB_MARKER_DIAGNOSIS_PATTERN = re.compile(
@@ -474,6 +514,17 @@ def _validate_lab_claims(candidate: str, analysis: Any) -> None:
             raise OutputValidationError("provider_output_contradicts_lab_status")
 
 
+def _validate_source_attributions(candidate: str, allowed_sources: set[str]) -> None:
+    allowed = {source.casefold() for source in allowed_sources}
+    for sentence in re.split(r"[.!?\n]+", candidate):
+        if not (SOURCE_CUE_PATTERN.search(sentence) or UNBRACKETED_SOURCE_CUE_PATTERN.search(sentence)):
+            continue
+        if SOURCE_NON_ATTRIBUTION_PATTERN.search(sentence):
+            continue
+        if not any(source in sentence.casefold() for source in allowed):
+            raise OutputValidationError("provider_output_forged_citation")
+
+
 def _price_amount(data: dict[str, Any]) -> float | int | None:
     price = data.get("price")
     amount = price.get("amount") if isinstance(price, dict) else price
@@ -586,7 +637,12 @@ def validate_provider_text(
         or _has_positive_thai_medication_advice(candidate)
     ):
         raise OutputValidationError("provider_output_medication_change")
-    if UNSUPPORTED_DIAGNOSIS_PATTERN.search(candidate) or LAB_MARKER_DIAGNOSIS_PATTERN.search(candidate):
+    diagnosis_candidate = SAFE_DIAGNOSIS_DISCLAIMER_PATTERN.sub(" ", candidate)
+    if (
+        UNSUPPORTED_DIAGNOSIS_PATTERN.search(diagnosis_candidate)
+        or HEDGED_DIAGNOSIS_PATTERN.search(diagnosis_candidate)
+        or LAB_MARKER_DIAGNOSIS_PATTERN.search(diagnosis_candidate)
+    ):
         raise OutputValidationError("provider_output_diagnosis")
     if UNAUTHORIZED_TRANSACTION_PATTERN.search(candidate):
         raise OutputValidationError("provider_output_unauthorized_transaction")
@@ -621,6 +677,12 @@ def validate_provider_text(
                 and _business_concepts(sentence)
             ):
                 raise OutputValidationError("provider_output_unsupported_business_claim")
+    else:
+        # Lab answers must not smuggle in a business fact merely because the
+        # query was routed to the health-information path.
+        if intent in {"lab", "mixed"} and LAB_BUSINESS_CLAIM_PATTERN.search(candidate):
+            raise OutputValidationError("provider_output_unrequested_business_claim")
+        _validate_business_claims(candidate, query, items)
     if intent in {"lab", "mixed"}:
         _validate_lab_claims(candidate, analysis)
     allowed_sources = {source.casefold() for item in items for source in item.record.source_ids}
@@ -633,6 +695,7 @@ def validate_provider_text(
     }
     if not mentioned.issubset(allowed_sources):
         raise OutputValidationError("provider_output_forged_citation")
+    _validate_source_attributions(candidate, allowed_sources)
     return candidate
 
 
@@ -649,7 +712,19 @@ def validate_answer_result(
     if result.status == "answered":
         body = result.text.split("\n\nSources:", 1)[0]
         validate_provider_text(body, query, items, analysis, result.intent, confirmed_extraction)
-        allowed_sources = {source for item in items for source in item.record.source_ids}
-        if any(citation.source_id not in allowed_sources for citation in result.citations):
+        allowed_citations = {
+            (source.casefold(), item.record.record_id, item.record.chunk_id)
+            for item in items
+            for source in item.record.source_ids
+        }
+        if any(
+            (
+                str(getattr(citation, "source_id", "")).casefold(),
+                str(getattr(citation, "record_id", "")),
+                str(getattr(citation, "chunk_id", "")),
+            )
+            not in allowed_citations
+            for citation in result.citations
+        ):
             raise OutputValidationError("citation_not_retrieved")
     return result

@@ -4,7 +4,9 @@ import json
 import logging
 import uuid
 import asyncio
+import re
 import time
+from dataclasses import asdict
 from typing import Any
 
 from fastapi import APIRouter, Request, Response
@@ -16,7 +18,7 @@ from services import llm_client
 from services import answer_service
 from services.answer_service import AnswerResult, answer_query
 from services.deterministic_engine import analyze_message, get_rulebook
-from services.extraction_store import ExtractionStoreError, extraction_store
+from services.extraction_store import ExtractionRecord, ExtractionStoreError, extraction_store
 from services.intent_router import IntentDecision, route_intent
 from services.lab_scope import SCOPE_SUGGESTIONS, local_scope_reply
 from services.llm_client import LLMConnectionError
@@ -30,9 +32,6 @@ router = APIRouter(prefix="/api/v1")
 
 SESSION_COOKIE = "resultscope_session"
 SESSION_MAX_AGE = settings.SESSION_TTL_SECONDS
-RESET_RECOVERY_TTL_SECONDS = min(SESSION_MAX_AGE, 15 * 60)
-MAX_PENDING_RESET_RECOVERIES = 64
-_pending_reset_recovery: dict[str, tuple[float, list[dict[str, str]], list[Any]]] = {}
 
 
 class ChatRequest(BaseModel):
@@ -53,6 +52,7 @@ class ChatResponse(BaseModel):
     demo_notice: str | None = None
     retrieval_reason: str = "not_run"
     retrieval_latency_ms: float = 0.0
+    request_id: str
 
 
 class ScopeRequest(BaseModel):
@@ -72,35 +72,70 @@ def _session_id(request: Request) -> tuple[str, bool]:
     return (existing, False) if existing else (new_session_id(), True)
 
 
+def _request_id(request: Request) -> str:
+    supplied = request.headers.get("x-request-id", "").strip()
+    if supplied and len(supplied) <= 64 and re.fullmatch(r"[A-Za-z0-9._:-]+", supplied):
+        return supplied
+    return uuid.uuid4().hex
+
+
+def _audit_event(
+    request_id: str,
+    outcome: str,
+    started_at: float,
+    *,
+    event: str = "chat_request",
+    result: AnswerResult | None = None,
+) -> None:
+    corpus_version = result.corpus_version if result else None
+    retrieval_latency_ms = result.retrieval_latency_ms if result else None
+    logger.info(
+        "Request audit event",
+        extra={
+            "event": event,
+            "request_id": request_id,
+            "outcome": outcome,
+            "intent": result.intent if result else "unknown",
+            "corpus_version": corpus_version or "unknown",
+            "retrieval_latency_ms": retrieval_latency_ms,
+            "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),
+        },
+    )
+
+
+def _audit_result(request_id: str, result: AnswerResult, started_at: float) -> None:
+    _audit_event(request_id, result.error_code or result.status, started_at, result=result)
+
+
+def _result_metadata(result: AnswerResult, request_id: str) -> dict[str, Any]:
+    metadata = result.metadata()
+    metadata["request_id"] = request_id
+    return metadata
+
+
 async def _recover_pending_reset(session_id: str) -> None:
-    pending = _pending_reset_recovery.get(session_id)
-    if pending is None:
+    payload = await conversation_store.get_reset_recovery(session_id)
+    if payload is None:
         return
-    expires_at, history, extractions = pending
-    if expires_at <= time.time():
-        _pending_reset_recovery.pop(session_id, None)
-        raise ConversationStoreError("Session reset recovery expired; start a new session.")
+    history = payload.get("history")
+    serialized_extractions = payload.get("extractions")
+    if not isinstance(history, list) or not isinstance(serialized_extractions, list):
+        raise ConversationStoreError("Conversation reset recovery is invalid.")
+    try:
+        extractions = [ExtractionRecord(**record) for record in serialized_extractions]
+    except (TypeError, ValueError) as exc:
+        raise ConversationStoreError("Conversation reset recovery is invalid.") from exc
     await extraction_store.restore(session_id, extractions)
     await conversation_store.set(session_id, history)
-    _pending_reset_recovery.pop(session_id, None)
+    await conversation_store.clear_reset_recovery(session_id)
 
 
-async def _expire_pending_reset(session_id: str, expires_at: float) -> None:
-    await asyncio.sleep(max(0.0, expires_at - time.time()))
-    pending = _pending_reset_recovery.get(session_id)
-    if pending is not None and pending[0] <= time.time():
-        _pending_reset_recovery.pop(session_id, None)
-
-
-def _prune_pending_reset_recovery() -> None:
-    now = time.time()
-    for session_id, pending in list(_pending_reset_recovery.items()):
-        if pending[0] <= now:
-            _pending_reset_recovery.pop(session_id, None)
-    if len(_pending_reset_recovery) > MAX_PENDING_RESET_RECOVERIES:
-        oldest = sorted(_pending_reset_recovery.items(), key=lambda item: item[1][0])
-        for session_id, _ in oldest[: len(_pending_reset_recovery) - MAX_PENDING_RESET_RECOVERIES]:
-            _pending_reset_recovery.pop(session_id, None)
+def _reset_recovery_payload(history: list[dict[str, str]], extractions: list[ExtractionRecord]) -> dict[str, Any]:
+    return {
+        "state": "pending",
+        "history": history,
+        "extractions": [asdict(record) for record in extractions],
+    }
 
 
 def _set_session_cookie(response: Response, session_id: str) -> None:
@@ -141,6 +176,7 @@ def _validated_result(
     message: str,
     analysis: Any,
     confirmed_extraction: dict[str, Any] | None,
+    request_id: str,
 ) -> AnswerResult:
     try:
         validate_answer_result(
@@ -151,7 +187,10 @@ def _validated_result(
             confirmed_extraction,
         )
     except OutputValidationError:
-        logger.warning("Chat output rejected by deterministic validation")
+        logger.warning(
+            "Chat output rejected by deterministic validation",
+            extra={"event": "chat_request", "request_id": request_id, "outcome": "output_rejected"},
+        )
         return answer_service.fail_closed_result(result)
     return result
 
@@ -199,7 +238,7 @@ async def _load_confirmed_extraction(session_id: str, extraction_id: str | None)
     }
 
 
-def _response_model(intent: IntentDecision, result: AnswerResult) -> ChatResponse:
+def _response_model(intent: IntentDecision, result: AnswerResult, request_id: str) -> ChatResponse:
     meta = result.metadata()
     return ChatResponse(
         reply=result.text,
@@ -214,13 +253,18 @@ def _response_model(intent: IntentDecision, result: AnswerResult) -> ChatRespons
         demo_notice=meta["demo_notice"],
         retrieval_reason=result.retrieval_reason,
         retrieval_latency_ms=result.retrieval_latency_ms,
+        request_id=request_id,
     )
 
 
-def _store_error_response(response: Response | None = None) -> JSONResponse:
+def _store_error_response(response: Response | None = None, request_id: str | None = None) -> JSONResponse:
+    content = {"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."}
+    if request_id:
+        content["request_id"] = request_id
     error = JSONResponse(
         status_code=503,
-        content={"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."},
+        content=content,
+        headers={"X-Request-ID": request_id} if request_id else None,
     )
     if response and response.headers.get("set-cookie"):
         error.headers.append("set-cookie", response.headers["set-cookie"])
@@ -245,22 +289,32 @@ async def _persist_turn(
     await conversation_store.set(session_id, _bounded_history(updated))
 
 
-def _extraction_error_response(error: ExtractionRequestError) -> JSONResponse:
+def _extraction_error_response(error: ExtractionRequestError, request_id: str | None = None) -> JSONResponse:
+    content = {"error": True, "code": error.code, "message": error.message}
+    if request_id:
+        content["request_id"] = request_id
     return JSONResponse(
         status_code=error.status_code,
-        content={"error": True, "code": error.code, "message": error.message},
+        content=content,
+        headers={"X-Request-ID": request_id} if request_id else None,
     )
 
 
-def _rate_limit_response() -> JSONResponse:
+def _rate_limit_response(request_id: str | None = None) -> JSONResponse:
+    content = {
+        "error": True,
+        "code": "rate_limited",
+        "message": "Too many requests. Please try again later.",
+    }
+    if request_id:
+        content["request_id"] = request_id
+    headers = {"Retry-After": str(max(1, settings.CHAT_RATE_LIMIT_WINDOW_SECONDS))}
+    if request_id:
+        headers["X-Request-ID"] = request_id
     return JSONResponse(
         status_code=429,
-        content={
-            "error": True,
-            "code": "rate_limited",
-            "message": "Too many requests. Please try again later.",
-        },
-        headers={"Retry-After": str(max(1, settings.CHAT_RATE_LIMIT_WINDOW_SECONDS))},
+        content=content,
+        headers=headers,
     )
 
 
@@ -286,12 +340,13 @@ async def get_rules():
 @router.post("/scope/check")
 async def post_scope_check(scope_request: ScopeRequest, request: Request, response: Response):
     session_id, is_new = _session_id(request)
+    request_id = _request_id(request)
     try:
         async with session_locks.lock(session_id):
             await _recover_pending_reset(session_id)
             history = _bounded_history(await conversation_store.get(session_id))
     except ConversationStoreError:
-        return _store_error_response()
+        return _store_error_response(request_id=request_id)
     intent = route_intent(scope_request.message, history)
     if is_new:
         _set_session_cookie(response, session_id)
@@ -316,84 +371,112 @@ async def get_models():
 @router.post("/chat/reset")
 async def post_chat_reset(request: Request, response: Response):
     session_id, is_new = _session_id(request)
+    request_id = _request_id(request)
+    started_at = time.perf_counter()
     try:
         if not is_new:
             async with session_locks.lock(session_id):
                 await _recover_pending_reset(session_id)
                 history = _bounded_history(await conversation_store.get(session_id))
                 extractions = await extraction_store.snapshot(session_id)
-                _prune_pending_reset_recovery()
-                expires_at = time.time() + RESET_RECOVERY_TTL_SECONDS
-                _pending_reset_recovery[session_id] = (
-                    expires_at,
-                    history,
-                    extractions,
+                await conversation_store.save_reset_recovery(
+                    session_id,
+                    _reset_recovery_payload(history, extractions),
                 )
-                asyncio.create_task(_expire_pending_reset(session_id, expires_at))
+                recovery_payload = _reset_recovery_payload(history, extractions)
                 try:
                     await extraction_store.clear(session_id)
                     await conversation_store.clear(session_id)
+                    await conversation_store.save_reset_recovery(
+                        session_id,
+                        {**recovery_payload, "state": "completed"},
+                    )
                 except (ConversationStoreError, ExtractionStoreError):
                     try:
                         await extraction_store.restore(session_id, extractions)
                         await conversation_store.set(session_id, history)
                     except (ConversationStoreError, ExtractionStoreError):
-                        logger.warning("Conversation reset rollback failed")
+                        _audit_event(request_id, "rollback_pending", started_at, event="conversation_reset")
                         raise
-                    _pending_reset_recovery.pop(session_id, None)
+                    try:
+                        await conversation_store.clear_reset_recovery(session_id)
+                    except ConversationStoreError:
+                        _audit_event(request_id, "recovery_journal_retained", started_at, event="conversation_reset")
                     raise
-                _pending_reset_recovery.pop(session_id, None)
+                try:
+                    await conversation_store.clear_reset_recovery(session_id)
+                except ConversationStoreError:
+                    _audit_event(request_id, "completed_journal_retained", started_at, event="conversation_reset")
+                _audit_event(request_id, "reset", started_at, event="conversation_reset")
     except (ConversationStoreError, ExtractionStoreError):
-        return _store_error_response()
+        _audit_event(request_id, "session_unavailable", started_at, event="conversation_reset")
+        return _store_error_response(request_id=request_id)
+    if is_new:
+        _audit_event(request_id, "reset", started_at, event="conversation_reset")
+    response.headers["X-Request-ID"] = request_id
     rotated_id = new_session_id()
     _set_session_cookie(response, rotated_id)
-    return {"ok": True}
+    return {"ok": True, "request_id": request_id}
 
 
 @router.post("/chat", response_model=ChatResponse)
 async def post_chat(chat_request: ChatRequest, request: Request, response: Response):
     session_id, is_new = _session_id(request)
+    request_id = _request_id(request)
+    started_at = time.perf_counter()
     if not request_rate_limiter.allow(request):
-        return _rate_limit_response()
+        _audit_event(request_id, "rate_limited", started_at)
+        return _rate_limit_response(request_id)
     try:
         async with session_locks.lock(session_id):
             await _recover_pending_reset(session_id)
             history = _bounded_history(await conversation_store.get(session_id))
             confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
             intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
-            result = _validated_result(result, chat_request.message, analysis, confirmed_extraction)
+            result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id)
             await _persist_turn(session_id, history, chat_request.message, result)
     except ExtractionRequestError as exc:
-        return _extraction_error_response(exc)
+        _audit_event(request_id, exc.code, started_at)
+        return _extraction_error_response(exc, request_id)
     except (ConversationStoreError, ExtractionStoreError):
-        return _store_error_response(response)
+        _audit_event(request_id, "session_unavailable", started_at)
+        return _store_error_response(response, request_id)
     except asyncio.TimeoutError:
+        _audit_event(request_id, "provider_timeout", started_at)
         return JSONResponse(
             status_code=504,
-            content={"error": True, "code": "provider_timeout", "message": "The AI provider took too long to respond."},
+            content={"error": True, "code": "provider_timeout", "message": "The AI provider took too long to respond.", "request_id": request_id},
+            headers={"X-Request-ID": request_id},
         )
+    _audit_result(request_id, result, started_at)
     if is_new:
         _set_session_cookie(response, session_id)
     if result.status == "error":
         error = JSONResponse(
             status_code=_error_status(result),
-            content={"error": True, "code": result.error_code, "message": result.text, "metadata": result.metadata()},
+            content={"error": True, "code": result.error_code, "message": result.text, "metadata": _result_metadata(result, request_id)},
+            headers={"X-Request-ID": request_id},
         )
         if is_new:
             _set_session_cookie(error, session_id)
         return error
-    return _response_model(intent, result)
+    model = _response_model(intent, result, request_id)
+    response.headers["X-Request-ID"] = request_id
+    return model
 
 
 @router.post("/chat/stream")
 async def post_chat_stream(chat_request: ChatRequest, request: Request):
     session_id, is_new = _session_id(request)
+    request_id = _request_id(request)
+    started_at = time.perf_counter()
 
     async def event_generator():
         try:
             if not request_rate_limiter.allow(request):
+                _audit_event(request_id, "rate_limited", started_at)
                 yield "data: " + json.dumps(
-                    {"error": True, "code": "rate_limited", "message": "Too many requests. Please try again later."},
+                    {"error": True, "code": "rate_limited", "message": "Too many requests. Please try again later.", "request_id": request_id},
                     ensure_ascii=False,
                 ) + "\n\n"
                 yield 'data: {"done": true}\n\n'
@@ -403,17 +486,18 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
                 history = _bounded_history(await conversation_store.get(session_id))
                 confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
                 intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
-                result = _validated_result(result, chat_request.message, analysis, confirmed_extraction)
+                result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id)
                 await _persist_turn(session_id, history, chat_request.message, result)
+                _audit_result(request_id, result, started_at)
                 if analysis.scope.allowed:
                     yield "data: " + json.dumps(
                         {"analysis_meta": analysis.to_public_dict()}, ensure_ascii=False
                     ) + "\n\n"
-                metadata = result.metadata()
+                metadata = _result_metadata(result, request_id)
                 yield "data: " + json.dumps({"response_meta": metadata}, ensure_ascii=False) + "\n\n"
                 if result.status == "error":
                     yield "data: " + json.dumps(
-                        {"error": True, "code": result.error_code, "message": result.text}, ensure_ascii=False
+                        {"error": True, "code": result.error_code, "message": result.text, "request_id": request_id}, ensure_ascii=False
                     ) + "\n\n"
                 elif intent.kind in {"unrelated", "local", "unsafe"}:
                     yield "data: " + json.dumps(
@@ -429,29 +513,32 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
                     yield "data: " + json.dumps({"delta": result.text}, ensure_ascii=False) + "\n\n"
                 yield 'data: {"done": true}\n\n'
         except ExtractionRequestError as exc:
+            _audit_event(request_id, exc.code, started_at)
             yield "data: " + json.dumps(
-                {"error": True, "code": exc.code, "message": exc.message}, ensure_ascii=False
+                {"error": True, "code": exc.code, "message": exc.message, "request_id": request_id}, ensure_ascii=False
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'
         except (ConversationStoreError, ExtractionStoreError):
+            _audit_event(request_id, "session_unavailable", started_at)
             yield "data: " + json.dumps(
-                {"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable."},
+                {"error": True, "code": "session_unavailable", "message": "Conversation history is temporarily unavailable.", "request_id": request_id},
                 ensure_ascii=False,
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'
         except asyncio.TimeoutError:
+            _audit_event(request_id, "provider_timeout", started_at)
             yield "data: " + json.dumps(
-                {"error": True, "code": "provider_timeout", "message": "The AI provider took too long to respond."},
+                {"error": True, "code": "provider_timeout", "message": "The AI provider took too long to respond.", "request_id": request_id},
                 ensure_ascii=False,
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'
         except asyncio.CancelledError:
-            logger.info("Chat stream cancelled")
+            _audit_event(request_id, "cancelled", started_at)
             return
         except Exception:
-            logger.warning("Chat pipeline failed")
+            _audit_event(request_id, "internal_error", started_at)
             yield "data: " + json.dumps(
-                {"error": True, "code": "internal_error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิด"},
+                {"error": True, "code": "internal_error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิด", "request_id": request_id},
                 ensure_ascii=False,
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'
@@ -461,6 +548,7 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+    response.headers["X-Request-ID"] = request_id
     if is_new:
         _set_session_cookie(response, session_id)
     return response
