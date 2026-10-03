@@ -1,0 +1,6 @@
+# Review packet — Admin Settings and provider adapters
+
+- Review exact candidate SHA supplied by MAIN after implementation. Do not modify files, stage, commit, or rely solely on worker claims.
+- Read AGENTS.md, PROMPT.md, current reports, and the implementation diff. Review against owner update: server-side admin auth for settings page and all config/provider-test APIs; explicit local-demo guard for admin/1234; password hash only; HttpOnly/SameSite/Secure session expiration/logout; CSRF and login rate limit; separate Typhoon LLM/OCR/SystemOne configs; write-only keys; allowlisted endpoints; save/test separation; SystemOne shadow-only; no paid fallback; no arbitrary URL; local-only persistence with online blocker; main UX unchanged; tests and responsive settings evidence.
+- Check for credential disclosure in source, tests, logs, reports, Brain, Git status, and HTTP responses. Check that provider adapters use their documented contracts and that failures cannot bypass Python safety/output validation.
+- Run focused and full tests appropriate to the final diff and report findings first with severity and file/line references. Approval is allowed only for the exact SHA after all material findings are resolved. Live provider calls, real keys, deployment, and human usability remain NOT_RUN unless independently evidenced.

@@ -17,9 +17,9 @@ def test_rulebook_endpoint_and_home_surface():
 
     home = client.get("/")
     assert home.status_code == 200
-    assert "อ่านผลแล็บของคุณ" in home.text
-    assert "ดูกติกาทั้งหมด" in home.text
-    assert 'lang="th"' in home.text
+    assert "Understand your" in home.text
+    assert "View all rules" in home.text
+    assert 'lang="en"' in home.text
     assert 'id="image-input"' in home.text
     assert 'id="image-review"' in home.text
     assert '/static/js/chat.js' in home.text

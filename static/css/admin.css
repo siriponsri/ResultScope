@@ -1,0 +1,28 @@
+.admin-shell { min-height: 100vh; background: var(--ink-950); color: var(--text-on-dark); padding: clamp(1rem, 4vw, 4rem); }
+.admin-panel { width: min(920px, 100%); margin: 0 auto; padding: clamp(1.25rem, 4vw, 3rem); border: 1px solid var(--line-dark); background: #0d1a34; }
+.admin-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; }
+.admin-panel h1 { margin: .25rem 0 1rem; font-family: var(--font-display); font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: -.06em; line-height: .95; }
+.admin-muted { max-width: 62ch; color: var(--text-on-dark-muted); line-height: 1.6; }
+.admin-panel form { display: grid; gap: .75rem; max-width: 28rem; margin-top: 2rem; }
+.admin-panel label { color: var(--text-on-dark-muted); font-size: .85rem; }
+.admin-panel input, .provider-card select, .provider-card input { width: 100%; min-height: 2.75rem; border: 1px solid var(--line-dark-strong); background: #071127; color: var(--text-on-dark); padding: .65rem .75rem; font: inherit; }
+.admin-panel input:focus, .provider-card select:focus, .provider-card input:focus { outline: 3px solid var(--cyan-300); outline-offset: 2px; }
+.admin-error { min-height: 1.5rem; color: #ffb4ab; }
+.admin-status { min-height: 2rem; padding: .75rem 0; color: var(--cyan-300); }
+.provider-list { display: grid; gap: 1rem; }
+.provider-card { display: grid; gap: .9rem; padding: 1.2rem; border: 1px solid var(--line-dark); background: #101f3d; }
+.provider-card h2 { margin: 0; font-size: 1.15rem; }
+.provider-card small { color: var(--text-on-dark-muted); line-height: 1.5; }
+.provider-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .8rem; }
+.provider-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.provider-actions label { display: flex; align-items: center; gap: .5rem; }
+.provider-actions input[type="checkbox"] { width: auto; min-height: 1rem; }
+.admin-badge { color: var(--cyan-300); font-family: var(--font-mono); font-size: .75rem; }
+@media (max-width: 600px) {
+  .admin-shell { padding: .75rem; }
+  .admin-heading { flex-direction: column; }
+  .admin-heading .secondary-button { width: 100%; }
+  .provider-grid { grid-template-columns: 1fr; }
+  .provider-actions { align-items: stretch; flex-direction: column; }
+  .provider-actions button { width: 100%; }
+}

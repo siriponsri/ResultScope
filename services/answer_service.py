@@ -8,7 +8,7 @@ from typing import Any
 from config import settings
 from services import llm_client
 from services.intent_router import IntentDecision
-from services.knowledge import DEMO_NOTICE_TH, KnowledgeBase, KnowledgeLoadError, SourceProvenance
+from services.knowledge import DEMO_NOTICE, KnowledgeBase, KnowledgeLoadError, SourceProvenance
 from services.retrieval import RetrievalResult, RetrievedRecord, retrieve
 from services.llm_client import LLMConnectionError
 from services.output_validation import OutputValidationError, validate_provider_text
@@ -76,7 +76,7 @@ class AnswerResult:
             "corpus_version": self.corpus_version,
             "demo": self.demo,
             "data_class": "synthetic" if self.demo else self.corpus_mode,
-            "demo_notice": DEMO_NOTICE_TH if self.demo else None,
+            "demo_notice": DEMO_NOTICE if self.demo else None,
             "citations": [citation.as_dict() for citation in self.citations],
             "retrieval_reason": self.retrieval_reason,
             "retrieval_latency_ms": self.retrieval_latency_ms,
@@ -104,7 +104,7 @@ def _citation_rows(items: tuple[RetrievedRecord, ...], base: KnowledgeBase) -> t
                     chunk_id=item.record.chunk_id,
                     title=source.title or item.record.data.get("source_title"),
                     organisation=source.organisation or item.record.data.get("organisation"),
-                    page=item.record.data.get("page"),
+                    page=item.record.data.get("page", item.record.data.get("pdf_page")),
                     section=item.record.data.get("section"),
                     source_url=source.source_url or item.record.data.get("source_url"),
                     license_text=source.license_text or item.record.data.get("license"),
@@ -218,7 +218,7 @@ def _provider_prompt(
         f"{json.dumps(confirmed_extraction, ensure_ascii=False) if confirmed_extraction else 'none'}\n\n"
         "OUTPUT CONTRACT: Keep the answer concise, preserve supplied values and ranges, and cite only source IDs "
         "present in retrieved evidence. For business prices and policies, ignore image values. "
-        f"Synthetic data notice: {DEMO_NOTICE_TH if settings.KNOWLEDGE_MODE == 'synthetic' else 'release corpus'}"
+        f"Synthetic data notice: {DEMO_NOTICE if settings.KNOWLEDGE_MODE == 'synthetic' else 'release corpus'}"
     )
 
 

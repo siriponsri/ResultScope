@@ -26,6 +26,7 @@ from services.output_validation import OutputValidationError, validate_answer_re
 from services.request_limits import request_rate_limiter
 from services.sessions import new_session_id, session_locks, sign_session_id, verify_session_cookie
 from services.store import ConversationStoreError, conversation_store
+from services import systemone_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1")
@@ -206,10 +207,16 @@ def _local_result(intent: IntentDecision, message: str) -> AnswerResult:
 async def _run_pipeline(
     message: str, history: list[dict[str, str]], confirmed_extraction: dict[str, Any] | None = None
 ) -> tuple[IntentDecision, Any, AnswerResult]:
-    intent = route_intent(message, history)
-    analysis = analyze_message(message, history)
+    intent = route_intent(message, history, confirmed_extraction)
+    analysis = analyze_message(message, history, confirmed_extraction)
     if intent.kind in {"local", "unrelated"}:
         return intent, analysis, _local_result(intent, message)
+    if intent.allowed:
+        try:
+            # SystemOne is an optional observer; Python rules remain authoritative.
+            await systemone_client.shadow_decide(message, intent.kind, intent.allowed)
+        except systemone_client.SystemOneError:
+            logger.info("SystemOne shadow observation unavailable")
     answer = await answer_query(message, intent, history, analysis, confirmed_extraction=confirmed_extraction)
     return intent, analysis, answer
 
@@ -325,7 +332,7 @@ async def get_product():
         "lab_only": True,
         "storage": settings.STORAGE_BACKEND,
         "data_class": "synthetic" if settings.KNOWLEDGE_MODE == "synthetic" else "release",
-        "demo_notice": "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" if settings.KNOWLEDGE_MODE == "synthetic" else None,
+        "demo_notice": "Synthetic business data for demonstration only; no real service is provided." if settings.KNOWLEDGE_MODE == "synthetic" else None,
     }
 
 
@@ -536,7 +543,7 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
         except Exception:
             _audit_event(request_id, "internal_error", started_at)
             yield "data: " + json.dumps(
-                {"error": True, "code": "internal_error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิด", "request_id": request_id},
+                {"error": True, "code": "internal_error", "message": "An unexpected error occurred.", "request_id": request_id},
                 ensure_ascii=False,
             ) + "\n\n"
             yield 'data: {"done": true}\n\n'

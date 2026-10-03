@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.playwright-mcp/
 .env
 .vercel/
 data/*.db
@@ -10,3 +11,6 @@ data/*.sqlite*
 .DS_Store
 Thumbs.db
 .env.local
+data/admin_settings.json
+data/admin_settings.key
+data/admin_settings.json.tmp

@@ -25,6 +25,30 @@ def test_engine_blocked_intent_never_builds_lab_values():
     assert [entry.rule_id for entry in analysis.trace] == ["SCOPE-004"]
 
 
+def test_confirmed_extraction_uses_the_same_deterministic_value_path():
+    analysis = analyze_message(
+        "ช่วยอธิบายค่าจากภาพ",
+        confirmed_extraction={
+            "fields": [
+                {
+                    "marker": "Hb",
+                    "numeric_value": "10.8",
+                    "raw_value": "10.8",
+                    "unit": "g/dL",
+                    "reference_low": "12",
+                    "reference_high": "16",
+                    "flag": "low",
+                }
+            ]
+        },
+    )
+    assert analysis.scope.allowed is True
+    assert len(analysis.values) == 1
+    assert analysis.values[0].marker == "Hb"
+    assert analysis.values[0].flag == "low"
+    assert analysis.values[0].range_state == "valid"
+
+
 def test_rulebook_is_versioned_and_inspectable():
     rulebook = get_rulebook()
     assert rulebook["version"] == "2026.08"

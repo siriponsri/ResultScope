@@ -59,6 +59,15 @@ MIXED_ANALYSIS_HINTS = (
     "result", "mean", "explain", "interpret", "high", "low", "normal",
     "ผลตรวจ", "ผลแล็บ", "หมายความ", "อธิบาย", "แปลผล", "สูง", "ต่ำ",
 )
+CONFIRMED_EXTRACTION_ANALYSIS_HINTS = (
+    "explain", "interpret", "what do these values", "what do these results",
+    "อธิบาย", "แปลผล", "อ่านค่า", "ค่าที่อ่าน", "ผลที่อ่าน",
+)
+CONFIRMED_EXTRACTION_BUSINESS_HINTS = (
+    "price", "cost", "how much", "service", "package", "book", "booking",
+    "appointment", "refund", "cancel", "address", "location", "contact",
+    "ราคา", "ค่าบริการ", "แพ็กเกจ", "จอง", "คืนเงิน", "ยกเลิก", "ที่อยู่", "ติดต่อ",
+)
 
 
 @dataclass(frozen=True)
@@ -86,9 +95,22 @@ def _contains_unquoted_hint(message: str, hints: tuple[str, ...]) -> bool:
     return _contains_hint(unquoted, hints)
 
 
-def route_intent(message: str, history: list[dict[str, str]] | None = None) -> IntentDecision:
+def route_intent(
+    message: str,
+    history: list[dict[str, str]] | None = None,
+    confirmed_extraction: dict | None = None,
+) -> IntentDecision:
     prior = history or []
     scope = classify_lab_scope(message, prior)
+    confirmed_prompt = any(hint in " ".join(message.casefold().split()) for hint in CONFIRMED_EXTRACTION_ANALYSIS_HINTS)
+    if not scope.allowed and confirmed_extraction and confirmed_prompt:
+        marker_context = " ".join(
+            str(field.get("marker", ""))
+            for field in confirmed_extraction.get("fields", ())
+            if isinstance(field, dict)
+        )
+        if marker_context:
+            scope = classify_lab_scope(f"{message} {marker_context}", prior)
     has_business = _contains_hint(message, BUSINESS_HINTS)
     has_lab = scope.allowed or _contains_hint(message, LAB_TERM_HINTS)
 
@@ -104,6 +126,12 @@ def route_intent(message: str, history: list[dict[str, str]] | None = None) -> I
         return IntentDecision("unrelated", "outside_lab_scope", False, scope)
     if has_lab and _contains_hint(message, NON_LAB_ACTIVITY_HINTS):
         return IntentDecision("unrelated", "outside_lab_scope", False, scope)
+    if (
+        confirmed_extraction
+        and confirmed_prompt
+        and not _contains_hint(message, CONFIRMED_EXTRACTION_BUSINESS_HINTS)
+    ):
+        return IntentDecision("lab", "confirmed_image_analysis", True, scope)
     if has_business and has_lab:
         # A service/catalog question may mention a test name (e.g. CBC price)
         # without becoming a mixed clinical interpretation request. Keep the

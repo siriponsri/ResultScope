@@ -1,0 +1,100 @@
+- main [ref=f4e2] [box=50,41,920,1480]:
+  - generic [ref=f4e3] [box=93,84,836,195]:
+    - generic [ref=f4e4] [box=93,84,552,195]:
+      - paragraph [ref=f4e5] [box=93,84,552,19]: RESULTSCOPE / ADMIN SETTINGS
+      - heading "Provider settings" [level=1] [ref=f4e6] [box=93,127,552,69]
+      - paragraph [ref=f4e7] [box=93,212,552,51]: Settings are stored only for local demo use. Existing API keys are never displayed.
+    - button "Log out" [ref=f4e8] [cursor=pointer] [box=841,84,87,50]
+  - status [ref=f4e9] [box=93,311,836,32]
+  - generic [ref=f4e10] [box=93,343,836,1089]:
+    - article [ref=f4e11] [box=93,343,836,344]:
+      - generic [ref=f4e12] [box=113,363,796,81]:
+        - text: LLM
+        - heading "OpenTyphoon LLM" [level=2] [ref=f4e13] [box=113,389,796,29]
+        - text: "OpenAI-compatible chat completions. Endpoint: https://api.opentyphoon.ai/v1. Key: configured."
+      - generic [ref=f4e14] [box=113,458,796,145]:
+        - generic [ref=f4e15] [box=113,458,391,66]:
+          - text: Provider
+          - combobox "Provider" [ref=f4e16] [box=113,480,391,44]:
+            - option "OpenTyphoon LLM (typhoon_llm)" [selected] [box=0,0,0,0]
+            - option "OpenRouter (openrouter)" [box=0,0,0,0]
+            - option "OpenAI (openai)" [box=0,0,0,0]
+            - option "Groq (groq)" [box=0,0,0,0]
+            - option "DeepSeek (deepseek)" [box=0,0,0,0]
+            - option "Hugging Face Inference (huggingface)" [box=0,0,0,0]
+            - option "LM Studio (local) (lmstudio)" [box=0,0,0,0]
+            - option "OpenCode-compatible (opencode)" [box=0,0,0,0]
+            - option "Google Gemini (gemini)" [box=0,0,0,0]
+            - option "Anthropic Claude (claude)" [box=0,0,0,0]
+            - option "MaxPlus AI (maxplus)" [box=0,0,0,0]
+        - generic [ref=f4e17] [box=517,458,391,66]:
+          - text: Model
+          - textbox "Model" [ref=f4e18] [box=517,480,391,44]: typhoon-v2.5-30b-a3b-instruct
+        - generic [ref=f4e19] [box=113,537,391,66]:
+          - text: Timeout (seconds)
+          - spinbutton "Timeout (seconds)" [ref=f4e20] [box=113,558,391,44]: "60"
+        - generic [ref=f4e21] [box=517,537,391,66]:
+          - text: Replace key
+          - textbox "Replace key" [ref=f4e22] [box=517,558,391,44]:
+            - /placeholder: Leave blank to keep the current key
+      - generic [ref=f4e23] [box=113,617,796,50]:
+        - generic [ref=f4e24] [box=113,631,76,22]:
+          - checkbox "enabled" [checked] [ref=f4e25] [box=117,634,13,16]
+          - text: enabled
+        - button "Test with mock" [ref=f4e26] [cursor=pointer] [box=201,617,139,50]
+        - button "Delete key" [ref=f4e27] [cursor=pointer] [box=352,617,109,50]
+    - article [ref=f4e28] [box=93,703,836,344]:
+      - generic [ref=f4e29] [box=113,723,796,81]:
+        - text: OCR
+        - heading "Typhoon OCR" [level=2] [ref=f4e30] [box=113,748,796,29]
+        - text: "Separate OCR document contract using multimodal chat payloads. Endpoint: https://api.opentyphoon.ai/v1. Key: not configured."
+      - generic [ref=f4e31] [box=113,818,796,145]:
+        - generic [ref=f4e32] [box=113,818,391,66]:
+          - text: Provider
+          - combobox "Provider" [ref=f4e33] [box=113,839,391,44]:
+            - option "Typhoon OCR (typhoon_ocr)" [selected] [box=0,0,0,0]
+        - generic [ref=f4e34] [box=517,818,391,66]:
+          - text: Model
+          - textbox "Model" [ref=f4e35] [box=517,839,391,44]: typhoon-ocr
+        - generic [ref=f4e36] [box=113,896,391,66]:
+          - text: Timeout (seconds)
+          - spinbutton "Timeout (seconds)" [ref=f4e37] [box=113,918,391,44]: "60"
+        - generic [ref=f4e38] [box=517,896,391,66]:
+          - text: Replace key
+          - textbox "Replace key" [ref=f4e39] [box=517,918,391,44]:
+            - /placeholder: Leave blank to keep the current key
+      - generic [ref=f4e40] [box=113,977,796,50]:
+        - generic [ref=f4e41] [box=113,990,76,22]:
+          - checkbox "enabled" [checked] [ref=f4e42] [box=117,993,13,16]
+          - text: enabled
+        - button "Test with mock" [ref=f4e43] [cursor=pointer] [box=201,977,139,50]
+        - button "Delete key" [ref=f4e44] [cursor=pointer] [box=352,977,109,50]
+    - article [ref=f4e45] [box=93,1062,836,369]:
+      - generic [ref=f4e46] [box=113,1082,796,106]:
+        - text: SYSTEMONE
+        - heading "OpenThai-SystemOne" [level=2] [ref=f4e47] [box=113,1108,796,29]
+        - text: "Typed decision API; no generated text; shadow-only by default. Endpoint: https://api.iapp.co.th/v3/store/openthai/systemone. Key: not configured. shadow-only"
+      - generic [ref=f4e48] [box=113,1203,796,145]:
+        - generic [ref=f4e49] [box=113,1203,391,66]:
+          - text: Provider
+          - combobox "Provider" [ref=f4e50] [box=113,1225,391,44]:
+            - option "OpenThai-SystemOne (openthai_systemone)" [selected] [box=0,0,0,0]
+        - generic [ref=f4e51] [box=517,1203,391,66]:
+          - text: Model
+          - textbox "Model" [ref=f4e52] [box=517,1225,391,44]: openthai-systemone
+        - generic [ref=f4e53] [box=113,1282,391,66]:
+          - text: Timeout (seconds)
+          - spinbutton "Timeout (seconds)" [ref=f4e54] [box=113,1303,391,44]: "60"
+        - generic [ref=f4e55] [box=517,1282,391,66]:
+          - text: Replace key
+          - textbox "Replace key" [ref=f4e56] [box=517,1303,391,44]:
+            - /placeholder: Leave blank to keep the current key
+      - generic [ref=f4e57] [box=113,1362,796,50]:
+        - generic [ref=f4e58] [box=113,1376,76,22]:
+          - checkbox "enabled" [ref=f4e59] [box=117,1379,13,16]
+          - text: enabled
+        - button "Test with mock" [ref=f4e60] [cursor=pointer] [box=201,1362,139,50]
+        - button "Delete key" [ref=f4e61] [cursor=pointer] [box=352,1362,109,50]
+  - generic [ref=f4e62] [box=93,1431,836,48]:
+    - button "Save settings" [ref=f4e63] [cursor=pointer] [box=93,1431,124,48]
+    - generic [ref=f4e64] [box=229,1443,541,26]: Save does not call a provider. Tests are separate and use a mock by default.

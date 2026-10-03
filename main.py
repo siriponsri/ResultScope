@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 from config import settings
 from routers.chat import router as chat_router
 from routers.images import router as images_router
+from routers.admin import router as admin_router
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -35,14 +36,15 @@ if cors_origins:
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type", "Authorization"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
     )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 app.include_router(chat_router)
 app.include_router(images_router)
+app.include_router(admin_router)
 
 
 @app.get("/")
@@ -54,7 +56,7 @@ async def index(request: Request):
             "app_name": settings.APP_NAME,
             "tagline": settings.APP_TAGLINE,
             "owner_name": settings.OWNER_NAME,
-            "demo_notice": "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" if settings.KNOWLEDGE_MODE == "synthetic" else None,
+            "demo_notice": "Synthetic business data for demonstration only; no real service is provided." if settings.KNOWLEDGE_MODE == "synthetic" else None,
         },
     )
 

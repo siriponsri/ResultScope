@@ -9,7 +9,7 @@ def test_allows_common_lab_question():
 def test_blocks_general_programming_question():
     decision = classify_lab_scope("ช่วยเขียน Python ทำเว็บให้หน่อย")
     assert decision.allowed is False
-    assert "ผลตรวจทางห้องปฏิบัติการ" in local_scope_reply(decision, "ช่วยเขียน Python ทำเว็บให้หน่อย")
+    assert "laboratory results" in local_scope_reply(decision, "ช่วยเขียน Python ทำเว็บให้หน่อย")
 
 
 def test_out_of_scope_request_is_not_misclassified_as_help_intent():

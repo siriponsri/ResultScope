@@ -59,10 +59,53 @@ def _scope_rule(decision: ScopeDecision) -> str:
     }.get(decision.reason, "SCOPE-004")
 
 
+def _confirmed_values(extraction: dict | None) -> tuple[ParsedLabValue, ...]:
+    """Convert user-confirmed OCR fields into the same server-owned value model."""
+    values: list[ParsedLabValue] = []
+    for field in (extraction or {}).get("fields", ()):
+        if not isinstance(field, dict):
+            continue
+        numeric_text = field.get("numeric_value") or field.get("raw_value")
+        if not isinstance(numeric_text, str):
+            continue
+        try:
+            value = float(numeric_text.replace(",", "."))
+        except ValueError:
+            continue
+        low_text = field.get("reference_low")
+        high_text = field.get("reference_high")
+        try:
+            low = float(str(low_text).replace(",", ".")) if low_text is not None else None
+            high = float(str(high_text).replace(",", ".")) if high_text is not None else None
+        except ValueError:
+            low = high = None
+        range_state = (
+            "missing"
+            if low is None or high is None
+            else "invalid"
+            if low > high
+            else "valid"
+        )
+        flag = field.get("flag") if field.get("flag") in {"low", "high", "within", "unknown"} else "unknown"
+        marker = field.get("marker")
+        if isinstance(marker, str) and marker.strip():
+            values.append(ParsedLabValue(marker, value, field.get("unit"), low, high, flag, range_state))
+    return tuple(values)
+
+
 def analyze_message(
-    message: str, history: list[dict[str, str]] | None = None
+    message: str,
+    history: list[dict[str, str]] | None = None,
+    confirmed_extraction: dict | None = None,
 ) -> DeterministicAnalysis:
-    decision = classify_lab_scope(message, history or [])
+    confirmed = _confirmed_values(confirmed_extraction)
+    marker_context = " ".join(
+        str(field.get("marker", ""))
+        for field in (confirmed_extraction or {}).get("fields", ())
+        if isinstance(field, dict)
+    )
+    scoped_message = f"{message} {marker_context}".strip()
+    decision = classify_lab_scope(scoped_message, history or [])
     trace: list[RuleTraceEntry] = [
         RuleTraceEntry(
             _scope_rule(decision),
@@ -73,12 +116,13 @@ def analyze_message(
     if not decision.allowed:
         return DeterministicAnalysis(decision, (), tuple(trace))
 
-    values = tuple(extract_lab_values(message))
+    values = confirmed or tuple(extract_lab_values(message))
     trace.append(
         RuleTraceEntry(
             "PARSE-001",
             "matched" if values else "no_match",
-            f"Extracted {len(values)} explicit marker-value item(s) in message order.",
+            f"Extracted {len(values)} explicit marker-value item(s) in message order."
+            + (" Values came from user-confirmed image fields." if confirmed else ""),
         )
     )
 

@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 DEFAULT_SYSTEM_PROMPT = """You are ResultScope, a laboratory-results education assistant.
 
 MISSION
-Help people understand laboratory results in plain Thai or English, depending on the user's language. You are not a general-purpose assistant and you are not a clinician.
+Help people understand laboratory results in clear language. You may converse in any language the user chooses; preserve the user's language unless they ask for another one. You are not a general-purpose assistant and you are not a clinician.
 
 SCOPE
 - Discuss laboratory tests, laboratory panels, specimen-related results, trends, and questions to ask a clinician.
@@ -18,7 +18,7 @@ SAFETY AND EVIDENCE DISCIPLINE
 - Never prescribe, dose, stop, or change medication.
 - Treat the laboratory's supplied reference range as authoritative for flagging high/low when provided.
 - If a reference range, unit, age, sex, pregnancy status, specimen type, fasting status, or clinical context is needed, say what is missing instead of inventing it.
-- Separate observations from possible interpretations. Use cautious language such as 'รูปแบบนี้อาจสอดคล้องกับ...' rather than definitive diagnosis.
+- Separate observations from possible interpretations. Use cautious language such as 'this pattern may be consistent with...' rather than definitive diagnosis.
 - If a result may be urgent or the user reports severe symptoms, tell them to seek prompt professional medical assessment. Do not invent numeric emergency thresholds unless the user supplied a reference/critical range.
 - Do not claim that a value is normal merely because it is familiar; use the provided reference range when available.
 
@@ -51,10 +51,10 @@ class Settings(BaseSettings):
     # only when a separate trusted frontend must call this API.
     CORS_ALLOWED_ORIGINS: str = ""
 
-    # LLM: OpenAI-compatible provider (OpenRouter by default)
-    LLM_BASE_URL: str = "https://openrouter.ai/api/v1"
+    # LLM: OpenAI-compatible provider (Typhoon by default)
+    LLM_BASE_URL: str = "https://api.opentyphoon.ai/v1"
     LLM_API_KEY: str = ""
-    LLM_MODEL: str = "openai/gpt-4o-mini"
+    LLM_MODEL: str = "typhoon-v2.5-30b-a3b-instruct"
     LLM_TIMEOUT_SECONDS: float = 60.0
     SYSTEM_PROMPT: str = DEFAULT_SYSTEM_PROMPT
 
@@ -79,11 +79,24 @@ class Settings(BaseSettings):
     PUBLIC_REFERENCE_ROOT: str = "addons/resultscope_evidence_v1"
     SESSION_SIGNING_KEY: str = ""
 
+    # Admin Settings is deliberately opt-in and local-demo-only. A cloud
+    # deployment must use its platform secret store instead of this file path.
+    LOCAL_DEMO_MODE: bool = False
+    ADMIN_SETTINGS_PATH: str = "data/admin_settings.json"
+    ADMIN_PASSWORD_HASH: str = ""
+    ADMIN_SESSION_TTL_SECONDS: int = 1800
+    ADMIN_LOGIN_RATE_LIMIT_REQUESTS: int = 5
+    ADMIN_LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = 60
+    ADMIN_TEST_RATE_LIMIT_REQUESTS: int = 3
+    ADMIN_TEST_RATE_LIMIT_WINDOW_SECONDS: int = 300
+    ADMIN_SECRET_STORAGE_KEY: str = ""
+    SYSTEMONE_SHADOW_ENABLED: bool = True
+
     # Vision/OCR is opt-in. A text-capable model is never assumed to support images.
     VISION_ENABLED: bool = False
-    VISION_BASE_URL: str = ""
+    VISION_BASE_URL: str = "https://api.opentyphoon.ai/v1"
     VISION_API_KEY: str = ""
-    VISION_MODEL: str = ""
+    VISION_MODEL: str = "typhoon-ocr"
     VISION_TIMEOUT_SECONDS: float = 60.0
     IMAGE_MAX_BYTES: int = 3 * 1024 * 1024
     IMAGE_MAX_PIXELS: int = 12 * 1000 * 1000

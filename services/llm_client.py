@@ -8,16 +8,16 @@ from typing import Any
 import httpx
 
 from config import settings
+from services.provider_adapters import (
+    ProviderAdapterError,
+    build_anthropic_payload,
+    build_openai_chat_payload,
+    parse_anthropic_messages_response,
+    parse_openai_chat_response,
+)
+from services.provider_config import RuntimeProvider, runtime_provider
 
 logger = logging.getLogger(__name__)
-REQUEST_TIMEOUT = httpx.Timeout(
-    connect=5.0,
-    write=10.0,
-    read=settings.LLM_TIMEOUT_SECONDS,
-    pool=5.0,
-)
-
-
 class LLMConnectionError(Exception):
     def __init__(self, message: str, status_code: int = 502):
         self.message = message
@@ -25,19 +25,41 @@ class LLMConnectionError(Exception):
         super().__init__(message)
 
 
-def _ensure_configured() -> None:
-    if not settings.LLM_API_KEY or settings.LLM_API_KEY == "replace_me":
+def _provider() -> RuntimeProvider:
+    return runtime_provider(
+        "llm",
+        fallback_base_url=settings.LLM_BASE_URL,
+        fallback_model=settings.LLM_MODEL,
+        fallback_key=settings.LLM_API_KEY,
+        fallback_timeout=settings.LLM_TIMEOUT_SECONDS,
+    )
+
+
+def _ensure_configured(provider: RuntimeProvider | None = None) -> RuntimeProvider:
+    provider = provider or _provider()
+    if not provider.enabled or not provider.api_key or provider.api_key == "replace_me":
         raise LLMConnectionError(
             "LLM_API_KEY is not configured. Add it in .env or Vercel Environment Variables before requesting an AI explanation.",
             status_code=503,
         )
+    return provider
 
 
-def _auth_headers() -> dict[str, str]:
+def _auth_headers(provider: RuntimeProvider) -> dict[str, str]:
+    if provider.protocol == "anthropic_messages":
+        return {
+            "x-api-key": provider.api_key,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        }
     return {
-        "Authorization": f"Bearer {settings.LLM_API_KEY}",
+        "Authorization": f"Bearer {provider.api_key}",
         "Content-Type": "application/json",
     }
+
+
+def _timeout(provider: RuntimeProvider) -> httpx.Timeout:
+    return httpx.Timeout(connect=5.0, write=10.0, read=provider.timeout_seconds, pool=5.0)
 
 
 def _build_messages(
@@ -65,11 +87,11 @@ def _friendly_error_for_status(status: int) -> LLMConnectionError:
     if status == 401:
         message = "The AI provider rejected the configured credentials."
     elif status == 429:
-        message = "ผู้ให้บริการจำกัดอัตราการเรียกใช้งาน กรุณาลองใหม่ภายหลัง"
+        message = "The provider is rate limited. Please try again later."
     elif status >= 500:
-        message = "ผู้ให้บริการ AI ยังไม่พร้อมให้บริการในขณะนี้"
+        message = "The AI provider is temporarily unavailable."
     else:
-        message = "ผู้ให้บริการ AI ไม่สามารถประมวลผลคำขอนี้ได้"
+        message = "The AI provider could not process this request."
     return LLMConnectionError(message, status_code=502)
 
 
@@ -78,67 +100,82 @@ def _friendly_error_from_response(exc: httpx.HTTPStatusError) -> LLMConnectionEr
 
 
 async def list_models() -> list[dict[str, Any]]:
-    _ensure_configured()
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+    provider = _ensure_configured()
+    endpoint = f"{provider.base_url.rstrip('/')}/models"
+    async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
         try:
             response = await client.get(
-                f"{settings.LLM_BASE_URL.rstrip('/')}/models",
-                headers=_auth_headers(),
+                endpoint,
+                headers=_auth_headers(provider),
             )
             response.raise_for_status()
         except httpx.ConnectError as exc:
-            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+            raise LLMConnectionError("The AI provider could not be reached.") from exc
         except httpx.TimeoutException as exc:
-            raise LLMConnectionError("ผู้ให้บริการ AI ตอบสนองช้าเกินไป") from exc
+            raise LLMConnectionError("The AI provider took too long to respond.") from exc
         except httpx.HTTPStatusError as exc:
             raise _friendly_error_from_response(exc) from exc
         except httpx.HTTPError as exc:
-            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+            raise LLMConnectionError("The AI provider could not be reached.") from exc
         try:
             data = response.json()
         except ValueError as exc:
-            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง") from exc
+            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
         models = data.get("data") if isinstance(data, dict) else None
         if not isinstance(models, list):
-            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
+            raise LLMConnectionError("The AI provider returned an invalid response.")
         return models
 
 
 async def chat(
     history: list[dict[str, str]], message: str, rule_grounding: str = ""
 ) -> str:
-    _ensure_configured()
-    payload: dict[str, Any] = {
-        "model": settings.LLM_MODEL,
-        "messages": _build_messages(history, message, rule_grounding),
-    }
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+    provider = _ensure_configured()
+    if provider.protocol == "anthropic_messages":
+        payload = build_anthropic_payload(
+            provider,
+            message=message,
+            system_prompt=f"{settings.SYSTEM_PROMPT}\n{rule_grounding}".strip(),
+        )
+        endpoint = f"{provider.base_url.rstrip('/')}/messages"
+    else:
+        payload = build_openai_chat_payload(
+            provider,
+            message=message,
+            system_prompt=f"{settings.SYSTEM_PROMPT}\n{rule_grounding}".strip(),
+        )
+        payload["messages"] = _build_messages(history, message, rule_grounding)
+        endpoint = f"{provider.base_url.rstrip('/')}/chat/completions"
+    async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
         try:
             response = await client.post(
-                f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions",
-                headers=_auth_headers(),
+                endpoint,
+                headers=_auth_headers(provider),
                 json=payload,
             )
             response.raise_for_status()
         except httpx.ConnectError as exc:
-            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+            raise LLMConnectionError("The AI provider could not be reached.") from exc
         except httpx.TimeoutException as exc:
-            raise LLMConnectionError("ผู้ให้บริการ AI ตอบสนองช้าเกินไป") from exc
+            raise LLMConnectionError("The AI provider took too long to respond.") from exc
         except httpx.HTTPStatusError as exc:
             raise _friendly_error_from_response(exc) from exc
         except httpx.HTTPError as exc:
-            raise LLMConnectionError("เชื่อมต่อผู้ให้บริการ AI ไม่ได้") from exc
+            raise LLMConnectionError("The AI provider could not be reached.") from exc
         try:
             data = response.json()
         except ValueError as exc:
-            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง") from exc
-        choices = data.get("choices") if isinstance(data, dict) else None
-        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
-        message = choices[0].get("message")
-        content = message.get("content") if isinstance(message, dict) else None
-        if not isinstance(content, str) or not content.strip() or len(content) > settings.MAX_PROVIDER_OUTPUT_CHARS:
-            raise LLMConnectionError("ผู้ให้บริการ AI ส่งข้อมูลตอบกลับไม่ถูกต้อง")
+            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
+        try:
+            content = (
+                parse_anthropic_messages_response(data)
+                if provider.protocol == "anthropic_messages"
+                else parse_openai_chat_response(data)
+            )
+        except ProviderAdapterError as exc:
+            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
+        if len(content) > settings.MAX_PROVIDER_OUTPUT_CHARS:
+            raise LLMConnectionError("The AI provider returned an invalid response.")
         return content
 
 
@@ -147,24 +184,32 @@ async def chat_stream(
     message: str,
     rule_grounding: str = "",
 ) -> AsyncGenerator[dict[str, Any], None]:
+    provider = _provider()
+    if provider.protocol != "openai_chat":
+        try:
+            yield {"type": "delta", "content": await chat(history, message, rule_grounding)}
+            yield {"type": "done"}
+        except LLMConnectionError as exc:
+            yield {"type": "error", "message": exc.message}
+        return
     try:
-        _ensure_configured()
+        _ensure_configured(provider)
     except LLMConnectionError as exc:
         yield {"type": "error", "message": exc.message}
         return
 
     payload: dict[str, Any] = {
-        "model": settings.LLM_MODEL,
+        "model": provider.model,
         "messages": _build_messages(history, message, rule_grounding),
         "stream": True,
     }
 
     try:
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
             async with client.stream(
                 "POST",
-                f"{settings.LLM_BASE_URL.rstrip('/')}/chat/completions",
-                headers=_auth_headers(),
+                f"{provider.base_url.rstrip('/')}/chat/completions",
+                headers=_auth_headers(provider),
                 json=payload,
             ) as response_llm:
                 if response_llm.status_code >= 400:
@@ -194,12 +239,12 @@ async def chat_stream(
                     if content:
                         yield {"type": "delta", "content": content}
     except httpx.ConnectError:
-        yield {"type": "error", "message": "เชื่อมต่อผู้ให้บริการ AI ไม่ได้"}
+        yield {"type": "error", "message": "The AI provider could not be reached."}
     except httpx.TimeoutException:
-        yield {"type": "error", "message": "ผู้ให้บริการ AI ตอบสนองช้าเกินไป"}
+        yield {"type": "error", "message": "The AI provider took too long to respond."}
     except httpx.HTTPError:
         logger.warning("AI provider stream connection failed")
-        yield {"type": "error", "message": "เชื่อมต่อผู้ให้บริการ AI ไม่ได้"}
+        yield {"type": "error", "message": "The AI provider could not be reached."}
     except Exception:
         logger.exception("Unexpected stream failure")
-        yield {"type": "error", "message": "เกิดข้อผิดพลาดที่ไม่คาดคิดระหว่างประมวลผล"}
+        yield {"type": "error", "message": "An unexpected error occurred while processing the request."}

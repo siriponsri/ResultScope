@@ -12,7 +12,7 @@ A lab-only neuro-symbolic AI starter built from the KMITL Week 7 FastAPI/Vercel 
 
 ## What this starter is
 
-**ResultScope** is a coursework-ready product prototype that accepts laboratory-result questions, rejects unrelated prompts before they reach the LLM, and produces structured educational explanations through any OpenAI-compatible provider such as OpenRouter.
+**ResultScope** is a coursework-ready product prototype that accepts laboratory-result questions, rejects unrelated prompts before they reach the LLM, and produces structured educational explanations through Typhoon or another allowlisted compatible provider.
 
 The code intentionally keeps the instructor starter's core deployment pattern:
 
@@ -67,14 +67,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 
 The script creates `.venv`, installs dependencies, copies `.env.example` to `.env`, opens the browser, and starts FastAPI.
 
-### 3. Add your OpenRouter/API key
+### 3. Add your Typhoon/API key
 
 Open `.env` and set:
 
 ```env
-LLM_BASE_URL=https://openrouter.ai/api/v1
+LLM_BASE_URL=https://api.opentyphoon.ai/v1
 LLM_API_KEY=your_key_here
-LLM_MODEL=openai/gpt-4o-mini
+LLM_MODEL=typhoon-v2.5-30b-a3b-instruct
 OWNER_NAME=Your Name
 CORS_ALLOWED_ORIGINS=
 ```
@@ -127,6 +127,12 @@ ResultScope separates conversation persistence from the router.
 ### Local default — SQLite
 
 `STORAGE_BACKEND=auto` uses `data/resultscope.db` when running locally. This is intentionally simple and requires no extra database service.
+
+### Local Admin Settings
+
+The main product does not require login or expose provider settings before use. For a local demo only, set `LOCAL_DEMO_MODE=true` and open `/admin/login`; the default `admin` / `1234` fallback is guarded by the local-demo check and must never be enabled online. Settings use an HttpOnly session plus CSRF token, keep keys write-only in the browser, and store encrypted values only in ignored local files. Vercel/cloud secret persistence is intentionally blocked until a durable secret store is approved. The web app UI is English, while the LLM may converse in any user-selected language.
+
+The provider catalog keeps provider URLs server-side and includes Typhoon LLM, Typhoon OCR, OpenThai-SystemOne, OpenRouter, OpenAI, Groq, DeepSeek, Hugging Face, LM Studio, OpenCode-compatible, Gemini compatibility, Claude native, and MaxPlus slots. SystemOne uses its own iApp adapter and remains shadow-only; it never replaces Python routing or safety validation.
 
 ### Vercel without external storage — memory fallback
 

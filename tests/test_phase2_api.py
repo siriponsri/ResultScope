@@ -38,7 +38,7 @@ def test_business_faq_is_allowed_but_abstains_without_a_source(monkeypatch):
     assert response.json()["citations"] == []
     assert response.json()["demo"] is True
     assert response.json()["data_class"] == "synthetic"
-    assert response.json()["demo_notice"] == "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง"
+    assert response.json()["demo_notice"] == "Synthetic business data for demonstration only; no real service is provided."
 
 
 def test_synthetic_mode_shows_demo_notice_on_product_surface(monkeypatch):
@@ -46,7 +46,7 @@ def test_synthetic_mode_shows_demo_notice_on_product_surface(monkeypatch):
     response = TestClient(app).get("/")
 
     assert response.status_code == 200
-    assert "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" in response.text
+    assert "Synthetic business data for demonstration only; no real service is provided." in response.text
 
 
 def test_unrelated_and_unsafe_requests_bypass_provider_in_sync_and_stream(monkeypatch):

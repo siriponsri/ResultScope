@@ -3,7 +3,7 @@
   "mode": "synthetic",
   "demo": true,
   "data_class": "synthetic",
-  "demo_notice": "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง",
+  "demo_notice": "Synthetic business data for demonstration only; no real service is provided.",
   "corpus_version": "promptlab-synthetic-v1",
   "record_count": 21,
   "sources": {
@@ -120,13 +120,13 @@
       }
     },
     {
-      "record_id": "68cbe530c73c95dae690faab",
-      "chunk_id": "68cbe530c73c95dae690faab",
+      "record_id": "11f105a642724e4313c416f5",
+      "chunk_id": "11f105a642724e4313c416f5",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-001\nThai service name: ความสมบูรณ์ของเม็ดเลือด\nEnglish service name: CBC\nAliases: CBC, ความสมบูรณ์ของเม็ดเลือด\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 250 THB",
+      "content": "Service ID: SVC-001\nThai service name: ความสมบูรณ์ของเม็ดเลือด\nEnglish service name: CBC\nAliases: CBC, ความสมบูรณ์ของเม็ดเลือด\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 250 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-001",
@@ -136,7 +136,7 @@
           "CBC",
           "ความสมบูรณ์ของเม็ดเลือด"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 250,
           "currency": "THB"
@@ -149,13 +149,13 @@
       }
     },
     {
-      "record_id": "5fc5f4e796a9bffd3e735474",
-      "chunk_id": "5fc5f4e796a9bffd3e735474",
+      "record_id": "fe1f0ce162ccf9601b0ab017",
+      "chunk_id": "fe1f0ce162ccf9601b0ab017",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-002\nThai service name: น้ำตาลในเลือด\nEnglish service name: FPG\nAliases: FPG, น้ำตาลในเลือด\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 120 THB",
+      "content": "Service ID: SVC-002\nThai service name: น้ำตาลในเลือด\nEnglish service name: FPG\nAliases: FPG, น้ำตาลในเลือด\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 120 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-002",
@@ -165,7 +165,7 @@
           "FPG",
           "น้ำตาลในเลือด"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 120,
           "currency": "THB"
@@ -178,13 +178,13 @@
       }
     },
     {
-      "record_id": "e13a89f4b84d810a9711c1d1",
-      "chunk_id": "e13a89f4b84d810a9711c1d1",
+      "record_id": "7f0c2dbbc96d0e75ea4e53c2",
+      "chunk_id": "7f0c2dbbc96d0e75ea4e53c2",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-003\nThai service name: ฮีโมโกลบินเอวันซี\nEnglish service name: HbA1c\nAliases: HbA1c, ฮีโมโกลบินเอวันซี\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 350 THB",
+      "content": "Service ID: SVC-003\nThai service name: ฮีโมโกลบินเอวันซี\nEnglish service name: HbA1c\nAliases: HbA1c, ฮีโมโกลบินเอวันซี\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 350 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-003",
@@ -194,7 +194,7 @@
           "HbA1c",
           "ฮีโมโกลบินเอวันซี"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 350,
           "currency": "THB"
@@ -207,13 +207,13 @@
       }
     },
     {
-      "record_id": "ad0f4aa4971e38f0aa050411",
-      "chunk_id": "ad0f4aa4971e38f0aa050411",
+      "record_id": "2c50b46700cf3542ef890066",
+      "chunk_id": "2c50b46700cf3542ef890066",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-004\nThai service name: ชุดไขมันในเลือด\nEnglish service name: Lipid panel\nAliases: Lipid panel, ชุดไขมันในเลือด\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 450 THB",
+      "content": "Service ID: SVC-004\nThai service name: ชุดไขมันในเลือด\nEnglish service name: Lipid panel\nAliases: Lipid panel, ชุดไขมันในเลือด\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 450 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-004",
@@ -223,7 +223,7 @@
           "Lipid panel",
           "ชุดไขมันในเลือด"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 450,
           "currency": "THB"
@@ -236,13 +236,13 @@
       }
     },
     {
-      "record_id": "333ccb5ca660b65067e5b0ca",
-      "chunk_id": "333ccb5ca660b65067e5b0ca",
+      "record_id": "1f78569c3944a2b50e18b967",
+      "chunk_id": "1f78569c3944a2b50e18b967",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-005\nThai service name: ครีอะตินีน\nEnglish service name: Creatinine\nAliases: Creatinine, ครีอะตินีน\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-005\nThai service name: ครีอะตินีน\nEnglish service name: Creatinine\nAliases: Creatinine, ครีอะตินีน\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-005",
@@ -252,7 +252,7 @@
           "Creatinine",
           "ครีอะตินีน"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"
@@ -265,13 +265,13 @@
       }
     },
     {
-      "record_id": "739054be4ee4aed6b7a23bc4",
-      "chunk_id": "739054be4ee4aed6b7a23bc4",
+      "record_id": "f7d3df219fbeea60f986e48f",
+      "chunk_id": "f7d3df219fbeea60f986e48f",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-006\nThai service name: บียูเอ็น\nEnglish service name: BUN\nAliases: BUN, บียูเอ็น\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-006\nThai service name: บียูเอ็น\nEnglish service name: BUN\nAliases: BUN, บียูเอ็น\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-006",
@@ -281,7 +281,7 @@
           "BUN",
           "บียูเอ็น"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"
@@ -294,13 +294,13 @@
       }
     },
     {
-      "record_id": "ca25d9f7a35153ba7065460d",
-      "chunk_id": "ca25d9f7a35153ba7065460d",
+      "record_id": "269ff0cfc37aac6c8cbef699",
+      "chunk_id": "269ff0cfc37aac6c8cbef699",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-007\nThai service name: เอเอสที\nEnglish service name: AST\nAliases: AST, เอเอสที\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-007\nThai service name: เอเอสที\nEnglish service name: AST\nAliases: AST, เอเอสที\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-007",
@@ -310,7 +310,7 @@
           "AST",
           "เอเอสที"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"
@@ -323,13 +323,13 @@
       }
     },
     {
-      "record_id": "19539185e367672f75c88f90",
-      "chunk_id": "19539185e367672f75c88f90",
+      "record_id": "16d3c70657aeda65d8ef5a90",
+      "chunk_id": "16d3c70657aeda65d8ef5a90",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-008\nThai service name: เอแอลที\nEnglish service name: ALT\nAliases: ALT, เอแอลที\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-008\nThai service name: เอแอลที\nEnglish service name: ALT\nAliases: ALT, เอแอลที\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-008",
@@ -339,7 +339,7 @@
           "ALT",
           "เอแอลที"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"
@@ -352,13 +352,13 @@
       }
     },
     {
-      "record_id": "9b74bcedf700f99161f36790",
-      "chunk_id": "9b74bcedf700f99161f36790",
+      "record_id": "dae67aa349cbd37ef09167a9",
+      "chunk_id": "dae67aa349cbd37ef09167a9",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-009\nThai service name: กรดยูริก\nEnglish service name: Uric acid\nAliases: Uric acid, กรดยูริก\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 180 THB",
+      "content": "Service ID: SVC-009\nThai service name: กรดยูริก\nEnglish service name: Uric acid\nAliases: Uric acid, กรดยูริก\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 180 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-009",
@@ -368,7 +368,7 @@
           "Uric acid",
           "กรดยูริก"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 180,
           "currency": "THB"
@@ -381,13 +381,13 @@
       }
     },
     {
-      "record_id": "fbe5561e64476253d8e9bb00",
-      "chunk_id": "fbe5561e64476253d8e9bb00",
+      "record_id": "314bcdbb432438851abe04b0",
+      "chunk_id": "314bcdbb432438851abe04b0",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-010\nThai service name: ปัสสาวะทั่วไป\nEnglish service name: Urinalysis\nAliases: Urinalysis, ปัสสาวะทั่วไป\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-010\nThai service name: ปัสสาวะทั่วไป\nEnglish service name: Urinalysis\nAliases: Urinalysis, ปัสสาวะทั่วไป\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-010",
@@ -397,7 +397,7 @@
           "Urinalysis",
           "ปัสสาวะทั่วไป"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"
@@ -410,13 +410,13 @@
       }
     },
     {
-      "record_id": "793c82a9c84360edeee02e50",
-      "chunk_id": "793c82a9c84360edeee02e50",
+      "record_id": "641e3e3703a8c3b3cf32aa88",
+      "chunk_id": "641e3e3703a8c3b3cf32aa88",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-011\nThai service name: ทีเอสเอช\nEnglish service name: TSH\nAliases: TSH, ทีเอสเอช\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 450 THB",
+      "content": "Service ID: SVC-011\nThai service name: ทีเอสเอช\nEnglish service name: TSH\nAliases: TSH, ทีเอสเอช\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 450 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-011",
@@ -426,7 +426,7 @@
           "TSH",
           "ทีเอสเอช"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 450,
           "currency": "THB"
@@ -439,13 +439,13 @@
       }
     },
     {
-      "record_id": "2978e29764128776c053d80e",
-      "chunk_id": "2978e29764128776c053d80e",
+      "record_id": "55fcaa5678ce115bbf43f5cc",
+      "chunk_id": "55fcaa5678ce115bbf43f5cc",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-012\nThai service name: เอฟทีโฟร์\nEnglish service name: FT4\nAliases: FT4, เอฟทีโฟร์\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 450 THB",
+      "content": "Service ID: SVC-012\nThai service name: เอฟทีโฟร์\nEnglish service name: FT4\nAliases: FT4, เอฟทีโฟร์\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 450 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-012",
@@ -455,7 +455,7 @@
           "FT4",
           "เอฟทีโฟร์"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 450,
           "currency": "THB"
@@ -468,13 +468,13 @@
       }
     },
     {
-      "record_id": "b2a40f336ac46e11d6a0855c",
-      "chunk_id": "b2a40f336ac46e11d6a0855c",
+      "record_id": "2361fa8ae0132b46d92fb5d5",
+      "chunk_id": "2361fa8ae0132b46d92fb5d5",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-013\nThai service name: เฟอร์ริติน\nEnglish service name: Ferritin\nAliases: Ferritin, เฟอร์ริติน\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 550 THB",
+      "content": "Service ID: SVC-013\nThai service name: เฟอร์ริติน\nEnglish service name: Ferritin\nAliases: Ferritin, เฟอร์ริติน\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 550 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-013",
@@ -484,7 +484,7 @@
           "Ferritin",
           "เฟอร์ริติน"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 550,
           "currency": "THB"
@@ -497,13 +497,13 @@
       }
     },
     {
-      "record_id": "e10c4e19f35a62cd0ebdfc86",
-      "chunk_id": "e10c4e19f35a62cd0ebdfc86",
+      "record_id": "f7e1dba8dbff547c270b5073",
+      "chunk_id": "f7e1dba8dbff547c270b5073",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-014\nThai service name: วิตามินบีสิบสอง\nEnglish service name: Vitamin B12\nAliases: Vitamin B12, วิตามินบีสิบสอง\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 650 THB",
+      "content": "Service ID: SVC-014\nThai service name: วิตามินบีสิบสอง\nEnglish service name: Vitamin B12\nAliases: Vitamin B12, วิตามินบีสิบสอง\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 650 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-014",
@@ -513,7 +513,7 @@
           "Vitamin B12",
           "วิตามินบีสิบสอง"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 650,
           "currency": "THB"
@@ -526,13 +526,13 @@
       }
     },
     {
-      "record_id": "a1fe298978cbc622d96101a3",
-      "chunk_id": "a1fe298978cbc622d96101a3",
+      "record_id": "2ae04e8a141641fe2ae0d434",
+      "chunk_id": "2ae04e8a141641fe2ae0d434",
       "corpus_version": "promptlab-synthetic-v1",
       "source_ids": [
         "DEMO-SERVICES"
       ],
-      "content": "Service ID: SVC-015\nThai service name: อัลบูมิน\nEnglish service name: Albumin\nAliases: Albumin, อัลบูมิน\nDescription: รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง\nPrice: 150 THB",
+      "content": "Service ID: SVC-015\nThai service name: อัลบูมิน\nEnglish service name: Albumin\nAliases: Albumin, อัลบูมิน\nDescription: Synthetic service listing for demonstration only; not a real commercial offer.\nPrice: 150 THB",
       "kind": "service",
       "data": {
         "service_id": "SVC-015",
@@ -542,7 +542,7 @@
           "Albumin",
           "อัลบูมิน"
         ],
-        "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+        "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
         "price": {
           "amount": 150,
           "currency": "THB"

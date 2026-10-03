@@ -5,11 +5,12 @@ Branch: local `main`
 
 ## Delivered on the real home
 
-- The first screen now says `อ่านผลแล็บของคุณให้เข้าใจง่าย` and presents one
-  primary action: upload a report image or type a question.
-- Thai examples populate the existing question field. JPEG/PNG upload remains
-  real, with server validation, editable OCR fields, confirm/discard, and a
-  session-bound extraction ID.
+- The first screen now uses English UI copy and presents one primary action:
+  upload a report image or type a question. The LLM is not forced to answer in
+  English and may converse in the user's language.
+- English examples populate the existing question field. JPEG/PNG upload
+  remains real, with server validation, editable OCR fields, confirm/discard,
+  and a session-bound extraction ID.
 - Results keep the integrated value/range/explanation object. Server-owned
   citation metadata can be opened to see title, organization, page, section,
   version, class, license, and safe original link.
@@ -21,8 +22,8 @@ Branch: local `main`
 
 | Check | Status | Evidence |
 |---|---|---|
-| Desktop first-use home at 1440px | PASS | `docs/progress/evidence/phase5-browser-20261003/desktop-home.png`; Thai headline and real controls rendered |
-| Narrow mobile at 390px | PASS | `mobile-home-390.png`; measured `scrollWidth=390`, viewport `390` |
+| Desktop first-use home | PASS | `docs/progress/evidence/admin-settings-browser-20261003/desktop-home-en.png`; English UI and real controls rendered |
+| Narrow mobile at 390px | PASS | `docs/progress/evidence/admin-settings-browser-20261003/mobile-home-en.png`; no horizontal overflow |
 | Out-of-scope refusal | PASS | Local Chrome probe; deterministic refusal rendered without provider |
 | Invalid upload | PASS | Local Chrome probe; non-image returned server validation text beside upload |
 | Reset | PASS | Local Chrome probe; returned to `data-view=intake` with empty input |
@@ -32,4 +33,6 @@ Branch: local `main`
 | Live OCR/LLM answer quality | NOT_RUN | Owner did not authorize live provider calls |
 
 The existing deep spectral field is retained as the product identity; no glass
-cards, fake dashboard, confidence meter, or browser API key was added.
+cards, fake dashboard, confidence meter, or browser API key was added. Admin
+Settings browser checks are recorded separately in
+`docs/progress/evidence/admin-settings-browser-20261003.md`.

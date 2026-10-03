@@ -97,6 +97,8 @@ def test_public_guideline_citation_preserves_license_and_section(monkeypatch):
     assert all(citation.data_class == "open_guideline" for citation in result.citations)
     assert all(citation.license_text == "CC BY-NC-SA 3.0 IGO" for citation in result.citations)
     assert all(citation.section for citation in result.citations)
+    assert {citation.page for citation in result.citations} == {37}
+    assert all("iris.who.int" in citation.source_url and "download" in citation.source_url for citation in result.citations)
 
 
 def test_public_reference_no_hit_and_corrupt_root_abstain(monkeypatch):

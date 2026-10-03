@@ -1,8 +1,8 @@
 # ResultScope as-built message flow (local candidate)
 
 This is an as-built description of the local FastAPI application after the
-public-reference and first-use changes. Items marked proposed are not runtime
-integrations.
+public-reference, first-use, provider, and local Admin Settings changes. Items
+marked proposed are not runtime integrations.
 
 ```text
 Browser home
@@ -23,7 +23,10 @@ scope gate / intent router
                        ├─ no hit/corrupt → abstain; no provider
                        └─ matched → untrusted context packet + allowlist
                                       ↓
-                           OpenAI-compatible provider
+                           server-allowlisted provider adapter
+                                      ├─ Typhoon LLM → answer generation
+                                      ├─ Typhoon OCR → image/PDF reading boundary
+                                      └─ SystemOne → typed shadow decision only
                                       ↓
                          output validation and citation resolution
                                       ↓
@@ -35,9 +38,15 @@ scope gate / intent router
 ## Trust and ownership
 
 - The server owns scope decisions, numeric flags, session signing, source
-  allowlists, provider calls, and output validation.
+  allowlists, provider calls, output validation, Admin Settings authentication,
+  CSRF validation, and secret persistence policy.
 - Browser JavaScript only presents returned metadata. It never chooses a
-  clinical interval or trusts an arbitrary URL from model text.
+  clinical interval, receives an existing key, or trusts an arbitrary URL from
+  model text.
+- Admin Settings is reachable only in explicit local-demo mode. All config,
+  provider-test, and logout mutations require a valid session and CSRF token.
+- Provider endpoints are selected by server-side catalog IDs. The browser
+  cannot submit an arbitrary URL together with a secret.
 - Confirmed OCR remains user-supplied/untrusted data. It cannot establish
   business prices or policies.
 - Public numeric records are `public_reference`; WHO notes are
@@ -45,8 +54,9 @@ scope gate / intent router
 
 ## Proposed, not implemented
 
-- No OCR framework, RAG/embedding service, authentication, patient profile,
-  HIS/pharmacy connector, production database, Clef route control, or live
-  provider evaluation is added here.
+- No patient profile, HIS/pharmacy connector, production database, Clef route
+  control, or live provider evaluation is added here. OCR uses the separate
+  Typhoon OCR adapter; local Admin Settings authentication is implemented, but
+  cloud secret persistence remains blocked.
 - A future HIS/pharmacy integration needs an approved schema, consent,
   retention, and partner authorization before any connector is implemented.

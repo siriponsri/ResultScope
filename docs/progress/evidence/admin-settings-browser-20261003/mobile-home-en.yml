@@ -1,0 +1,62 @@
+- generic [ref=f6e2] [box=0,0,375,1870]:
+  - banner [ref=f6e3] [box=0,0,375,65]:
+    - link "ResultScope home" [ref=f6e4] [cursor=pointer] [box=16,16,141,32]:
+      - /url: /
+      - strong [ref=f6e6] [box=60,23,97,18]: ResultScope
+  - main [ref=f6e7] [box=0,65,375,1713]:
+    - region [ref=f6e8] [box=0,65,375,1713]:
+      - generic [ref=f6e9] [box=16,113,343,590]:
+        - paragraph [ref=f6e10] [box=16,113,343,28]:
+          - generic [ref=f6e11] [box=16,113,28,28]: "01"
+          - text: Start with your results
+        - heading [level=1] [ref=f6e12] [box=16,165,343,242]:
+          - text: Understand your
+          - emphasis [ref=f6e13] [box=16,270,290,151]: laboratory results
+        - paragraph [ref=f6e14] [box=16,438,343,99]: Upload a report or type a question about laboratory results. ResultScope reads the values provided, checks the supplied reference ranges, and explains them carefully.
+        - list "Result interpretation sequence" [ref=f6e15] [box=16,570,343,133]:
+          - listitem [ref=f6e16] [box=16,570,343,34]:
+            - generic [ref=f6e17] [box=16,570,34,34]: "01"
+            - strong [ref=f6e19] [box=66,575,294,22]: Read
+          - listitem [ref=f6e20] [box=16,619,343,34]:
+            - generic [ref=f6e21] [box=16,619,34,34]: "02"
+            - strong [ref=f6e23] [box=66,625,294,22]: Check
+          - listitem [ref=f6e24] [box=16,669,343,34]:
+            - generic [ref=f6e25] [box=16,669,34,34]: "03"
+            - strong [ref=f6e27] [box=66,674,294,22]: Explain
+      - region "Laboratory result intake" [ref=f6e28] [box=16,750,343,979]:
+        - generic [ref=f6e29] [box=33,775,310,54]:
+          - heading "Start with values or ask a short question" [level=2] [ref=f6e31] [box=33,775,235,54]
+          - button "Load example" [ref=f6e32] [cursor=pointer] [box=292,775,51,54]
+        - generic [ref=f6e33] [box=33,861,310,641]:
+          - generic [ref=f6e34] [box=33,862,310,47]: Your result or question
+          - textbox "Your result or question" [ref=f6e35] [box=33,909,310,271]:
+            - /placeholder: "For example: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100). How should I read this?"
+          - generic [ref=f6e36] [box=33,1180,310,170]:
+            - generic [ref=f6e37] [box=33,1197,310,86]:
+              - generic [ref=f6e38] [box=33,1197,310,61]:
+                - generic [ref=f6e39] [box=33,1197,310,19]: Upload a laboratory report
+                - paragraph [ref=f6e40] [box=33,1219,310,38]: JPEG or PNG supported. Review and edit every extracted field before confirming.
+              - status [ref=f6e41] [box=33,1266,106,18]: No file selected
+            - button "Upload a laboratory report" [ref=f6e42] [box=33,1299,310,34]
+          - generic [ref=f6e43] [box=33,1350,310,152]:
+            - paragraph [ref=f6e44] [box=33,1367,310,55]:
+              - generic [ref=f6e45] [box=33,1367,310,18]: 0 / 12,000
+              - generic [ref=f6e46] [box=33,1387,310,35]: Include the report's units and reference ranges when available.
+            - button "Analyze results" [ref=f6e48] [cursor=pointer] [box=165,1446,177,56]:
+              - generic [aria-hidden] [ref=f6e50] [box=312,1459,14,30]: ↗
+        - generic "Example laboratory questions" [ref=f6e51] [box=33,1534,310,75]:
+          - paragraph [ref=f6e52] [box=33,1534,310,18]: Try an example
+          - generic [ref=f6e53] [box=33,1563,310,46]:
+            - button "CBC" [ref=f6e54] [cursor=pointer] [box=33,1563,23,20]
+            - button "Creatinine + eGFR" [ref=f6e55] [cursor=pointer] [box=72,1563,97,20]
+            - button "Liver panel" [ref=f6e56] [cursor=pointer] [box=185,1563,59,20]
+            - button "HbA1c" [ref=f6e57] [cursor=pointer] [box=260,1563,36,20]
+            - button "LDL" [ref=f6e58] [cursor=pointer] [box=312,1563,20,20]
+            - button "Thyroid" [ref=f6e59] [cursor=pointer] [box=33,1589,41,20]
+        - generic [ref=f6e60] [box=33,1641,310,64]:
+          - generic [ref=f6e61] [box=33,1658,226,18]: ·Use the report's reference range
+          - generic [ref=f6e62] [box=33,1687,94,18]: ·No diagnosis
+          - generic [ref=f6e63] [box=151,1687,153,18]: ·Rules are inspectable
+  - contentinfo [ref=f6e64] [box=0,1778,375,92]:
+    - generic [ref=f6e65] [box=16,1795,321,18]: ResultScope / Laboratory explanation assistant
+    - generic [ref=f6e66] [box=16,1836,279,18]: Educational information, not a diagnosis

@@ -41,7 +41,7 @@ def test_provider_timeout_is_sanitized(monkeypatch):
     with pytest.raises(LLMConnectionError) as error:
         asyncio.run(llm_client.chat([], "synthetic request"))
 
-    assert error.value.message == "ผู้ให้บริการ AI ตอบสนองช้าเกินไป"
+    assert error.value.message == "The AI provider took too long to respond."
     assert "synthetic private timeout detail" not in error.value.message
 
 
@@ -53,7 +53,7 @@ def test_malformed_provider_payload_is_a_safe_error(monkeypatch):
     with pytest.raises(LLMConnectionError) as error:
         asyncio.run(llm_client.chat([], "synthetic request"))
 
-    assert "ไม่ถูกต้อง" in error.value.message
+    assert "invalid" in error.value.message
 
 
 def test_missing_provider_configuration_does_not_open_transport(monkeypatch):

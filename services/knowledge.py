@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 from validation.validate_corpus import validate_corpus, validate_release_readiness
 
 KnowledgeMode = Literal["release", "synthetic", "public_reference"]
-DEMO_NOTICE_TH = "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง"
+DEMO_NOTICE = "Synthetic business data for demonstration only; no real service is provided."
 DEMO_ROOT_RELATIVE = Path("docs/coursework-demo/ResultScope_Coursework_Demo_v1")
 
 
@@ -65,7 +65,7 @@ class KnowledgeBase:
             "mode": self.mode,
             "demo": self.demo,
             "data_class": "synthetic" if self.demo else self.mode,
-            "demo_notice": DEMO_NOTICE_TH if self.demo else None,
+            "demo_notice": DEMO_NOTICE if self.demo else None,
             "corpus_version": self.corpus_version,
             "record_count": len(self.records),
         }
@@ -273,7 +273,7 @@ def _demo_services_from_markdown(path: Path, source_id: str, version: str) -> li
                 "name_th": name_th.strip(),
                 "name_en": name_en.strip(),
                 "aliases": [name_en.strip(), name_th.strip()],
-                "description": "รายการบริการจำลองสำหรับการเรียน ไม่ใช่ข้อเสนอขายจริง",
+                "description": "Synthetic service listing for demonstration only; not a real commercial offer.",
                 "price": {"amount": numeric_amount, "currency": "THB"},
                 "preparation": None,
                 "specimen": None,

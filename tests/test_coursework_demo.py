@@ -112,7 +112,7 @@ def test_demo_citation_and_q09_history_are_real_multi_turn(monkeypatch):
     assert result.citations[0].source_id == "DEMO-SERVICES"
     assert result.citations[0].version == "promptlab-synthetic-v1"
     assert "HbA1c" in seen["prompt"]
-    assert "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง" in result.metadata()["demo_notice"]
+    assert "Synthetic business data for demonstration only; no real service is provided." in result.metadata()["demo_notice"]
 
 
 def test_demo_multi_service_price_derivations_are_grounded(monkeypatch):

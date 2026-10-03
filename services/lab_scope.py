@@ -188,47 +188,31 @@ def classify_lab_scope(message: str, history: list[dict[str, str]] | None = None
     return ScopeDecision(False, "outside_lab_scope")
 
 
-OUT_OF_SCOPE_MESSAGE_TH = (
-    "ResultScope รับเฉพาะคำถามเกี่ยวกับผลตรวจทางห้องปฏิบัติการเท่านั้นครับ\n\n"
-    "ลองส่งค่าแลปพร้อมหน่วยและช่วงอ้างอิง เช่น `Hb 10.8 g/dL (12–16)` "
-    "หรือถามว่า `HbA1c 6.1% หมายความว่าอย่างไร`"
+OUT_OF_SCOPE_MESSAGE = (
+    "ResultScope is focused on laboratory results.\n\n"
+    "Share a result with its unit and reference range, such as `Hb 10.8 g/dL (12–16)`, "
+    "or ask what a result such as `HbA1c 6.1%` may mean."
 )
 
 SCOPE_SUGGESTIONS = [
-    "ช่วยอธิบาย CBC ชุดนี้",
-    "ค่าไต Creatinine/eGFR ดูอย่างไร",
-    "AST/ALT สูงควรอ่านร่วมกับค่าอะไร",
-    "HbA1c คืออะไร",
+    "Explain this CBC panel",
+    "How should I read Creatinine and eGFR together?",
+    "What should I read alongside high AST/ALT?",
+    "What is HbA1c?",
 ]
 
 
 def local_scope_reply(decision: ScopeDecision, message: str) -> str:
     """Return deterministic product copy for requests that should not reach the LLM."""
-    thai = any("\u0e00" <= char <= "\u0e7f" for char in message)
     if decision.reason == "outside_lab_scope":
-        if thai:
-            return OUT_OF_SCOPE_MESSAGE_TH
-        return (
-            "ResultScope is focused on laboratory results. Share a test name, value, unit, "
-            "and reference range, or ask about a panel such as CBC, kidney, liver, HbA1c, "
-            "lipid, or thyroid testing."
-        )
-    if thai:
-        replies = {
-            "greeting": "สวัสดีครับ ผมช่วยอธิบายผลตรวจทางห้องปฏิบัติการได้ ส่งชื่อการตรวจ ค่า หน่วย และช่วงอ้างอิงมาได้เลย",
-            "help": "ResultScope ช่วยอ่านผลตรวจทางห้องปฏิบัติการที่คุณส่งมา โดยแสดงค่าที่แยกได้และอธิบายเชิงการศึกษา ใช้ได้ดีกับชื่อการตรวจ ค่า หน่วย และช่วงอ้างอิงจากรายงานของคุณ",
-            "closing": "ยินดีครับ หากมีผลตรวจที่อยากอ่านเพิ่มเติม ส่งมาได้ทุกเมื่อ",
-            "ambiguous": "ส่งชื่อการตรวจ ค่าที่ได้ หน่วย และช่วงอ้างอิงจากรายงานมาได้เลย แล้วผมจะช่วยอธิบายให้เป็นขั้นตอน",
-            "empty_message": "ส่งผลตรวจหรือคำถามเกี่ยวกับการตรวจทางห้องปฏิบัติการมาได้เลย",
-        }
-    else:
-        replies = {
-            "greeting": "Hello. I can help you understand laboratory results in clear, practical language. Share the test name, value, unit, and reference range when you have them.",
-            "help": "ResultScope explains laboratory results you provide. It can organize your values, compare them with the reference ranges from your report, and suggest useful questions to ask next. It does not diagnose or prescribe.",
-            "closing": "You are welcome. Send any laboratory result when you would like to review it.",
-            "ambiguous": "Please share the test name, result, unit, and reference range from your report. That gives me enough context to explain the value carefully.",
-            "empty_message": "Share a laboratory result or a question about a test to begin.",
-        }
+        return OUT_OF_SCOPE_MESSAGE
+    replies = {
+        "greeting": "Hello. I can help you understand laboratory results in clear, practical language. Share the test name, value, unit, and reference range when you have them.",
+        "help": "ResultScope explains laboratory results you provide. It can organize your values, compare them with the reference ranges from your report, and suggest useful questions to ask next. It does not diagnose or prescribe.",
+        "closing": "You are welcome. Send any laboratory result when you would like to review it.",
+        "ambiguous": "Please share the test name, result, unit, and reference range from your report. That gives me enough context to explain the value carefully.",
+        "empty_message": "Share a laboratory result or a question about a test to begin.",
+    }
 
     return replies.get(
         decision.reason,
