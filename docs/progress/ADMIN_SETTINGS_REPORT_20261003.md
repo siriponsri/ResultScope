@@ -3,6 +3,7 @@
 วันที่: 3 ตุลาคม 2569  
 สาขา: `main` ภายในเครื่อง  
 สถานะการเผยแพร่: ยังไม่มีการ push และยังไม่มีการ deploy
+Implementation candidate: `a7f1d6b2e025c4ebda16cadfd1563691203f6e0e`
 
 ## สรุปสถานะ
 
@@ -16,6 +17,7 @@
 - Python rules ยังคงเป็นผู้ตัดสินใจหลัก และ safety/output validation ยังคงทำงานหลัง provider boundary
 - Clef ถูกปิดใช้งาน และไม่มี fallback ไปยัง provider ที่มีค่าใช้จ่าย
 - มี catalog และ adapter compatibility สำหรับ OpenRouter, OpenAI, Groq, DeepSeek, Hugging Face, LM Studio, OpenCode-compatible, Gemini compatibility path, Claude native path และ MaxPlus ตามข้อจำกัดของ protocol แต่ยังไม่มีการยืนยัน live ในรอบนี้
+- เอกสาร Typhoon ระบุว่า SDK ของ `typhoon-ocr` รองรับ PDF แต่ upload boundary ของ repository นี้ตรวจรับเฉพาะ PNG/JPEG อยู่ในปัจจุบัน และยังไม่ยืนยัน raw HTTP contract สำหรับส่ง PDF โดยตรง จึงยังไม่อ้างว่า PDF OCR ใช้งานได้
 
 ## การควบคุมความปลอดภัย
 
@@ -49,19 +51,20 @@
 | Save โดยไม่เรียก provider | PASS |
 | Mock provider test | PASS; ไม่ใช้โควตาและไม่เรียก external provider |
 | Secret non-disclosure ใน browser | PASS |
+| PDF OCR ผ่าน upload boundary | NOT_RUN/BLOCKED; ยังไม่มี raw API contract ที่ยืนยันและยังไม่มี PDF rasterizer ใน runtime |
 | Live Typhoon LLM | NOT_RUN ตาม owner instruction |
 | Live Typhoon OCR | NOT_RUN ตาม owner instruction |
 | Live OpenThai-SystemOne | NOT_RUN ตาม owner instruction |
-| Independent O1/O2 review ของ candidate สุดท้าย | NOT_RUN; runtime/account ยังไม่พร้อม |
+| Independent O1/O2 review ของ candidate สุดท้าย | NOT_RUN; dispatch แบบ nested read-only ไม่ส่ง handoff และถูกหยุด จึงยืนยัน account independence ไม่ได้ |
 
 ## Readiness decision
 
 ### Local-demo readiness
 
-**READY สำหรับการสาธิตภายในเครื่องแบบ mocked/local** ภายใต้เงื่อนไขต่อไปนี้: เปิด `LOCAL_DEMO_MODE` อย่างชัดเจน ใช้ synthetic/mock provider test เท่านั้น ไม่ใส่ key จริงใน repository และตรวจว่าไฟล์ local secret ไม่ถูกนำไป commit
+**READY สำหรับการสาธิตภายในเครื่องแบบ mocked/local ของ Admin Settings และ workflow ภาพที่มีอยู่** ภายใต้เงื่อนไขต่อไปนี้: เปิด `LOCAL_DEMO_MODE` อย่างชัดเจน ใช้ synthetic/mock provider test เท่านั้น ไม่ใส่ key จริงใน repository และตรวจว่าไฟล์ local secret ไม่ถูกนำไป commit PDF OCR ยังไม่อยู่ในสถานะพร้อมใช้งาน
 
 ### Online readiness
 
-**BLOCKED** และห้ามอ้างว่า production-ready เนื่องจากยังไม่มี durable secret store ที่ยืนยันสำหรับ Vercel/cloud, ยังไม่มี live provider contract/quality verification, ยังไม่มี independent review ของ candidate สุดท้าย และยังไม่มี operational controls สำหรับการใช้งานจริงหลาย instance
+**BLOCKED** และห้ามอ้างว่า production-ready เนื่องจากยังไม่มี durable secret store ที่ยืนยันสำหรับ Vercel/cloud, ยังไม่มี live provider contract/quality verification, PDF OCR ยังไม่ผ่าน contract/runtime verification, ยังไม่มี independent review ของ candidate สุดท้าย และยังไม่มี operational controls สำหรับการใช้งานจริงหลาย instance
 
 ไม่มีการเติมเครดิต เปิด auto top-up เรียก live provider หรือ deploy ในรอบนี้
