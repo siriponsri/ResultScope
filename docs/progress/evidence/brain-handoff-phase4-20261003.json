@@ -1,0 +1,14 @@
+{
+  "last_completed": "Phase 4 safety hardening committed locally at b159ed60b55f2915a64cc9330fdd8e68655e28b8. Full deterministic and mocked verification passed.",
+  "currently_in_progress": "No implementation is in progress. G4 remains unclaimed because the final account-independent review could not complete.",
+  "verified": "Full pytest: 161 passed with one existing Starlette/httpx warning; focused coursework/Phase 4 tests: 41 passed; scripts/check.ps1: PASS; node --check static/js/chat.js: PASS; git diff --check: PASS; PROMPT.md is untracked and excluded by .git/info/exclude.",
+  "not_verified": "Live LLM, Vision/OCR, and external guard validation remain NOT_RUN. Final independent O1/O2 review of the committed candidate is NOT_RUN because the dispatcher runtime failed, O1 hit usage limits, and O2 authentication was revoked. G4 is NOT_CLAIMED.",
+  "blockers": "Independent final review is unavailable in the current runtime/account state. Historical G0 and G1-data/release readiness remain blocked; G3 remains NOT_CLAIMED.",
+  "failed_approaches_not_to_repeat": "Do not retry the unchanged PowerShell dispatcher without a runtime fix. Do not treat a review worker receipt, partial inspection, mocked provider run, or serial MAIN inspection as independent approval. Do not push or deploy.",
+  "owner_decisions_awaiting_implementation": "Authorize a functioning independent O1/O2 review route before claiming G4. Authorize live provider credentials and budget only for a later separate evaluation.",
+  "next_recommended_action": "Run a fresh read-only independent review against commit b159ed60b55f2915a64cc9330fdd8e68655e28b8 when a functioning O1/O2 route is available; resolve findings before any G4 claim.",
+  "relevant_files": "docs/progress/PHASE_4_REPORT.md; docs/progress/evidence/phase4-after-20261003.md; docs/security/THREAT_MODEL.md; docs/security/ADR-GUARD.md; routers/chat.py; services/output_validation.py; tests/test_phase4_safety.py",
+  "relevant_commits_receipts": "b159ed60b55f2915a64cc9330fdd8e68655e28b8; dispatcher failure due missing System.IO.Path.IsPathFullyQualified; O1 session 01a1004f-5080-7e72-922e-bc1d9f9b9f92 usage-limit termination; O2 session 01a10052-e86b-74c1-ac8b-9e5b678fd323 revoked-token failure",
+  "relevant_brain_records": "C:/Users/User/.agent-kit/brains/resultscope/brain.json; state/CURRENT.md; state/HANDOFF.md; docs/progress/PHASE_4_REPORT.md; docs/progress/evidence/phase4-after-20261003.md",
+  "current_state": "Phase 4 safety hardening is locally committed and verified on main. No push or deployment occurred. The owner prompt remains machine-local and excluded from Git. Final independent review and live-provider evidence remain outstanding."
+}
