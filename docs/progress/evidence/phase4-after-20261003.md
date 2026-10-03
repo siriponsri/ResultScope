@@ -1,8 +1,10 @@
 # Phase 4 Safety Evidence — 2026-10-03
 
 Baseline: `80e7a5986141d96db0d52f1c0a8f629476e6543c` on local `main`.
-Candidate was tested in the local worktree before the Phase 4 commit. No live
-provider or credential value was used.
+Safety evidence was collected against the Phase 4 implementation before its
+local hardening commit `b159ed60b55f2915a64cc9330fdd8e68655e28b8`; the final
+local state was recorded at `d280bd2b3bf048225ea70a3da15bcb982a5ba2da`. No
+live provider or credential value was used.
 
 ## Deterministic and mocked evidence
 
@@ -130,7 +132,7 @@ helper attempt did not start REVIEW. A separate fresh O1 review then ran as
 `ae0ac611328447a29a44b5278a991514` and returned findings; it is not approval of
 the revised candidate. The next configured O1 read-only fallback review also
 returned findings. The third fresh direct O1 review returned three findings,
-all addressed in the current uncommitted candidate. The latest direct O1
+all addressed in the Phase 4 candidate. The latest direct O1
 session `65404` returned four grouped findings covering citation-marker case
 handling, medication/diagnosis detection, canonical opening-hours validation,
 Thai business/service-price association, unrelated coding prompts with lab
@@ -149,5 +151,11 @@ Configured role/account status: MAIN and IMPLEMENT are MaxPlus; REVIEW is O1.
 This MAIN launch is MaxPlus, while the configured REVIEW account is O1, so
 account independence is configured. The canonical dispatcher could not create
 a receipt for the fallback review because it failed before worker creation; the
-actual O1 output and its findings are recorded above. The revised candidate
-still requires a seventh fresh REVIEW.
+actual O1 output and its findings are recorded above. A same-host fallback
+review by Lorentz (`01a10053-faef-7fd2-8daa-8bdd3d30893f`) reviewed the final
+local state read-only and returned **NOT_READY**, not O1/O2 approval. It found
+four unresolved groups: lab-route business/citation grounding, hedged
+diagnosis wording, reset recovery expiry/pruning, and missing structured audit
+metadata. Its `scripts/check.ps1` run was **NOT_RUN** because dependency
+installation was prohibited. The final committed candidate therefore requires
+scoped remediation and a fresh independent REVIEW.
