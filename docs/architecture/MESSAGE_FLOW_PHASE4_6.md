@@ -25,7 +25,7 @@ scope gate / intent router
                                       ↓
                            server-allowlisted provider adapter
                                       ├─ Typhoon LLM → answer generation
-                                      ├─ Typhoon OCR → image/PDF reading boundary
+                                      ├─ Typhoon OCR → validated PNG/JPEG image reading boundary
                                       └─ SystemOne → typed shadow decision only
                                       ↓
                          output validation and citation resolution
@@ -51,6 +51,9 @@ scope gate / intent router
   business prices or policies.
 - Public numeric records are `public_reference`; WHO notes are
   `open_guideline` and explicitly non-numeric. Both remain `release_eligible=false`.
+- Typhoon's SDK documents PDF capability, but this application's upload boundary
+  currently accepts PNG/JPEG only. PDF transport and runtime support remain
+  `BLOCKED` until a verified raw contract or approved rasterizer is added.
 
 ## Proposed, not implemented
 

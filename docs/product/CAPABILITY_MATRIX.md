@@ -8,7 +8,7 @@
 | JPEG/PNG upload and OCR correction | Yes, mocked/local | No live Vision | Live Vision authorization missing |
 | English web UI with multilingual LLM conversation | Yes | No live LLM | Live language-quality evaluation NOT_RUN |
 | Typhoon LLM answer adapter | Yes, mocked/local | No | Live contract and quality NOT_RUN |
-| Typhoon OCR image/PDF boundary | Yes, separate adapter, mocked/local | No | Live OCR verification NOT_RUN |
+| Typhoon OCR image boundary | Yes, separate adapter, mocked/local | No | PNG/JPEG upload only; PDF upload BLOCKED; live OCR verification NOT_RUN |
 | OpenThai-SystemOne iApp shadow adapter | Yes, separate typed parser | No | Shadow comparison and live contract NOT_RUN |
 | Provider compatibility catalog | Yes, server allowlist | No | Model/account access verification per provider |
 | Local Admin Settings authentication and CSRF | Yes, local-demo only | No online verification | Cloud secret persistence BLOCKED |
