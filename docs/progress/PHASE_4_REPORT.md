@@ -1,9 +1,9 @@
 # Phase 4 Report
 
-สถานะ: DOCUMENTED LOCAL CLOSEOUT; local controls verified, fallback review NOT_READY, independent O1/O2 gate unavailable
+สถานะ: DOCUMENTED LOCAL CLOSEOUT; local controls and fallback remediation verified, independent O1/O2 gate unavailable
 
 - Phase / date / MAIN / IMPLEMENT / REVIEW: Phase 4 / 2026-10-03 / MaxPlus / MaxPlus (dispatch timed out; MAIN completed bounded fallback) / O1 configured but unavailable at final review; O2 owner-authorized fallback also unavailable
-- Baseline SHA / final local SHA / integration SHA: `80e7a5986141d96db0d52f1c0a8f629476e6543c` / `d280bd2b3bf048225ea70a3da15bcb982a5ba2da` / `d280bd2b3bf048225ea70a3da15bcb982a5ba2da`
+- Baseline SHA / final local SHA / integration SHA: `80e7a5986141d96db0d52f1c0a8f629476e6543c` / `45acba9` / `45acba9`
 - Corpus version / prompt-policy version / model-provider: synthetic `promptlab-synthetic-v1` for tests; deterministic rulebook `2026.08`; provider calls mocked or unavailable only
 - Scope completed / deferred: Phase 4 trust/output/session/resource/rendering controls completed locally; live-provider quality, external guard, authentication, and Phase 5 deferred
 
@@ -24,12 +24,13 @@
 
 | Command/case | Environment | Actual result/exit code | Mock or live | Evidence path |
 |---|---|---|---|---|
-| `.venv\\Scripts\\python.exe -m pytest -q` | Windows local `.venv` | `161 passed`, exit 0, 1 existing warning | deterministic + mocked | `docs/progress/evidence/phase4-after-20261003.md` |
-| Focused coursework/Phase 4 tests | Windows local `.venv` | `41 passed`, exit 0, 1 existing warning | deterministic + mocked | same evidence |
-| `scripts/check.ps1` | Windows local `.venv` | PASS, exit 0; includes `161 passed` | deterministic | same evidence |
+| `.venv\\Scripts\\python.exe -m pytest -q` | Windows local `.venv` | `172 passed`, exit 0, 1 existing warning | deterministic + mocked | `docs/progress/evidence/phase4-after-20261003.md` |
+| Focused remediation tests (`test_phase4_safety.py`, `test_store.py`) | Windows local `.venv` | `48 passed`, exit 0, 1 existing warning | deterministic + mocked | same evidence |
+| `scripts/check.ps1` | Windows local `.venv` | PASS, exit 0; includes `172 passed` | deterministic | same evidence |
+| `compileall` | Windows local `.venv` | PASS, exit 0 | local | same evidence |
 | `node --check static/js/chat.js` | Node 24.19.0 | PASS, exit 0 | local | same evidence |
 | `git diff --check` | Git local | PASS, exit 0 | local | final closeout command |
-| Desktop/mobile browser | System Chrome via external Playwright | PASS; no horizontal overflow | mocked/local, no live provider | `docs/progress/evidence/phase4-browser-20261003/` |
+| Desktop/mobile browser | System Chrome via external Playwright | PASS; no horizontal overflow | mocked/local, no live provider | `docs/progress/evidence/phase4-browser-20261003/` and `docs/progress/evidence/phase4-browser-20261003-remediation/` |
 | Reset failure browser probe | System Chrome via external Playwright | PASS; current analysis remained visible and error was shown after mocked HTTP 503 | local UI route mock | `docs/progress/evidence/phase4-after-20261003.md` |
 | SSE error terminal browser probe | System Chrome via external Playwright | PASS; mocked error followed by `done` kept `has-error`, cleared loading, and did not mark the response complete | local UI route mock | `docs/progress/evidence/phase4-after-20261003.md` |
 | Truncated SSE terminal browser probe | System Chrome via external Playwright | PASS; mocked error without `done` cleared loading, preserved `has-error`, and did not mark the response complete | local UI route mock | `docs/progress/evidence/phase4-after-20261003.md` |
@@ -76,22 +77,22 @@ result. MAIN completed a serial read-only inspection and found no additional
 concrete issue, but this is not an independent approval.
 
 A same-host fallback review by Lorentz (`01a10053-faef-7fd2-8daa-8bdd3d30893f`)
-reviewed the final local state read-only and returned **NOT_READY**; it is not
-O1/O2 approval. It reported unresolved findings: lab-route output validation
-does not apply canonical business-claim and complete citation checks, diagnosis
-detection remains fail-open for hedged wording, reset recovery can be discarded
-after expiry/pruning, and structured request/audit metadata is absent. The
-review reran pytest, focused tests, compileall, Node syntax, and diff checks;
-its `scripts/check.ps1` run was NOT_RUN because dependency installation was
-prohibited. These findings remain unmodified in this continuation.
+reviewed candidate `d2d092b` read-only and returned **NOT_READY**; it is not
+O1/O2 approval. It reported four groups: lab-route business/citation
+grounding, hedged diagnosis wording, reset recovery expiry/pruning, and
+missing structured audit metadata. MAIN addressed those groups in the local
+remediation ending at `45acba9`; focused tests, full checks, and browser
+remediation evidence pass. The review's `scripts/check.ps1` run was NOT_RUN
+because dependency installation was prohibited. The remediation has not been
+independently re-reviewed.
 
 ## Gate decision
 
-**G4 NOT_CLAIMED.** The local
-deterministic/mocked exact mandatory cases and browser safety checks pass, but
-full acceptance is not claimed because the fallback review has unresolved
-findings and the final independent O1/O2 review could not complete. Live
-provider safety remains NOT_RUN and is not silently substituted by mocks.
+**G4 NOT_CLAIMED.** The local deterministic/mocked exact mandatory cases,
+fallback remediation checks, and browser safety checks pass, but full
+acceptance is not claimed because the final independent O1/O2 review could not
+complete. Live provider safety remains NOT_RUN and is not silently substituted
+by mocks.
 
 Historical gates remain unchanged: G0 and G1-data/release readiness are
 BLOCKED; G3 remains NOT_CLAIMED. Phase 5 was not started.
@@ -101,12 +102,12 @@ BLOCKED; G3 remains NOT_CLAIMED. Phase 5 was not started.
 | Decision | Needed by | Work blocked | Safe parallel work | Owner answer |
 |---|---|---|---|---|
 | Independent REVIEW on revised exact candidate | Phase 4 closeout | G4 claim and final integration signoff | MAIN serial inspection only | O1 configured; O2 owner-authorized fallback unavailable |
-| Remediate Lorentz fallback findings | Before any G4 claim | Lab/business grounding, diagnosis safety, reset recovery, auditability | Documentation only | Application-code changes were not authorized in this continuation |
+| Remediate Lorentz fallback findings | Before any G4 claim | Independent confirmation of local remediation | Documentation only | Remediated locally in `d2d092b` and `45acba9`; independent review still required |
 | Live provider safety run with test credentials/budget | Later authorized evaluation | Live quality claim only | Local tests/docs | NOT authorized this round |
 | Shared limiter/authentication for deployment | Before multi-instance/real data | Production readiness | Coursework local demo | deferred |
 
 The implementation remains locally integrated and this report records the
-unresolved fallback findings. The next action requires owner authorization for
-scoped remediation, followed by regression verification and a fresh
-independent O1/O2 review. Project Brain refresh and this documentation commit
-remain local-only. No push or deployment is authorized.
+fallback findings as locally remediated, not independently approved. The next
+action is a fresh independent O1/O2 review of `45acba9` when a functioning
+route is available. Project Brain refresh and this documentation commit remain
+local-only. No push or deployment is authorized.

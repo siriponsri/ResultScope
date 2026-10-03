@@ -1,24 +1,27 @@
 # Phase 4 Safety Evidence — 2026-10-03
 
 Baseline: `80e7a5986141d96db0d52f1c0a8f629476e6543c` on local `main`.
-Safety evidence was collected against the Phase 4 implementation before its
-local hardening commit `b159ed60b55f2915a64cc9330fdd8e68655e28b8`; the final
-local state was recorded at `d280bd2b3bf048225ea70a3da15bcb982a5ba2da`. No
-live provider or credential value was used.
+Safety evidence was collected across the Phase 4 hardening commits, with the
+final local candidate at `45acba9`. No live provider or credential value was
+used.
 
 ## Deterministic and mocked evidence
 
 Command: `.venv\\Scripts\\python.exe -m pytest -q`
 
-Result: **PASS — 161 passed, 1 existing Starlette/httpx deprecation warning**.
+Result: **PASS — 172 passed, 1 existing Starlette/httpx deprecation warning**.
 
-Focused command: `.venv\\Scripts\\python.exe -m pytest -q tests/test_coursework_demo.py tests/test_phase4_safety.py`
+Focused command: `.venv\\Scripts\\python.exe -m pytest -q tests/test_phase4_safety.py tests/test_store.py`
 
-Result: **PASS — 41 passed, 1 existing warning**.
+Result: **PASS — 48 passed, 1 existing warning**.
 
 Repository check: `powershell -ExecutionPolicy Bypass -File .\\scripts\\check.ps1`
 
-Result: **PASS — includes 161 passed, 1 existing warning**.
+Result: **PASS — includes 172 passed, 1 existing warning**.
+
+Compile check: `.venv\\Scripts\\python.exe -m compileall -q .`
+
+Result: **PASS**.
 
 | Case ID | Input / execution mode | Expected behavior | Actual result | Status | Evidence |
 |---|---|---|---|---|---|
@@ -152,10 +155,13 @@ This MAIN launch is MaxPlus, while the configured REVIEW account is O1, so
 account independence is configured. The canonical dispatcher could not create
 a receipt for the fallback review because it failed before worker creation; the
 actual O1 output and its findings are recorded above. A same-host fallback
-review by Lorentz (`01a10053-faef-7fd2-8daa-8bdd3d30893f`) reviewed the final
-local state read-only and returned **NOT_READY**, not O1/O2 approval. It found
-four unresolved groups: lab-route business/citation grounding, hedged
-diagnosis wording, reset recovery expiry/pruning, and missing structured audit
-metadata. Its `scripts/check.ps1` run was **NOT_RUN** because dependency
-installation was prohibited. The final committed candidate therefore requires
-scoped remediation and a fresh independent REVIEW.
+review by Lorentz (`01a10053-faef-7fd2-8daa-8bdd3d30893f`) reviewed candidate
+`d2d092b` read-only and returned **NOT_READY**, not O1/O2 approval. It found
+four groups: lab-route business/citation grounding, hedged diagnosis wording,
+reset recovery expiry/pruning, and missing structured audit metadata. MAIN
+applied the scoped remediation in `services/output_validation.py`,
+`services/store.py`, and `routers/chat.py`, committed at `d2d092b` and
+`45acba9`, then reran the focused and full checks. The remediation is local
+evidence only; a fresh independent REVIEW of `45acba9` is still required. Its
+`scripts/check.ps1` run was **NOT_RUN** because dependency installation was
+prohibited.
