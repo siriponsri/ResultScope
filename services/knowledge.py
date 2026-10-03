@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 
 from validation.validate_corpus import validate_corpus, validate_release_readiness
 
-KnowledgeMode = Literal["release", "synthetic"]
+KnowledgeMode = Literal["release", "synthetic", "public_reference"]
 DEMO_NOTICE_TH = "ข้อมูลธุรกิจสมมติสำหรับการเรียน ไม่รับบริการจริง"
 DEMO_ROOT_RELATIVE = Path("docs/coursework-demo/ResultScope_Coursework_Demo_v1")
 
@@ -29,6 +29,13 @@ class SourceProvenance:
     checksum: str
     origin: str
     source_kind: str
+    title: str | None = None
+    organisation: str | None = None
+    source_url: str | None = None
+    document_date: str | None = None
+    license_text: str | None = None
+    data_class: str | None = None
+    release_eligible: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -57,7 +64,7 @@ class KnowledgeBase:
         return {
             "mode": self.mode,
             "demo": self.demo,
-            "data_class": "synthetic" if self.demo else "release",
+            "data_class": "synthetic" if self.demo else self.mode,
             "demo_notice": DEMO_NOTICE_TH if self.demo else None,
             "corpus_version": self.corpus_version,
             "record_count": len(self.records),
@@ -440,9 +447,30 @@ def load_knowledge_base(
 
 
 def knowledge_base_to_dict(base: KnowledgeBase) -> dict[str, Any]:
+    def source_dict(source: SourceProvenance) -> dict[str, Any]:
+        # Keep legacy indexes stable while preserving extended provenance when present.
+        result = {
+            "source_id": source.source_id,
+            "version": source.version,
+            "checksum": source.checksum,
+            "origin": source.origin,
+            "source_kind": source.source_kind,
+        }
+        optional = {
+            "title": source.title,
+            "organisation": source.organisation,
+            "source_url": source.source_url,
+            "document_date": source.document_date,
+            "license_text": source.license_text,
+            "data_class": source.data_class,
+            "release_eligible": source.release_eligible,
+        }
+        result.update({key: value for key, value in optional.items() if value is not None})
+        return result
+
     return {
         "schema_version": "knowledge-index-v1",
         **base.metadata(),
-        "sources": {key: asdict(value) for key, value in sorted(base.sources.items())},
+        "sources": {key: source_dict(value) for key, value in sorted(base.sources.items())},
         "records": [asdict(record) for record in base.records],
     }

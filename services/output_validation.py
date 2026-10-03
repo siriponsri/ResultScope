@@ -9,6 +9,8 @@ from config import settings
 NUMBER_PATTERN = re.compile(r"(?<![\w])\d+(?:[.,]\d+)?(?![\w])")
 SOURCE_MARKER_PATTERN = re.compile(r"\[((?:SRC|DEMO)-[A-Z0-9_-]+)\]", re.IGNORECASE)
 SOURCE_ID_PATTERN = re.compile(r"\b(?:SRC|DEMO)-[A-Z0-9_-]+\b", re.IGNORECASE)
+BRACKETED_SOURCE_PATTERN = re.compile(r"\[((?:[A-Za-z][A-Za-z0-9]*)-[A-Za-z0-9_-]{1,80})\]")
+URL_PATTERN = re.compile(r"https?://[^\s<>\]\)\"']+", re.IGNORECASE)
 SOURCE_ATTRIBUTION_PATTERN = re.compile(
     r"\b(?:source|sources|citation|citations|reference|references|from|แหล่ง(?:ที่มา|ข้อมูล)?|"
     r"อ้างอิง|ข้อมูลจาก|จาก)\s*(?:is|are|คือ|ได้แก่|:)?\s*((?:SRC|DEMO)-[A-Z0-9_-]+)\b",
@@ -525,6 +527,19 @@ def _validate_source_attributions(candidate: str, allowed_sources: set[str]) -> 
             raise OutputValidationError("provider_output_forged_citation")
 
 
+def _validate_source_urls(candidate: str, items: tuple[Any, ...]) -> None:
+    allowed = set()
+    for item in items:
+        data = item.record.data if isinstance(item.record.data, dict) else {}
+        for key in ("source_url", "origin", "publication_url"):
+            value = data.get(key)
+            if isinstance(value, str):
+                allowed.add(value.rstrip(".,;"))
+    for url in URL_PATTERN.findall(candidate):
+        if url.rstrip(".,;") not in allowed:
+            raise OutputValidationError("provider_output_forged_source_url")
+
+
 def _price_amount(data: dict[str, Any]) -> float | int | None:
     price = data.get("price")
     amount = price.get("amount") if isinstance(price, dict) else price
@@ -689,13 +704,14 @@ def validate_provider_text(
     known_lab_units = _known_lab_units(analysis, confirmed_extraction)
     mentioned = {
         source.casefold()
-        for pattern in (SOURCE_MARKER_PATTERN, SOURCE_ID_PATTERN, SOURCE_ATTRIBUTION_PATTERN)
+        for pattern in (SOURCE_MARKER_PATTERN, SOURCE_ID_PATTERN, BRACKETED_SOURCE_PATTERN, SOURCE_ATTRIBUTION_PATTERN)
         for source in pattern.findall(candidate)
         if source.casefold() not in known_lab_units
     }
     if not mentioned.issubset(allowed_sources):
         raise OutputValidationError("provider_output_forged_citation")
     _validate_source_attributions(candidate, allowed_sources)
+    _validate_source_urls(candidate, items)
     return candidate
 
 

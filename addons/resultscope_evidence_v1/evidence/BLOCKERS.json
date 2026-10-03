@@ -1,0 +1,21 @@
+{
+  "scope": "Additive extension delivery; no access to latest private local Phase 4 source",
+  "github_base_verified": "68b6e256ac074c0714e39aa5c0edd5d69ce936c9",
+  "owner_reported_local_head": "b9bc97d",
+  "extension_tests": "PASS",
+  "main_application_integration": "NOT_RUN",
+  "main_application_full_suite": "NOT_RUN",
+  "business_release_readiness": "BLOCKED",
+  "commercial_source_permission": "BLOCKED",
+  "live_typhoon": "NOT_RUN",
+  "live_clef": "NOT_RUN",
+  "live_guard": "NOT_RUN",
+  "independent_review": "NOT_RUN",
+  "patient_specific_reference_selection": "NOT_IMPLEMENTED",
+  "his_pharmacy_live_integration": "NOT_IMPLEMENTED",
+  "first_time_human_usability_study": "NOT_RUN",
+  "local_windows_execution": "NOT_RUN",
+  "push": "NOT_PERFORMED",
+  "deployment": "NOT_PERFORMED",
+  "historical_gates": "Unchanged; this package does not re-audit them"
+}

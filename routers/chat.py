@@ -44,7 +44,7 @@ class ChatResponse(BaseModel):
     scope: str
     status: str
     intent: str
-    citations: list[dict[str, str]] = Field(default_factory=list)
+    citations: list[dict[str, Any]] = Field(default_factory=list)
     corpus_mode: str
     corpus_version: str | None = None
     demo: bool

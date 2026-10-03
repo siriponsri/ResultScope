@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#081326" />
-    <meta name="description" content="ResultScope turns laboratory values into one rule-grounded, inspectable explanation." />
-    <title>{{ app_name }} — {{ tagline }}</title>
+    <meta name="description" content="ResultScope ช่วยอ่านค่าผลแล็บจากข้อมูลที่คุณให้ พร้อมคำอธิบายที่ตรวจสอบได้" />
+    <title>{{ app_name }} — อ่านผลแล็บให้เข้าใจง่าย</title>
     <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,10 +25,10 @@
       <header class="app-header">
         <a class="brand" href="/" aria-label="ResultScope home">
           <img src="/static/img/mark.svg" alt="" width="34" height="34" />
-          <span class="brand-copy"><strong>{{ app_name }}</strong><span>Rule-grounded lab intelligence</span></span>
+          <span class="brand-copy"><strong>{{ app_name }}</strong><span>ผู้ช่วยอ่านผลแล็บแบบมีหลักฐาน</span></span>
         </a>
         <div class="header-meta">
-          <span class="boundary-status"><i aria-hidden="true"></i> Lab-only system</span>
+          <span class="boundary-status"><i aria-hidden="true"></i> ใช้กับผลแล็บเท่านั้น</span>
           <span class="owner-name">{{ owner_name }}</span>
           {% if demo_notice %}<span class="demo-notice" lang="th">{{ demo_notice }}</span>{% endif %}
         </div>
@@ -37,64 +37,64 @@
       <main class="app-main">
         <section id="starter" class="intake-workspace" aria-labelledby="intake-title">
           <div class="intake-introduction">
-            <p class="section-kicker"><span>01</span> Laboratory signal workspace</p>
-            <h1 id="intake-title">Read the signal.<br /><em>Keep the context.</em></h1>
-            <p class="intake-lede">A deterministic engine verifies what is actually present in your report before AI explains what it may mean.</p>
+            <p class="section-kicker"><span>01</span> เริ่มต้นที่ผลแล็บของคุณ</p>
+            <h1 id="intake-title">อ่านผลแล็บของคุณ<br /><em>ให้เข้าใจง่าย</em></h1>
+            <p class="intake-lede">อัปโหลดใบผลตรวจ หรือพิมพ์คำถามเกี่ยวกับผลแล็บ ระบบจะอ่านค่าที่มีจริง ตรวจช่วงอ้างอิงที่คุณให้ และอธิบายอย่างระมัดระวัง</p>
 
-            <ol class="sequence-map" aria-label="Analysis sequence">
-              <li><span>01</span><div><strong>Read</strong><small>Extract literal values and supplied ranges</small></div></li>
-              <li><span>02</span><div><strong>Verify</strong><small>Apply inspectable arithmetic rules</small></div></li>
-              <li><span>03</span><div><strong>Explain</strong><small>Generate one grounded narrative</small></div></li>
+            <ol class="sequence-map" aria-label="ลำดับการอ่านผล">
+              <li><span>01</span><div><strong>อ่าน</strong><small>ดึงค่าตัวเลข หน่วย และช่วงอ้างอิง</small></div></li>
+              <li><span>02</span><div><strong>ตรวจ</strong><small>เทียบตามกติกาที่เปิดเผยได้</small></div></li>
+              <li><span>03</span><div><strong>อธิบาย</strong><small>สรุปจากข้อมูลที่ตรวจสอบแล้ว</small></div></li>
             </ol>
           </div>
 
           <section class="intake-console" aria-label="Laboratory result intake">
-            <div class="console-edge" aria-hidden="true"><span>LIVE INPUT</span><i></i><span>RULEBOOK 2026.08</span></div>
+            <div class="console-edge" aria-hidden="true"><span>รับข้อมูล</span><i></i><span>กติกา 2026.08</span></div>
             <div class="panel-heading">
               <div>
-                <p class="section-kicker"><span>+</span> New analysis</p>
-                <h2>Paste a result. Ask a precise question.</h2>
+                <p class="section-kicker"><span>+</span> การวิเคราะห์ใหม่</p>
+                <h2>เริ่มจากค่าที่มี หรือถามคำถามสั้น ๆ</h2>
               </div>
-              <button id="sample-button" class="quiet-button" type="button">Load sample</button>
+              <button id="sample-button" class="quiet-button" type="button">เติมตัวอย่าง</button>
             </div>
 
             <form id="chat-form" class="intake-form">
-              <label for="message-input">Laboratory results or question</label>
-              <textarea id="message-input" rows="9" maxlength="12000" placeholder="Example: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100)…" required></textarea>
+              <label for="message-input">ผลตรวจหรือคำถามของคุณ</label>
+              <textarea id="message-input" rows="9" maxlength="12000" placeholder="เช่น Hb 10.8 g/dL (12–16), MCV 72 fL (80–100) อยากทราบว่าควรอ่านอย่างไร" required></textarea>
               <div class="image-intake" id="image-intake">
                 <div class="image-intake-heading">
                   <div>
-                    <label for="image-input">Read a document image</label>
-                    <p>JPEG or PNG only. Review every extracted field before using it in an answer.</p>
+                    <label for="image-input">อัปโหลดใบผลตรวจ</label>
+                    <p>รองรับ JPEG หรือ PNG ตรวจและแก้ค่าที่อ่านได้ทุกช่องก่อนยืนยัน</p>
                   </div>
-                  <span id="image-status" class="image-status">No image selected</span>
+                  <span id="image-status" class="image-status" role="status" aria-live="polite" aria-atomic="true">ยังไม่ได้เลือกไฟล์</span>
                 </div>
                 <input id="image-input" type="file" accept="image/jpeg,image/png" />
-                <div id="image-review" class="image-review hidden" aria-live="polite"></div>
+                <div id="image-review" class="image-review hidden" aria-live="polite" aria-atomic="true"></div>
               </div>
               <div class="intake-form-footer">
-                <p><span id="char-count">0 / 12,000</span><span>Include the report's unit and reference range when available.</span></p>
+                  <p><span id="char-count">0 / 12,000</span><span>ถ้ามี ให้ใส่หน่วยและช่วงอ้างอิงที่อยู่บนใบผลตรวจ</span></p>
                 <div class="intake-actions">
-                  <button id="stop-button" class="secondary-button hidden" type="button">Stop</button>
-                  <button id="send-button" class="primary-button" type="submit"><span>Run analysis</span><b aria-hidden="true">↗</b></button>
+                  <button id="stop-button" class="secondary-button hidden" type="button">หยุด</button>
+                  <button id="send-button" class="primary-button" type="submit"><span>อ่านผลแล็บ</span><b aria-hidden="true">↗</b></button>
                 </div>
               </div>
             </form>
 
-            <div class="supported-domains" aria-label="Laboratory result examples">
-              <p>Signal presets</p>
+            <div class="supported-domains" aria-label="ตัวอย่างคำถามเกี่ยวกับผลแล็บ">
+              <p>ลองถาม</p>
               <div class="domain-actions">
-                <button type="button" data-sample="CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150). Please explain the overall pattern.">CBC pattern</button>
-                <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. Please explain how these should be read together.">Kidney pair</button>
-                <button type="button" data-sample="AST 68 U/L (0-40), ALT 92 U/L (0-41), ALP 88 U/L (40-129). Please explain the pattern without diagnosing.">Liver pattern</button>
-                <button type="button" data-sample="HbA1c 6.1%. What additional information affects interpretation?">HbA1c</button>
-                <button type="button" data-sample="LDL 162 mg/dL. What other details affect how this is interpreted?">Lipid</button>
-                <button type="button" data-sample="TSH 5.2 mIU/L. What context changes how this test is read?">Thyroid</button>
+                <button type="button" data-sample="CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150). ช่วยอธิบายภาพรวมโดยไม่วินิจฉัย">เม็ดเลือด CBC</button>
+                <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. ควรอ่านสองค่านี้ร่วมกันอย่างไร">Creatinine + eGFR</button>
+                <button type="button" data-sample="AST 68 U/L (0-40), ALT 92 U/L (0-41), ALP 88 U/L (40-129). ช่วยอธิบายรูปแบบโดยไม่วินิจฉัย">ค่าตับ</button>
+                <button type="button" data-sample="HbA1c 6.1% มีข้อมูลอะไรอีกที่ส่งผลต่อการแปลผล">HbA1c</button>
+                <button type="button" data-sample="LDL 162 mg/dL มีบริบทอะไรอีกที่ควรรู้ก่อนอ่านค่านี้">ไขมัน LDL</button>
+                <button type="button" data-sample="TSH 5.2 mIU/L บริบทอะไรทำให้การอ่านค่านี้ต่างกัน">ไทรอยด์</button>
               </div>
             </div>
 
             <div class="console-trust">
-              <span>Uses supplied ranges</span><span>No diagnosis</span><span>Rules inspectable</span>
+              <span>ยึดช่วงอ้างอิงในใบผลตรวจ</span><span>ไม่วินิจฉัย</span><span>เปิดดูกติกาได้</span>
             </div>
           </section>
         </section>
@@ -102,23 +102,23 @@
         <section id="conversation" class="analysis-workspace hidden" aria-labelledby="analysis-title">
           <header class="analysis-header">
             <div>
-              <p class="section-kicker"><span>02</span> Active signal</p>
-              <h1 id="analysis-title">Results, resolved into context.</h1>
+              <p class="section-kicker"><span>02</span> ผลการอ่าน</p>
+              <h1 id="analysis-title">ผลตรวจในบริบทที่อ่านได้</h1>
             </div>
-            <button id="new-chat-button" type="button" class="quiet-button">New analysis <span aria-hidden="true">↗</span></button>
+            <button id="new-chat-button" type="button" class="quiet-button">เริ่มการวิเคราะห์ใหม่ <span aria-hidden="true">↗</span></button>
           </header>
 
           <div class="analysis-layout">
-            <aside class="analysis-rail" aria-label="Deterministic analysis pipeline">
+            <aside class="analysis-rail" aria-label="ขั้นตอนตรวจสอบผล">
               <div class="rail-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-              <p class="rail-label">Pre-answer engine</p>
+              <p class="rail-label">ขั้นตอนก่อนคำอธิบาย</p>
               <ol>
-                <li><span>S</span><div><strong>Scope gate</strong><small>Allow or local response</small></div></li>
-                <li><span>P</span><div><strong>Literal parser</strong><small>Marker · value · unit · range</small></div></li>
-                <li><span>R</span><div><strong>Range rules</strong><small>Low · high · within · unknown</small></div></li>
-                <li><span>G</span><div><strong>Grounding</strong><small>Facts locked before LLM</small></div></li>
+                <li><span>S</span><div><strong>ขอบเขต</strong><small>รับเฉพาะคำถามเกี่ยวกับผลแล็บ</small></div></li>
+                <li><span>P</span><div><strong>อ่านค่าตรงตัว</strong><small>ชื่อ · ค่า · หน่วย · ช่วงอ้างอิง</small></div></li>
+                <li><span>R</span><div><strong>กติกาช่วง</strong><small>ต่ำ · สูง · อยู่ในช่วง · ไม่ทราบ</small></div></li>
+                <li><span>G</span><div><strong>แหล่งข้อมูล</strong><small>ล็อกข้อเท็จจริงก่อนเรียกโมเดล</small></div></li>
               </ol>
-              <a class="rulebook-link" href="/api/v1/rules" target="_blank" rel="noreferrer">Open full rulebook <span aria-hidden="true">↗</span></a>
+              <a class="rulebook-link" href="/api/v1/rules" target="_blank" rel="noreferrer">ดูกติกาทั้งหมด <span aria-hidden="true">↗</span></a>
             </aside>
 
             <div class="analysis-content">
@@ -128,19 +128,19 @@
               <div id="error-banner" class="error-banner hidden" role="alert"></div>
 
               <form id="followup-form" class="followup-form">
-                <label for="followup-input">Interrogate this analysis</label>
+                <label for="followup-input">ถามต่อจากผลนี้</label>
                 <div class="followup-row">
-                  <textarea id="followup-input" rows="2" maxlength="12000" placeholder="Ask about one value, a relationship, or missing context" required></textarea>
-                  <button id="followup-send" type="submit" class="primary-button"><span>Ask follow-up</span><b aria-hidden="true">↗</b></button>
+                  <textarea id="followup-input" rows="2" maxlength="12000" placeholder="ถามเกี่ยวกับค่าหนึ่งค่า ความสัมพันธ์ หรือข้อมูลที่ยังขาด" required></textarea>
+                  <button id="followup-send" type="submit" class="primary-button"><span>ถามต่อ</span><b aria-hidden="true">↗</b></button>
                 </div>
-                <p>Follow-ups remain inside the current laboratory context.</p>
+                <p>คำถามต่อยังอยู่ในบริบทผลแล็บชุดเดิม</p>
               </form>
             </div>
           </div>
         </section>
       </main>
 
-      <footer class="app-footer"><span>{{ app_name }} / Laboratory-result intelligence</span><span>Educational support — not a diagnosis</span></footer>
+      <footer class="app-footer"><span>{{ app_name }} / ผู้ช่วยอ่านผลแล็บ</span><span>ข้อมูลเพื่อความเข้าใจ ไม่ใช่การวินิจฉัย</span></footer>
     </div>
 
     <script src="/static/js/chat.js"></script>

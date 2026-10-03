@@ -26,6 +26,9 @@ let pendingExtraction = null;
 let confirmedExtractionId = null;
 let imagePreviewUrl = null;
 let currentImageFile = null;
+let requestInFlight = false;
+let lastMessage = "";
+let lastOrigin = "starter";
 
 function renderMarkdown(rawText) {
   if (window.marked && window.DOMPurify) {
@@ -79,11 +82,11 @@ function createAnalysisSurface(message) {
   const identity = createElement("div", "response-identity");
   identity.append(
     createElement("span", "response-run", `RUN ${String(runCount).padStart(2, "0")}`),
-    createElement("h2", "response-title", runCount === 1 ? "Integrated result analysis" : "Contextual follow-up")
+    createElement("h2", "response-title", runCount === 1 ? "สรุปผลตรวจแบบรวม" : "คำถามต่อในบริบทเดิม")
   );
 
   const progress = createElement("ol", "response-progress");
-  ["Read", "Verify", "Explain"].forEach((label, index) => {
+  ["อ่าน", "ตรวจ", "อธิบาย"].forEach((label, index) => {
     const item = createElement("li", index === 0 ? "is-active" : "");
     item.dataset.step = String(index + 1);
     item.append(createElement("i", "", String(index + 1)), createElement("span", "", label));
@@ -93,39 +96,47 @@ function createAnalysisSurface(message) {
 
   const source = createElement("details", "source-disclosure");
   const sourceSummary = createElement("summary", "");
-  sourceSummary.append(createElement("span", "", "Source input"), createElement("b", "", "View exact text"));
+  sourceSummary.append(createElement("span", "", "ข้อความที่ส่งให้ระบบ"), createElement("b", "", "ดูข้อความเต็ม"));
   source.append(sourceSummary, createElement("pre", "source-text", message));
 
   const body = createElement("div", "response-body");
   const metricZone = createElement("section", "metric-zone");
-  metricZone.setAttribute("aria-label", "Deterministically extracted values");
+  metricZone.setAttribute("aria-label", "ค่าที่อ่านและตรวจแบบตรงตัว");
   metricZone.innerHTML = `
     <div class="zone-heading">
-      <div><span>Verified layer</span><h3>Reading literal values</h3></div>
-      <strong class="rule-version">Rulebook —</strong>
+      <div><span>ชั้นข้อมูลที่ตรวจแล้ว</span><h3>กำลังอ่านค่าตรงตัว</h3></div>
+      <strong class="rule-version">กติกา —</strong>
     </div>
     <div class="metric-loading" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   `;
 
   const narrativeZone = createElement("section", "narrative-zone");
-  narrativeZone.setAttribute("aria-label", "Integrated explanation");
+  narrativeZone.setAttribute("aria-label", "คำอธิบายจากข้อมูลที่ตรวจแล้ว");
   narrativeZone.innerHTML = `
     <div class="zone-heading">
-      <div><span>Integrated explanation</span><h3>Grounding the narrative</h3></div>
-      <strong class="answer-state">Waiting for verified facts</strong>
+      <div><span>คำอธิบายแบบรวม</span><h3>กำลังเตรียมข้อเท็จจริง</h3></div>
+      <strong class="answer-state">รอค่าที่ตรวจแล้ว</strong>
     </div>
-    <div class="narrative-output"><p class="narrative-wait"><i></i> The model receives the deterministic contract before writing.</p></div>
+    <div class="narrative-output"><p class="narrative-wait"><i></i> ระบบจะอธิบายหลังตรวจค่าที่อ่านได้</p></div>
   `;
   body.append(metricZone, narrativeZone);
+
+  const citations = createElement("details", "citation-disclosure hidden");
+  const citationSummary = createElement("summary", "");
+  citationSummary.append(
+    createElement("span", "", "แหล่งอ้างอิงที่ใช้"),
+    createElement("b", "", "เปิดดูข้อมูลต้นทาง")
+  );
+  citations.append(citationSummary, createElement("div", "citation-list"));
 
   const evidence = createElement("details", "rule-disclosure");
   const evidenceSummary = createElement("summary", "");
   const summaryCopy = createElement("span", "");
-  summaryCopy.append(createElement("strong", "", "How this answer was grounded"), createElement("small", "", "Inspect the rules applied before the LLM call"));
+  summaryCopy.append(createElement("strong", "", "คำตอบนี้มีที่มาอย่างไร"), createElement("small", "", "ดูกติกาที่ใช้ก่อนเรียกโมเดล"));
   evidenceSummary.append(summaryCopy, createElement("b", "", "+"));
   evidence.append(evidenceSummary, createElement("div", "rule-trace"));
 
-  wrapper.append(head, source, body, evidence);
+  wrapper.append(head, source, body, citations, evidence);
   chatWindow.insertBefore(wrapper, loadingIndicator);
   requestAnimationFrame(() => wrapper.classList.add("is-mounted"));
   scrollToNode(wrapper);
@@ -137,13 +148,13 @@ function formatNumber(value) {
 }
 
 function statusCopy(flag, rangeState) {
-  if (rangeState === "invalid") return "INVALID RANGE";
+  if (rangeState === "invalid") return "ช่วงอ้างอิงใช้ไม่ได้";
   return {
-    low: "BELOW RANGE",
-    high: "ABOVE RANGE",
-    within: "WITHIN RANGE",
-    unknown: "RANGE UNKNOWN",
-  }[flag] || "UNKNOWN";
+    low: "ต่ำกว่าช่วง",
+    high: "สูงกว่าช่วง",
+    within: "อยู่ในช่วง",
+    unknown: "ยังไม่ทราบช่วง",
+  }[flag] || "ยังไม่ทราบ";
 }
 
 function buildRangeVisual(item) {
@@ -159,8 +170,8 @@ function buildRangeVisual(item) {
         "p",
         "",
         item.range_state === "invalid"
-          ? "The supplied interval is reversed and cannot be used."
-          : "No valid report range was supplied. Status stays unknown."
+          ? "ช่วงอ้างอิงที่ให้มาสลับด้าน จึงยังใช้เทียบไม่ได้"
+          : "ไม่ได้ให้ช่วงอ้างอิงที่ใช้ได้ สถานะจึงยังไม่ทราบ"
       )
     );
     return shell;
@@ -190,7 +201,7 @@ function buildRangeVisual(item) {
     createElement("b", "range-value")
   );
   track.lastElementChild.setAttribute("aria-label", "Value position");
-  shell.append(labels, track, createElement("p", "", "Compared arithmetically with the interval supplied in this message."));
+  shell.append(labels, track, createElement("p", "", "เทียบด้วยการคำนวณกับช่วงอ้างอิงที่ให้มาในข้อความนี้"));
   return shell;
 }
 
@@ -212,7 +223,7 @@ function renderMetricInspector(container, item) {
     : item.range_state === "invalid"
       ? `${formatNumber(item.reference_low)}–${formatNumber(item.reference_high)}${unit} · invalid order`
       : "Not supplied";
-  reference.append(createElement("span", "", "Report reference"), createElement("strong", "", referenceText));
+  reference.append(createElement("span", "", "ช่วงอ้างอิงในใบผลตรวจ"), createElement("strong", "", referenceText));
 
   container.append(top, buildRangeVisual(item), reference);
 }
@@ -224,17 +235,17 @@ function renderMetrics(surface, meta) {
   const heading = createElement("div", "zone-heading");
   const copy = createElement("div", "");
   copy.append(
-    createElement("span", "", "Verified layer"),
-    createElement("h3", "", meta.count ? `${meta.count} literal value${meta.count === 1 ? "" : "s"} found` : "Context-only follow-up")
+    createElement("span", "", "ชั้นข้อมูลที่ตรวจแล้ว"),
+    createElement("h3", "", meta.count ? `พบค่าตัวเลข ${meta.count} ค่า` : "คำถามต่อที่ใช้บริบทเดิม")
   );
-  heading.append(copy, createElement("strong", "rule-version", `Rules ${meta.rulebook_version}`));
+  heading.append(copy, createElement("strong", "rule-version", `กติกา ${meta.rulebook_version}`));
   zone.appendChild(heading);
 
   if (!meta.values?.length) {
     const empty = createElement("div", "metric-empty");
     empty.append(
-      createElement("strong", "", "No new numeric value was extracted."),
-      createElement("p", "", "The explanation can use prior laboratory context, but it cannot invent a new deterministic result.")
+      createElement("strong", "", "ยังอ่านค่าตัวเลขใหม่ไม่ได้"),
+      createElement("p", "", "คำอธิบายใช้บริบทผลแล็บเดิมได้ แต่จะไม่สร้างค่าผลตรวจขึ้นเอง")
     );
     zone.appendChild(empty);
   } else {
@@ -291,14 +302,14 @@ function renderMetrics(surface, meta) {
 function renderLocalResponse(surface, message, intent, suggestions = []) {
   surface.classList.remove("is-loading");
   surface.classList.add("is-local");
-  surface.querySelector(".response-title").textContent = intent === "outside_lab_scope" ? "Outside the lab boundary" : "ResultScope guidance";
+  surface.querySelector(".response-title").textContent = intent === "outside_lab_scope" ? "อยู่นอกขอบเขตผลแล็บ" : "คำแนะนำจาก ResultScope";
   surface.querySelector(".response-progress").remove();
   surface.querySelector(".metric-zone").remove();
   surface.querySelector(".rule-disclosure").remove();
 
   const narrative = surface.querySelector(".narrative-zone");
-  narrative.querySelector(".zone-heading h3").textContent = "Deterministic local response";
-  narrative.querySelector(".answer-state").textContent = "No LLM called";
+  narrative.querySelector(".zone-heading h3").textContent = "คำตอบจากกติกาในระบบ";
+  narrative.querySelector(".answer-state").textContent = "ไม่ได้เรียก LLM";
   const output = narrative.querySelector(".narrative-output");
   output.innerHTML = renderMarkdown(message);
 
@@ -320,8 +331,8 @@ function renderLocalResponse(surface, message, intent, suggestions = []) {
 function beginNarrative(surface) {
   const step = surface.querySelector('.response-progress li[data-step="3"]');
   step?.classList.add("is-active");
-  surface.querySelector(".answer-state").textContent = "Streaming grounded answer";
-  surface.querySelector(".narrative-zone .zone-heading h3").textContent = "One answer, grounded in verified facts";
+  surface.querySelector(".answer-state").textContent = "กำลังส่งคำตอบที่ยึดข้อมูลตรวจแล้ว";
+  surface.querySelector(".narrative-zone .zone-heading h3").textContent = "คำอธิบายเดียวจากข้อเท็จจริงที่ตรวจแล้ว";
 }
 
 function finishSurface(surface) {
@@ -330,7 +341,7 @@ function finishSurface(surface) {
     surface.classList.remove("is-complete");
     surface.querySelectorAll(".response-progress li").forEach((step) => step.classList.remove("is-active"));
     const answerState = surface.querySelector(".answer-state");
-    if (answerState) answerState.textContent = "Response ended with an error";
+    if (answerState) answerState.textContent = "คำตอบจบลงด้วยข้อผิดพลาด";
     return;
   }
   surface.classList.add("is-complete");
@@ -339,11 +350,20 @@ function finishSurface(surface) {
     step.classList.add("is-done");
   });
   const answerState = surface.querySelector(".answer-state");
-  if (answerState) answerState.textContent = "Grounded response complete";
+  if (answerState) answerState.textContent = "คำตอบจากข้อมูลที่ตรวจแล้วเสร็จสิ้น";
 }
 
-function showError(message, notice = false) {
-  errorBanner.textContent = message;
+function showError(message, notice = false, retryMessage = null) {
+  errorBanner.replaceChildren(createElement("span", "error-copy", message));
+  if (retryMessage) {
+    const retry = createElement("button", "error-retry", "ลองอีกครั้ง");
+    retry.type = "button";
+    retry.addEventListener("click", () => {
+      clearError();
+      sendMessage(retryMessage, lastOrigin);
+    });
+    errorBanner.appendChild(retry);
+  }
   errorBanner.classList.remove("hidden");
   errorBanner.classList.toggle("notice", notice);
   scrollToNode(errorBanner, "nearest");
@@ -352,7 +372,46 @@ function showError(message, notice = false) {
 function clearError() {
   errorBanner.classList.add("hidden");
   errorBanner.classList.remove("notice");
-  errorBanner.textContent = "";
+  errorBanner.replaceChildren();
+}
+
+function renderCitations(surface, metadata) {
+  const disclosure = surface.querySelector(".citation-disclosure");
+  const list = surface.querySelector(".citation-list");
+  const citations = Array.isArray(metadata?.citations) ? metadata.citations : [];
+  if (!disclosure || !list || !citations.length) return;
+
+  list.replaceChildren();
+  citations.forEach((citation) => {
+    const card = createElement("article", "citation-card");
+    const title = citation.title || citation.source_id || "แหล่งอ้างอิงที่ไม่ระบุชื่อ";
+    card.appendChild(createElement("strong", "citation-title", title));
+    if (citation.organisation) card.appendChild(createElement("span", "citation-organisation", citation.organisation));
+
+    const details = [];
+    if (citation.page !== undefined && citation.page !== null) details.push(`หน้า ${citation.page}`);
+    if (citation.section) details.push(`ส่วน ${citation.section}`);
+    if (citation.version) details.push(`เวอร์ชัน ${citation.version}`);
+    if (citation.data_class) details.push(citation.data_class === "public_reference" ? "ข้อมูลอ้างอิงสาธารณะ" : citation.data_class);
+    if (details.length) card.appendChild(createElement("span", "citation-details", details.join(" · ")));
+    if (citation.license) card.appendChild(createElement("small", "citation-license", `สิทธิ์การใช้: ${citation.license}`));
+
+    const url = citation.source_url || citation.origin;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        const link = createElement("a", "citation-link", "เปิดต้นฉบับ");
+        link.href = parsed.href;
+        link.target = "_blank";
+        link.rel = "noreferrer noopener";
+        card.appendChild(link);
+      }
+    } catch {
+      // Local source origins are provenance text, not browser links.
+    }
+    list.appendChild(card);
+  });
+  disclosure.classList.remove("hidden");
 }
 
 function setImageStatus(message, state = "") {
@@ -373,7 +432,7 @@ function resetImageState() {
   imageInput.value = "";
   imageReview.replaceChildren();
   imageReview.classList.add("hidden");
-  setImageStatus("No image selected");
+  setImageStatus("ยังไม่ได้เลือกไฟล์");
 }
 
 function renderImageReview(file, extraction) {
@@ -385,18 +444,18 @@ function renderImageReview(file, extraction) {
 
   const preview = createElement("img", "image-preview");
   preview.src = imagePreviewUrl;
-  preview.alt = "Uploaded laboratory document preview";
+  preview.alt = "ตัวอย่างใบผลตรวจที่อัปโหลด";
 
   const panel = createElement("div", "image-review-fields");
   const heading = createElement("div", "image-review-heading");
   heading.append(
-    createElement("strong", "", extraction.status === "confirmed" ? "Confirmed extraction" : "Review extracted fields"),
-    createElement("small", "", "Image text is untrusted data. Correct anything unclear before confirming.")
+    createElement("strong", "", extraction.status === "confirmed" ? "ยืนยันค่าที่อ่านแล้ว" : "ตรวจค่าที่อ่านจากภาพ"),
+    createElement("small", "", "ข้อความจากภาพเป็นข้อมูลที่ยังไม่ยืนยัน แก้ค่าที่ไม่ชัดก่อนกดยืนยัน")
   );
   panel.appendChild(heading);
 
   if (!extraction.fields?.length) {
-    panel.appendChild(createElement("p", "image-review-empty", "No readable fields were returned. Upload a clearer image or enter the values manually."));
+    panel.appendChild(createElement("p", "image-review-empty", "ยังอ่านค่าไม่ได้ ลองอัปโหลดภาพที่ชัดขึ้นหรือพิมพ์ค่าเอง"));
   }
 
   const fieldNodes = [];
@@ -404,23 +463,23 @@ function renderImageReview(file, extraction) {
     const row = createElement("fieldset", "image-field");
     row.dataset.fieldId = field.field_id;
     const legend = createElement("legend", "", field.marker || "Unknown field");
-    const valueLabel = createElement("label", "", "Value");
+    const valueLabel = createElement("label", "", "ค่า");
     const value = document.createElement("input");
     value.type = "text";
     value.value = field.raw_value || "";
     value.autocomplete = "off";
     valueLabel.appendChild(value);
-    const unitLabel = createElement("label", "", "Unit");
+    const unitLabel = createElement("label", "", "หน่วย");
     const unit = document.createElement("input");
     unit.type = "text";
     unit.value = field.unit || "";
     unit.autocomplete = "off";
     unitLabel.appendChild(unit);
-    const rangeLabel = createElement("label", "", "Reference range");
+    const rangeLabel = createElement("label", "", "ช่วงอ้างอิง");
     const range = document.createElement("input");
     range.type = "text";
     range.value = field.reference_range_raw || "";
-    range.placeholder = "e.g. 10-15 or leave blank";
+    range.placeholder = "เช่น 10-15 หรือเว้นว่างถ้าไม่มี";
     range.autocomplete = "off";
     rangeLabel.appendChild(range);
     row.append(legend, valueLabel, unitLabel, rangeLabel);
@@ -429,12 +488,12 @@ function renderImageReview(file, extraction) {
   });
 
   const actions = createElement("div", "image-review-actions");
-  const cancel = createElement("button", "secondary-button", "Discard image");
+  const cancel = createElement("button", "secondary-button", "ไม่ใช้ภาพนี้");
   cancel.type = "button";
   cancel.addEventListener("click", cancelImageExtraction);
   actions.appendChild(cancel);
   if (extraction.status === "review_required" && fieldNodes.length) {
-    const confirm = createElement("button", "primary-button", "Confirm fields");
+    const confirm = createElement("button", "primary-button", "ยืนยันค่า");
     confirm.type = "button";
     confirm.addEventListener("click", () => confirmImageExtraction(fieldNodes));
     actions.appendChild(confirm);
@@ -444,7 +503,7 @@ function renderImageReview(file, extraction) {
   const shell = createElement("div", "image-review-shell");
   shell.append(preview, panel);
   imageReview.appendChild(shell);
-  setImageStatus(extraction.status === "confirmed" ? "Confirmed for this session" : "Review required", extraction.status);
+  setImageStatus(extraction.status === "confirmed" ? "ยืนยันสำหรับการวิเคราะห์นี้แล้ว" : "กรุณาตรวจและแก้ค่า", extraction.status);
 }
 
 async function cancelImageExtraction() {
@@ -488,24 +547,26 @@ async function confirmImageExtraction(fieldNodes) {
 async function uploadImage(file) {
   resetImageState();
   currentImageFile = file;
-  setImageStatus("Reading image…", "loading");
+  setImageStatus("กำลังอ่านภาพ…", "loading");
   const form = new FormData();
   form.append("file", file, file.name);
   try {
     const response = await fetch("/api/v1/images/extract", { method: "POST", body: form });
     const body = await response.json();
-    if (!response.ok) throw new Error(body.message || "The image could not be read.");
+    if (!response.ok) throw new Error(body.message || "อ่านภาพไม่สำเร็จ");
     renderImageReview(file, body);
   } catch (error) {
     resetImageState();
-    setImageStatus(error.message || "The image could not be read.", "error");
+    setImageStatus(error.message || "อ่านภาพไม่สำเร็จ", "error");
   }
 }
 
 function setBusy(isBusy) {
+  requestInFlight = isBusy;
   messageInput.disabled = isBusy;
   followupInput.disabled = isBusy;
   imageInput.disabled = isBusy;
+  newChatButton.disabled = isBusy;
   sendButton.classList.toggle("hidden", isBusy);
   stopButton.classList.toggle("hidden", !isBusy);
   followupSend.disabled = isBusy;
@@ -513,7 +574,10 @@ function setBusy(isBusy) {
   analysisContent?.setAttribute("aria-busy", String(isBusy));
 }
 
-async function sendMessage(message) {
+async function sendMessage(message, origin = "followup") {
+  if (requestInFlight || !message) return false;
+  lastMessage = message;
+  lastOrigin = origin;
   clearError();
   showConversation();
   const surface = createAnalysisSurface(message);
@@ -523,6 +587,7 @@ async function sendMessage(message) {
   let accumulatedText = "";
   let receivedDone = false;
   let narrativeStarted = false;
+  let streamError = false;
 
   try {
     const response = await fetch("/api/v1/chat/stream", {
@@ -532,7 +597,7 @@ async function sendMessage(message) {
       signal: activeAbortController.signal,
     });
 
-    if (!response.ok || !response.body) throw new Error(`Server returned ${response.status}`);
+    if (!response.ok || !response.body) throw new Error(`เซิร์ฟเวอร์ตอบกลับ ${response.status}`);
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
@@ -559,6 +624,8 @@ async function sendMessage(message) {
           renderLocalResponse(surface, payload.message, payload.intent, payload.suggestions || []);
         } else if (payload.analysis_meta) {
           renderMetrics(surface, payload.analysis_meta);
+        } else if (payload.response_meta) {
+          renderCitations(surface, payload.response_meta);
         } else if (payload.delta) {
           if (!narrativeStarted) {
             beginNarrative(surface);
@@ -567,7 +634,8 @@ async function sendMessage(message) {
           accumulatedText += payload.delta;
           surface.querySelector(".narrative-output").innerHTML = renderMarkdown(accumulatedText);
         } else if (payload.error) {
-          showError(payload.message || "Something went wrong while preparing the analysis.");
+          streamError = true;
+          showError(payload.message || "เกิดข้อผิดพลาดระหว่างเตรียมคำตอบ", false, message);
           surface.classList.add("has-error");
         } else if (payload.done) {
           receivedDone = true;
@@ -577,24 +645,31 @@ async function sendMessage(message) {
     }
 
     if (!receivedDone) {
-      showError("The response ended early. Please try again.");
+      showError("คำตอบจบก่อนกำหนด กรุณาลองอีกครั้ง", false, message);
       surface.classList.add("has-error");
       finishSurface(surface);
     }
+    if (streamError) finishSurface(surface);
   } catch (error) {
-    surface.classList.remove("is-loading");
+    surface.classList.add("has-error");
     if (error.name === "AbortError") {
-      showError("Analysis stopped.", true);
+      showError("หยุดการวิเคราะห์แล้ว คุณสามารถลองอีกครั้งได้", true, message);
     } else {
       console.error(error);
-      showError("Could not reach the service. Check your setup and try again.");
+      showError("เชื่อมต่อบริการไม่ได้ ตรวจการตั้งค่าแล้วลองอีกครั้ง", false, message);
     }
+    finishSurface(surface);
   } finally {
     activeAbortController = null;
     setBusy(false);
     scrollToNode(surface, "nearest");
-    followupInput.focus();
+    if (!errorBanner.classList.contains("hidden")) {
+      errorBanner.querySelector(".error-retry")?.focus();
+    } else {
+      followupInput.focus();
+    }
   }
+  return receivedDone && !streamError && !surface.classList.contains("has-error");
 }
 
 async function resetConversation() {
@@ -603,10 +678,10 @@ async function resetConversation() {
     const response = await fetch("/api/v1/chat/reset", { method: "POST" });
     const body = await response.json().catch(() => ({}));
     if (!response.ok || body.ok !== true) {
-      throw new Error(body.message || "The analysis could not be reset.");
+      throw new Error(body.message || "เริ่มการวิเคราะห์ใหม่ไม่สำเร็จ");
     }
   } catch (error) {
-    showError(error.message || "The analysis could not be reset.");
+    showError(error.message || "เริ่มการวิเคราะห์ใหม่ไม่สำเร็จ");
     newChatButton.disabled = false;
     return;
   }
@@ -629,19 +704,25 @@ function updateCount() {
 
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (requestInFlight) return;
   const message = messageInput.value.trim();
   if (!message) return;
-  messageInput.value = "";
-  updateCount();
-  sendMessage(message);
+  sendMessage(message, "starter").then((success) => {
+    if (success) {
+      messageInput.value = "";
+      updateCount();
+    }
+  });
 });
 
 followupForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (requestInFlight) return;
   const message = followupInput.value.trim();
   if (!message) return;
-  followupInput.value = "";
-  sendMessage(message);
+  sendMessage(message, "followup").then((success) => {
+    if (success) followupInput.value = "";
+  });
 });
 
 stopButton.addEventListener("click", () => activeAbortController?.abort());
@@ -657,7 +738,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 sampleButton.addEventListener("click", () => {
-  messageInput.value = "CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), RDW 17.2% (11.5-14.5), Ferritin 7 ng/mL (15-150). Please summarize what stands out, how the values relate, and what context is still missing.";
+  messageInput.value = "CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), RDW 17.2% (11.5-14.5), Ferritin 7 ng/mL (15-150) ช่วยสรุปค่าที่เด่น ความสัมพันธ์ของค่า และบริบทที่ยังขาด";
   updateCount();
   messageInput.focus();
 });

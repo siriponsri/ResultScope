@@ -1,0 +1,46 @@
+{
+  "schema_version": "rs-guidance-1",
+  "data_class": "open_guideline",
+  "sources": [
+    {
+      "source_id": "who-haemoglobin-2024",
+      "title": "Guideline on haemoglobin cutoffs to define anaemia in individuals and populations",
+      "publisher": "World Health Organization",
+      "published": "2024-03-05",
+      "publication_url": "https://www.who.int/publications/i/item/9789240088542",
+      "url": "https://iris.who.int/bitstreams/f9f74397-1440-478d-a63c-26f29a01552f/download",
+      "resolved_url": "https://iris.who.int/server/api/core/bitstreams/f9f74397-1440-478d-a63c-26f29a01552f/content",
+      "retrieved_at": "2026-10-03T09:41:09.552692+00:00",
+      "sha256": "315a402cb68eaa892b81ae02d41997c3bd4b3bb5d767a320fac544a30dbbab23",
+      "snapshot_path": "data/guidelines/who-haemoglobin-2024.pdf",
+      "text_path": "data/guidelines/who-haemoglobin-2024.txt",
+      "text_sha256": "f39b2b930abc297eee6b9993c316653998884ec3db5a5dfc76c6d1f86c25482d",
+      "pdf_pages": 79,
+      "isbn": "9789240088542",
+      "license": "CC BY-NC-SA 3.0 IGO",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/3.0/igo/",
+      "release_eligible": false,
+      "commercial_use_approved": false
+    },
+    {
+      "source_id": "who-ferritin-2020",
+      "title": "WHO guideline on use of ferritin concentrations to assess iron status in individuals and populations",
+      "publisher": "World Health Organization",
+      "published": "2020-04-21",
+      "publication_url": "https://www.who.int/publications/i/item/9789240000124",
+      "url": "https://iris.who.int/bitstreams/ccf25949-dfa7-4409-8b86-ade1a48dbd8f/download",
+      "resolved_url": "https://iris.who.int/server/api/core/bitstreams/ccf25949-dfa7-4409-8b86-ade1a48dbd8f/content",
+      "retrieved_at": "2026-10-03T09:41:11.742874+00:00",
+      "sha256": "8bd906fa5206bbe4b09308ea4372a60dca2719179708a8cb47beb758fc63f48f",
+      "snapshot_path": "data/guidelines/who-ferritin-2020.pdf",
+      "text_path": "data/guidelines/who-ferritin-2020.txt",
+      "text_sha256": "691887b44a0e0e79206a902542bb8204e94e51d7e8f1615be309c016cd40985b",
+      "pdf_pages": 82,
+      "isbn": "9789240000124",
+      "license": "CC BY-NC-SA 3.0 IGO",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/3.0/igo/",
+      "release_eligible": false,
+      "commercial_use_approved": false
+    }
+  ]
+}

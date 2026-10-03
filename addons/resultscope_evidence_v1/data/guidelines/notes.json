@@ -1,0 +1,74 @@
+{
+  "schema_version": "rs-guidance-1",
+  "notes": [
+    {
+      "note_id": "who-hb-context",
+      "source_id": "who-haemoglobin-2024",
+      "source_sha256": "315a402cb68eaa892b81ae02d41997c3bd4b3bb5d767a320fac544a30dbbab23",
+      "topic": "Haemoglobin",
+      "title_th": "ฮีโมโกลบิน: ต้องดูบริบทก่อนใช้เกณฑ์",
+      "aliases": [
+        "haemoglobin",
+        "hemoglobin",
+        "hgb",
+        "hb",
+        "ฮีโมโกลบิน",
+        "โลหิตจาง"
+      ],
+      "pdf_page": 30,
+      "printed_page": "9",
+      "section": "Normative statement 1.a; Table 2",
+      "summary_th": "WHO แบ่งเกณฑ์ฮีโมโกลบินตามอายุ เพศ และการตั้งครรภ์ รวมถึงไตรมาส จึงต้องทราบบริบทก่อนนำเกณฑ์ไปใช้ หน้านี้ให้ข้อมูลประกอบและไม่วินิจฉัยภาวะโลหิตจางจากค่าที่พิมพ์เข้ามา",
+      "kind": "educational_guideline_summary",
+      "data_class": "open_guideline",
+      "release_eligible": false,
+      "numeric_rule": false,
+      "adaptation_license": "CC BY-NC-SA 3.0 IGO",
+      "translator": "ResultScope coursework adaptation; not WHO"
+    },
+    {
+      "note_id": "who-ferritin-context",
+      "source_id": "who-ferritin-2020",
+      "source_sha256": "8bd906fa5206bbe4b09308ea4372a60dca2719179708a8cb47beb758fc63f48f",
+      "topic": "Ferritin",
+      "title_th": "เฟอร์ริติน: การอักเสบมีผลต่อการตีความ",
+      "aliases": [
+        "ferritin",
+        "เฟอร์ริติน",
+        "เฟอริติน"
+      ],
+      "pdf_page": 37,
+      "printed_page": "19",
+      "section": "Table 1 footnotes and remarks",
+      "summary_th": "การตีความเฟอร์ริตินต้องคำนึงถึงการติดเชื้อหรือการอักเสบ และการเปลี่ยนแปลงระหว่างตั้งครรภ์ คู่มือมีเกณฑ์แยกตามบริบท จึงไม่ควรใช้ช่วงเดียวกับทุกคน",
+      "kind": "educational_guideline_summary",
+      "data_class": "open_guideline",
+      "release_eligible": false,
+      "numeric_rule": false,
+      "adaptation_license": "CC BY-NC-SA 3.0 IGO",
+      "translator": "ResultScope coursework adaptation; not WHO"
+    },
+    {
+      "note_id": "who-ferritin-high",
+      "source_id": "who-ferritin-2020",
+      "source_sha256": "8bd906fa5206bbe4b09308ea4372a60dca2719179708a8cb47beb758fc63f48f",
+      "topic": "Ferritin",
+      "title_th": "เฟอร์ริตินสูงไม่ได้ระบุสาเหตุได้เพียงอย่างเดียว",
+      "aliases": [
+        "ferritin",
+        "เฟอร์ริติน",
+        "เฟอริติน"
+      ],
+      "pdf_page": 37,
+      "printed_page": "19",
+      "section": "Question 1; Remarks",
+      "summary_th": "เฟอร์ริตินอาจสูงจากเหล็กเกินหรือสาเหตุอื่น เช่น การอักเสบหรือโรคตับ ค่าตรวจนี้เพียงค่าเดียวจึงไม่ยืนยันสาเหตุ ต้องประเมินร่วมกับข้อมูลอื่นโดยบุคลากรสุขภาพ",
+      "kind": "educational_guideline_summary",
+      "data_class": "open_guideline",
+      "release_eligible": false,
+      "numeric_rule": false,
+      "adaptation_license": "CC BY-NC-SA 3.0 IGO",
+      "translator": "ResultScope coursework adaptation; not WHO"
+    }
+  ]
+}

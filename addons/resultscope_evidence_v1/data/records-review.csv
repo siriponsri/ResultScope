@@ -1,0 +1,27 @@
+﻿record_id,source_id,test,sex,age_text,lower,upper,unit,interval_type,page,source_sha256
+siriraj-alt-alt-01,siriraj-alt,ALT,male,,5,41,U/L,reference_interval,1,dc804f2111e77335e406bd3375ddd2c1754717dfa57627675f8b56a089be91e2
+siriraj-alt-alt-02,siriraj-alt,ALT,female,,5,33,U/L,reference_interval,1,dc804f2111e77335e406bd3375ddd2c1754717dfa57627675f8b56a089be91e2
+kku-alt-alt-03,kku-alt,ALT,male,,0,33,U/L,reference_interval,2,4bc4fc1a4934a94a2d57d42f546e6982bfea4ccd72a2793e563e67295803e10a
+kku-alt-alt-04,kku-alt,ALT,female,,0,25,U/L,reference_interval,2,4bc4fc1a4934a94a2d57d42f546e6982bfea4ccd72a2793e563e67295803e10a
+siriraj-ast-ast-05,siriraj-ast,AST,male,,5,40,U/L,reference_interval,1,54682ceee73b97df9ddb7a58094083b754c1de3990792c574aa3c2ef6e16eb24
+siriraj-ast-ast-06,siriraj-ast,AST,female,,5,32,U/L,reference_interval,1,54682ceee73b97df9ddb7a58094083b754c1de3990792c574aa3c2ef6e16eb24
+siriraj-glucose-glucose-07,siriraj-glucose,Glucose,,>15 years,74,99,mg/dL,reference_interval,2,f1028e33d30f356b228acc8446ba5c096abcfa3b4b8bae094ebb832a1a5e2347
+kku-glucose-glucose-08,kku-glucose,Glucose,,>18 years,74,109,mg/dL,reference_interval,2,02aa513c0b0b57983a2a98695a6d2febb93b6db136fcb68f4bbd31ce2b71ae3f
+siriraj-albumin-albumin-09,siriraj-albumin,Albumin,,Adult (numeric lower age not specified),3.5,5.2,g/dL,reference_interval,1,6273823c0b61485f684abbef14bd6f85ab2da5730f79faa10ca9a84ccce5f8f4
+siriraj-total-protein-total-protein-10,siriraj-total-protein,Total protein,,Adult (page 2 note),6.4,8.3,g/dL,reference_interval,1,52b28a97ac01d3da865b6c881eac3d51ca86f3fe40117db40762ede7ccd76f7b
+siriraj-creatinine-creatinine-11,siriraj-creatinine,Creatinine,male,,0.67,1.17,mg/dL,reference_interval,1,c79f462ace88d6fd46366dcfd2c7482160ae630f2b8ea7b846264ee340f8ce9f
+siriraj-creatinine-creatinine-12,siriraj-creatinine,Creatinine,female,,0.51,0.95,mg/dL,reference_interval,1,c79f462ace88d6fd46366dcfd2c7482160ae630f2b8ea7b846264ee340f8ce9f
+siriraj-bun-bun-13,siriraj-bun,BUN,,18–60 years; endpoints not explicitly qualified,6,20,mg/dL,reference_interval,2,75dc06e01827c14fdf57e5100961dc943f88b0abfdd9310a6a777911745167ed
+siriraj-bun-bun-14,siriraj-bun,BUN,,60–90 years; endpoints not explicitly qualified,8,23,mg/dL,reference_interval,2,75dc06e01827c14fdf57e5100961dc943f88b0abfdd9310a6a777911745167ed
+siriraj-electrolytes-sodium-15,siriraj-electrolytes,Sodium,,,136,145,mmol/L,reference_interval,2,9a7795dc5741c1811e29662ea6a06a2efd6cef87a70cf6dc5f87e5fe8d55db15
+siriraj-electrolytes-potassium-16,siriraj-electrolytes,Potassium,,,3.4,4.5,mmol/L,reference_interval,2,9a7795dc5741c1811e29662ea6a06a2efd6cef87a70cf6dc5f87e5fe8d55db15
+siriraj-electrolytes-chloride-17,siriraj-electrolytes,Chloride,,,98,107,mmol/L,reference_interval,2,9a7795dc5741c1811e29662ea6a06a2efd6cef87a70cf6dc5f87e5fe8d55db15
+siriraj-alp-alp-18,siriraj-alp,ALP,male,>=19 years,40,129,U/L,reference_interval,1,af298af81a2e19e2227d44c92b1f7360c3ca5332da12a07b686e54fb5bd18deb
+siriraj-alp-alp-19,siriraj-alp,ALP,female,>=19 years,35,104,U/L,reference_interval,1,af298af81a2e19e2227d44c92b1f7360c3ca5332da12a07b686e54fb5bd18deb
+siriraj-bilirubin-total-bilirubin-20,siriraj-bilirubin,Total bilirubin,,,0,1.2,mg/dL,reference_interval,1,e14979be7b6a6e42f3b39cf51cb05f10fd0722f9a75c0a535872a35ae13d2e10
+siriraj-bilirubin-direct-bilirubin-21,siriraj-bilirubin,Direct bilirubin,,,0,0.3,mg/dL,reference_interval,1,e14979be7b6a6e42f3b39cf51cb05f10fd0722f9a75c0a535872a35ae13d2e10
+siriraj-cholesterol-cholesterol-22,siriraj-cholesterol,Cholesterol,,,,200,mg/dL,source_threshold_unadjudicated,1,e21780927a4d2677b450cb026b5e105962f6f4decbf0c76df0c37b1ff2ed68af
+siriraj-ldl-c-ldl-c-23,siriraj-ldl-c,LDL-C,,,,130,mg/dL,source_threshold_unadjudicated,2,2957c7dfbed45966ecf77d996e6c2f98b636c9b10325974cfff3a29b0fa920a4
+siriraj-triglycerides-triglycerides-24,siriraj-triglycerides,Triglycerides,,,,150,mg/dL,source_threshold_unadjudicated,1,f1c59d6a5d7c35208bddc1f3ca242b4c7f9ba35f5b5e3df5ba6c255878a2c816
+siriraj-hdl-c-hdl-c-25,siriraj-hdl-c,HDL-C,male,,40,,mg/dL,source_threshold_unadjudicated,1,91d226ac54f3ef4d64db78917813a6d846c8c1e9dfbeddc893a720d6d470df0d
+siriraj-hdl-c-hdl-c-26,siriraj-hdl-c,HDL-C,female,,50,,mg/dL,source_threshold_unadjudicated,1,91d226ac54f3ef4d64db78917813a6d846c8c1e9dfbeddc893a720d6d470df0d

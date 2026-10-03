@@ -1,0 +1,9 @@
+{
+  "scope": "temporary synthetic git repository only; not owner Windows repo",
+  "fresh_install": "PASS",
+  "identical_reinstall": "PASS",
+  "modified_target_collision_before_copy": "PASS",
+  "existing_application_unchanged": "PASS",
+  "git_head_unchanged": "PASS",
+  "installer_stages_or_commits": false
+}

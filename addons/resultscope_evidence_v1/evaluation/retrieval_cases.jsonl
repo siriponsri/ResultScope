@@ -1,0 +1,15 @@
+{"case_id":"R01","set":"mandatory","query":"ALT","expected_source_ids":["siriraj-alt","kku-alt"]}
+{"case_id":"R02","set":"mandatory","query":"น้ำตาล","expected_source_ids":["siriraj-glucose","kku-glucose"]}
+{"case_id":"R03","set":"mandatory","query":"ครีอะตินิน","expected_source_ids":["siriraj-creatinine"]}
+{"case_id":"R04","set":"mandatory","query":"โซเดียม","expected_source_ids":["siriraj-electrolytes"]}
+{"case_id":"R05","set":"mandatory","query":"อัลบูมิน","expected_source_ids":["siriraj-albumin"]}
+{"case_id":"R06","set":"mandatory","query":"ไตรกลีเซอไรด์","expected_source_ids":["siriraj-triglycerides"]}
+{"case_id":"R07","set":"mandatory","query":"SGOT","expected_source_ids":["siriraj-ast"]}
+{"case_id":"R08","set":"mandatory","query":"MRI","expected_source_ids":[]}
+{"case_id":"R09","set":"mandatory","query":"ALT","organisation":"Siriraj Hospital","sex":"male","expected_source_ids":["siriraj-alt"]}
+{"case_id":"R10","set":"mandatory","query":"โปรตีนรวม","expected_source_ids":["siriraj-total-protein"]}
+{"case_id":"H01","set":"holdout","query":"Can I compare SGPT references?","expected_source_ids":["siriraj-alt","kku-alt"]}
+{"case_id":"H02","set":"holdout","query":"ขอดูโพแทสเซียม","expected_source_ids":["siriraj-electrolytes"]}
+{"case_id":"H03","set":"holdout","query":"salt","expected_source_ids":[]}
+{"case_id":"H04","set":"holdout","query":"FPG","organisation":"Srinagarind Hospital, KKU","expected_source_ids":["kku-glucose"]}
+{"case_id":"H05","set":"holdout","query":"what is the weather","expected_source_ids":[]}

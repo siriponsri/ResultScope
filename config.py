@@ -75,6 +75,8 @@ class Settings(BaseSettings):
     CHAT_RATE_LIMIT_REQUESTS: int = 120
     CHAT_RATE_LIMIT_WINDOW_SECONDS: int = 60
     KNOWLEDGE_MODE: str = "release"
+    PUBLIC_REFERENCE_ENABLED: bool = False
+    PUBLIC_REFERENCE_ROOT: str = "addons/resultscope_evidence_v1"
     SESSION_SIGNING_KEY: str = ""
 
     # Vision/OCR is opt-in. A text-capable model is never assumed to support images.

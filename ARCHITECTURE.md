@@ -23,6 +23,37 @@ one integrated interactive analysis surface
   └─ progressively disclosed rule trace
 ```
 
+## Current local extension boundary (Phase 4A/4B)
+
+The optional `PUBLIC_REFERENCE_ENABLED` path adds a server-owned adapter for
+the pinned `addons/resultscope_evidence_v1` package. Its numeric hospital
+records use `public_reference`; its WHO educational notes use the separate
+`open_guideline` namespace. Neither namespace is merged into the approved
+business release corpus or used to select a patient-specific interval.
+
+```text
+scope gate
+  ↓
+public-reference adapter (offline hash-checked corpus)
+  ├─ no hit/corrupt package → clear abstention, no provider call
+  └─ matched records → untrusted external context + citation allowlist
+                              ↓
+                     existing output validation → provider → sync/SSE metadata
+```
+
+The extension's tree is deterministic metadata/alias-guided hierarchical
+retrieval. It is not embedding retrieval, RAG infrastructure, or a learned
+clinical decision tree. Source IDs, URLs, PDF pages, hashes, versions,
+licenses, and release flags remain server-resolved at the answer boundary.
+
+## Current local intake boundary (Phase 3/5)
+
+The first screen is the real intake surface: typed result/question, JPEG/PNG
+upload, server-side Vision extraction when explicitly enabled, editable OCR
+fields, confirmation, then chat. Image bytes and extracted fields remain
+untrusted user data; confirmation is session-bound and revisioned. The browser
+does not calculate flags, authorize citations, or expose provider keys.
+
 ## Why neuro-symbolic here
 
 The symbolic layer handles things that should be explicit and testable:

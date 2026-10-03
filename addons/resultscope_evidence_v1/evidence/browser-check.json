@@ -1,0 +1,29 @@
+{
+  "scope": "isolated reference preview only; no OCR, chat or live model tested",
+  "results": [
+    {
+      "viewport": "1440x1000",
+      "home": "PASS",
+      "search_source_details": "PASS",
+      "reset": "PASS",
+      "guideline_citation": "PASS",
+      "keyboard_enter_tab": "PASS",
+      "no_hit": "PASS",
+      "server_error_recovery": "PASS",
+      "horizontal_overflow": false,
+      "page_errors": []
+    },
+    {
+      "viewport": "390x844",
+      "home": "PASS",
+      "search_source_details": "PASS",
+      "reset": "PASS",
+      "guideline_citation": "PASS",
+      "keyboard_enter_tab": "PASS",
+      "no_hit": "PASS",
+      "server_error_recovery": "PASS",
+      "horizontal_overflow": false,
+      "page_errors": []
+    }
+  ]
+}

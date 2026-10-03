@@ -1,0 +1,39 @@
+{
+  "node_id": "guidelines",
+  "kind": "guideline_corpus",
+  "title": "WHO open-access guidance (non-commercial)",
+  "children": [
+    {
+      "node_id": "who-haemoglobin-2024",
+      "kind": "document",
+      "title": "Guideline on haemoglobin cutoffs to define anaemia in individuals and populations",
+      "children": [
+        {
+          "node_id": "who-hb-context",
+          "kind": "educational_summary",
+          "title": "ฮีโมโกลบิน: ต้องดูบริบทก่อนใช้เกณฑ์",
+          "pdf_page": 30
+        }
+      ]
+    },
+    {
+      "node_id": "who-ferritin-2020",
+      "kind": "document",
+      "title": "WHO guideline on use of ferritin concentrations to assess iron status in individuals and populations",
+      "children": [
+        {
+          "node_id": "who-ferritin-context",
+          "kind": "educational_summary",
+          "title": "เฟอร์ริติน: การอักเสบมีผลต่อการตีความ",
+          "pdf_page": 37
+        },
+        {
+          "node_id": "who-ferritin-high",
+          "kind": "educational_summary",
+          "title": "เฟอร์ริตินสูงไม่ได้ระบุสาเหตุได้เพียงอย่างเดียว",
+          "pdf_page": 37
+        }
+      ]
+    }
+  ]
+}

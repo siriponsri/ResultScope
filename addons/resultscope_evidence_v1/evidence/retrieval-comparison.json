@@ -1,0 +1,428 @@
+{
+  "scope": "Extension flat versus hierarchical alias retrieval; NOT a benchmark of local Phase 2 code",
+  "provider_calls": 0,
+  "corpus_version": "th-public-lab-20261003-v1",
+  "results": [
+    {
+      "case_id": "R01",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "ALT",
+      "expected_source_ids": [
+        "siriraj-alt",
+        "kku-alt"
+      ],
+      "actual_source_ids": [
+        "kku-alt",
+        "siriraj-alt"
+      ],
+      "latency_ms": 2.19,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R02",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "น้ำตาล",
+      "expected_source_ids": [
+        "siriraj-glucose",
+        "kku-glucose"
+      ],
+      "actual_source_ids": [
+        "kku-glucose",
+        "siriraj-glucose"
+      ],
+      "latency_ms": 0.506,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R03",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "ครีอะตินิน",
+      "expected_source_ids": [
+        "siriraj-creatinine"
+      ],
+      "actual_source_ids": [
+        "siriraj-creatinine"
+      ],
+      "latency_ms": 1.109,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R04",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "โซเดียม",
+      "expected_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "actual_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "latency_ms": 0.809,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R05",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "อัลบูมิน",
+      "expected_source_ids": [
+        "siriraj-albumin"
+      ],
+      "actual_source_ids": [
+        "siriraj-albumin",
+        "siriraj-alp"
+      ],
+      "latency_ms": 0.367,
+      "result": "FAIL"
+    },
+    {
+      "case_id": "R06",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "ไตรกลีเซอไรด์",
+      "expected_source_ids": [
+        "siriraj-triglycerides"
+      ],
+      "actual_source_ids": [
+        "siriraj-electrolytes",
+        "siriraj-triglycerides"
+      ],
+      "latency_ms": 0.982,
+      "result": "FAIL"
+    },
+    {
+      "case_id": "R07",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "SGOT",
+      "expected_source_ids": [
+        "siriraj-ast"
+      ],
+      "actual_source_ids": [
+        "siriraj-ast"
+      ],
+      "latency_ms": 0.325,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R08",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "MRI",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 0.151,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R09",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "ALT",
+      "expected_source_ids": [
+        "siriraj-alt"
+      ],
+      "actual_source_ids": [
+        "siriraj-alt"
+      ],
+      "latency_ms": 0.634,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R10",
+      "set": "mandatory",
+      "method": "flat",
+      "query": "โปรตีนรวม",
+      "expected_source_ids": [
+        "siriraj-total-protein"
+      ],
+      "actual_source_ids": [
+        "siriraj-bilirubin",
+        "siriraj-total-protein"
+      ],
+      "latency_ms": 0.378,
+      "result": "FAIL"
+    },
+    {
+      "case_id": "H01",
+      "set": "holdout",
+      "method": "flat",
+      "query": "Can I compare SGPT references?",
+      "expected_source_ids": [
+        "siriraj-alt",
+        "kku-alt"
+      ],
+      "actual_source_ids": [
+        "kku-alt",
+        "siriraj-alt"
+      ],
+      "latency_ms": 1.437,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H02",
+      "set": "holdout",
+      "method": "flat",
+      "query": "ขอดูโพแทสเซียม",
+      "expected_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "actual_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "latency_ms": 1.83,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H03",
+      "set": "holdout",
+      "method": "flat",
+      "query": "salt",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 1.725,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H04",
+      "set": "holdout",
+      "method": "flat",
+      "query": "FPG",
+      "expected_source_ids": [
+        "kku-glucose"
+      ],
+      "actual_source_ids": [
+        "kku-glucose"
+      ],
+      "latency_ms": 0.176,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H05",
+      "set": "holdout",
+      "method": "flat",
+      "query": "what is the weather",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 0.146,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R01",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "ALT",
+      "expected_source_ids": [
+        "siriraj-alt",
+        "kku-alt"
+      ],
+      "actual_source_ids": [
+        "kku-alt",
+        "siriraj-alt"
+      ],
+      "latency_ms": 0.166,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R02",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "น้ำตาล",
+      "expected_source_ids": [
+        "siriraj-glucose",
+        "kku-glucose"
+      ],
+      "actual_source_ids": [
+        "kku-glucose",
+        "siriraj-glucose"
+      ],
+      "latency_ms": 0.165,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R03",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "ครีอะตินิน",
+      "expected_source_ids": [
+        "siriraj-creatinine"
+      ],
+      "actual_source_ids": [
+        "siriraj-creatinine"
+      ],
+      "latency_ms": 0.167,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R04",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "โซเดียม",
+      "expected_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "actual_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "latency_ms": 0.171,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R05",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "อัลบูมิน",
+      "expected_source_ids": [
+        "siriraj-albumin"
+      ],
+      "actual_source_ids": [
+        "siriraj-albumin"
+      ],
+      "latency_ms": 0.153,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R06",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "ไตรกลีเซอไรด์",
+      "expected_source_ids": [
+        "siriraj-triglycerides"
+      ],
+      "actual_source_ids": [
+        "siriraj-triglycerides"
+      ],
+      "latency_ms": 0.247,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R07",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "SGOT",
+      "expected_source_ids": [
+        "siriraj-ast"
+      ],
+      "actual_source_ids": [
+        "siriraj-ast"
+      ],
+      "latency_ms": 0.149,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R08",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "MRI",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 0.125,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R09",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "ALT",
+      "expected_source_ids": [
+        "siriraj-alt"
+      ],
+      "actual_source_ids": [
+        "siriraj-alt"
+      ],
+      "latency_ms": 0.127,
+      "result": "PASS"
+    },
+    {
+      "case_id": "R10",
+      "set": "mandatory",
+      "method": "tree",
+      "query": "โปรตีนรวม",
+      "expected_source_ids": [
+        "siriraj-total-protein"
+      ],
+      "actual_source_ids": [
+        "siriraj-total-protein"
+      ],
+      "latency_ms": 1.532,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H01",
+      "set": "holdout",
+      "method": "tree",
+      "query": "Can I compare SGPT references?",
+      "expected_source_ids": [
+        "siriraj-alt",
+        "kku-alt"
+      ],
+      "actual_source_ids": [
+        "kku-alt",
+        "siriraj-alt"
+      ],
+      "latency_ms": 0.202,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H02",
+      "set": "holdout",
+      "method": "tree",
+      "query": "ขอดูโพแทสเซียม",
+      "expected_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "actual_source_ids": [
+        "siriraj-electrolytes"
+      ],
+      "latency_ms": 0.238,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H03",
+      "set": "holdout",
+      "method": "tree",
+      "query": "salt",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 0.158,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H04",
+      "set": "holdout",
+      "method": "tree",
+      "query": "FPG",
+      "expected_source_ids": [
+        "kku-glucose"
+      ],
+      "actual_source_ids": [
+        "kku-glucose"
+      ],
+      "latency_ms": 0.14,
+      "result": "PASS"
+    },
+    {
+      "case_id": "H05",
+      "set": "holdout",
+      "method": "tree",
+      "query": "what is the weather",
+      "expected_source_ids": [],
+      "actual_source_ids": [],
+      "latency_ms": 0.147,
+      "result": "PASS"
+    }
+  ],
+  "summary": {
+    "flat": {
+      "passed": 12,
+      "total": 15
+    },
+    "tree": {
+      "passed": 15,
+      "total": 15
+    }
+  }
+}
