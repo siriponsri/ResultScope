@@ -2,8 +2,8 @@
 
 Baseline: `80e7a5986141d96db0d52f1c0a8f629476e6543c` on local `main`.
 Safety evidence was collected across the Phase 4 hardening commits, with the
-final local candidate at `45acba9`. No live provider or credential value was
-used.
+final implementation candidate at `45acba9`; the documentation closeout
+parent is `428a1de`. No live provider or credential value was used.
 
 ## Deterministic and mocked evidence
 
@@ -162,6 +162,7 @@ reset recovery expiry/pruning, and missing structured audit metadata. MAIN
 applied the scoped remediation in `services/output_validation.py`,
 `services/store.py`, and `routers/chat.py`, committed at `d2d092b` and
 `45acba9`, then reran the focused and full checks. The remediation is local
-evidence only; a fresh independent REVIEW of `45acba9` is still required. Its
+evidence only; a fresh independent REVIEW of the final local HEAD (the same
+application tree as `45acba9`) is still required. Its
 `scripts/check.ps1` run was **NOT_RUN** because dependency installation was
 prohibited.
