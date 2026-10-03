@@ -15,7 +15,7 @@ production และไม่เปลี่ยน historical gates G0/G1/G3/G4 
 | Phase 4A: public reference | PASS แบบ offline/local | `addons/resultscope_evidence_v1/verify.py`, 50 addon tests, `tests/test_public_reference.py` |
 | Phase 4B: evidence/provider boundary | PASS แบบ mocked/local | context packet เป็น untrusted data, server citation allowlist, sync/SSE parity, Clef disabled |
 | Phase 5: first-use UX | PASS แบบ mocked/local | หน้า home จริง, PNG/JPEG upload review/correction, retry/reset, desktop/mobile evidence |
-| Phase 6: เอกสารและ capability matrix | PASS แบบ local closeout | `RELEASE_CHECKLIST.md`, `docs/product/CAPABILITY_MATRIX.md`, architecture/message-flow และรายงานชุดนี้ |
+| Phase 6: เอกสารและ capability matrix | PASS แบบ local closeout | `RELEASE_CHECKLIST.md`, `docs/product/CAPABILITY_MATRIX.md`, architecture/message-flow, รายงานชุดนี้ และ `docs/progress/DEMO_SCRIPT_PHASE_6.md` |
 | Live provider quality | NOT_RUN | ไม่มี key จริงและ owner ไม่อนุญาต live call |
 | Human usability validation | NOT_RUN | ไม่มีผู้ทดสอบอิสระ; screenshot ไม่ใช่หลักฐานความเข้าใจของมนุษย์ |
 | Independent O1/O2 final review | NOT_RUN | ต้องใช้ receipt ของ review exact SHA; ไม่อ้าง approval จาก MAIN inspection |
