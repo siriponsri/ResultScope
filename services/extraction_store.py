@@ -77,6 +77,14 @@ class ExtractionStore(ABC):
     async def clear(self, session_id: str) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    async def snapshot(self, session_id: str) -> list[ExtractionRecord]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def restore(self, session_id: str, records: list[ExtractionRecord]) -> None:
+        raise NotImplementedError
+
 
 def _record_from_dict(data: dict[str, Any]) -> ExtractionRecord:
     return ExtractionRecord(
@@ -142,6 +150,20 @@ class MemoryExtractionStore(ExtractionStore):
         for extraction_id, record in list(self._data.items()):
             if record.session_id == session_id:
                 self._data.pop(extraction_id, None)
+
+    async def snapshot(self, session_id: str) -> list[ExtractionRecord]:
+        now = time.time()
+        return [
+            record
+            for record in self._data.values()
+            if record.session_id == session_id and record.expires_at > now
+        ]
+
+    async def restore(self, session_id: str, records: list[ExtractionRecord]) -> None:
+        now = time.time()
+        for record in records:
+            if record.session_id == session_id and record.expires_at > now:
+                self._data[record.extraction_id] = record
 
 
 class SQLiteExtractionStore(ExtractionStore):
@@ -219,6 +241,43 @@ class SQLiteExtractionStore(ExtractionStore):
             conn.execute("DELETE FROM extractions WHERE session_id = ?", (session_id,))
             conn.commit()
 
+    async def snapshot(self, session_id: str) -> list[ExtractionRecord]:
+        now = time.time()
+        with self._lock, sqlite3.connect(self.path) as conn:
+            rows = conn.execute(
+                "SELECT extraction_id, session_id, revision, status, document_type, fields_json, warnings_json, created_at, expires_at, confirmed_at FROM extractions WHERE session_id = ? AND expires_at > ?",
+                (session_id, now),
+            ).fetchall()
+        return [
+            ExtractionRecord(row[0], row[1], row[2], row[3], row[4], json.loads(row[5]), json.loads(row[6]), row[7], row[8], row[9])
+            for row in rows
+        ]
+
+    async def restore(self, session_id: str, records: list[ExtractionRecord]) -> None:
+        valid = [record for record in records if record.session_id == session_id and record.expires_at > time.time()]
+        if not valid:
+            return
+        with self._lock, sqlite3.connect(self.path) as conn:
+            conn.executemany(
+                "INSERT OR REPLACE INTO extractions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        record.extraction_id,
+                        record.session_id,
+                        record.revision,
+                        record.status,
+                        record.document_type,
+                        json.dumps(record.fields, ensure_ascii=False),
+                        json.dumps(record.warnings, ensure_ascii=False),
+                        record.created_at,
+                        record.expires_at,
+                        record.confirmed_at,
+                    )
+                    for record in valid
+                ],
+            )
+            conn.commit()
+
 
 class UpstashExtractionStore(ExtractionStore):
     def __init__(self, url: str, token: str) -> None:
@@ -280,9 +339,33 @@ class UpstashExtractionStore(ExtractionStore):
 
     async def clear(self, session_id: str) -> None:
         ids = await self._command(["SMEMBERS", self._session_key(session_id)])
-        if isinstance(ids, list) and ids:
-            await self._command(["DEL", *[self._key(str(extraction_id)) for extraction_id in ids]])
-        await self._command(["DEL", self._session_key(session_id)])
+        keys = [self._session_key(session_id)]
+        if isinstance(ids, list):
+            keys[0:0] = [self._key(str(extraction_id)) for extraction_id in ids]
+        await self._command(["DEL", *keys])
+
+    async def snapshot(self, session_id: str) -> list[ExtractionRecord]:
+        ids = await self._command(["SMEMBERS", self._session_key(session_id)])
+        records: list[ExtractionRecord] = []
+        for extraction_id in ids if isinstance(ids, list) else []:
+            raw = await self._command(["GET", self._key(str(extraction_id))])
+            if not raw:
+                continue
+            try:
+                record = _record_from_dict(json.loads(raw))
+            except (TypeError, ValueError, KeyError, json.JSONDecodeError) as exc:
+                raise ExtractionStoreError("Image confirmation storage returned invalid data.") from exc
+            if record.session_id == session_id and record.expires_at > time.time():
+                records.append(record)
+        return records
+
+    async def restore(self, session_id: str, records: list[ExtractionRecord]) -> None:
+        for record in records:
+            if record.session_id != session_id or record.expires_at <= time.time():
+                continue
+            ttl = max(1, int(record.expires_at - time.time()))
+            await self._command(["SETEX", self._key(record.extraction_id), ttl, json.dumps(record.__dict__, ensure_ascii=False)])
+            await self._command(["SADD", self._session_key(session_id), record.extraction_id])
 
 
 class UnavailableExtractionStore(ExtractionStore):
@@ -305,6 +388,13 @@ class UnavailableExtractionStore(ExtractionStore):
         await self._unavailable()
 
     async def clear(self, session_id: str) -> None:
+        await self._unavailable()
+
+    async def snapshot(self, session_id: str) -> list[ExtractionRecord]:
+        await self._unavailable()
+        return []
+
+    async def restore(self, session_id: str, records: list[ExtractionRecord]) -> None:
         await self._unavailable()
 
 

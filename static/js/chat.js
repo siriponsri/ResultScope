@@ -30,7 +30,11 @@ let currentImageFile = null;
 function renderMarkdown(rawText) {
   if (window.marked && window.DOMPurify) {
     const html = window.marked.parse(rawText, { breaks: true });
-    return window.DOMPurify.sanitize(html);
+    return window.DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "em", "del", "ul", "ol", "li", "code", "pre", "blockquote", "h1", "h2", "h3", "h4"],
+      ALLOWED_ATTR: [],
+      ALLOW_DATA_ATTR: false,
+    });
   }
   return rawText
     .replaceAll("&", "&amp;")
@@ -147,10 +151,18 @@ function buildRangeVisual(item) {
   const shell = createElement("div", `range-visual range-${item.flag}`);
 
   if (item.range_state !== "valid") {
-    shell.innerHTML = `
-      <div class="open-range-track"><i></i><i></i><i></i><i></i><i></i></div>
-      <p>${item.range_state === "invalid" ? "The supplied interval is reversed and cannot be used." : "No valid report range was supplied. Status stays unknown."}</p>
-    `;
+    const track = createElement("div", "open-range-track");
+    for (let index = 0; index < 5; index += 1) track.appendChild(document.createElement("i"));
+    shell.append(
+      track,
+      createElement(
+        "p",
+        "",
+        item.range_state === "invalid"
+          ? "The supplied interval is reversed and cannot be used."
+          : "No valid report range was supplied. Status stays unknown."
+      )
+    );
     return shell;
   }
 
@@ -167,11 +179,18 @@ function buildRangeVisual(item) {
   shell.style.setProperty("--value-position", `${position}%`);
   shell.style.setProperty("--low-stop", `${lowStop}%`);
   shell.style.setProperty("--high-stop", `${highStop}%`);
-  shell.innerHTML = `
-    <div class="range-labels"><span>${formatNumber(low)}${unit}</span><span>${formatNumber(high)}${unit}</span></div>
-    <div class="range-track"><i class="range-within"></i><b class="range-value" aria-label="Value position"></b></div>
-    <p>Compared arithmetically with the interval supplied in this message.</p>
-  `;
+  const labels = createElement("div", "range-labels");
+  labels.append(
+    createElement("span", "", `${formatNumber(low)}${unit}`),
+    createElement("span", "", `${formatNumber(high)}${unit}`)
+  );
+  const track = createElement("div", "range-track");
+  track.append(
+    createElement("i", "range-within"),
+    createElement("b", "range-value")
+  );
+  track.lastElementChild.setAttribute("aria-label", "Value position");
+  shell.append(labels, track, createElement("p", "", "Compared arithmetically with the interval supplied in this message."));
   return shell;
 }
 
@@ -307,6 +326,13 @@ function beginNarrative(surface) {
 
 function finishSurface(surface) {
   surface.classList.remove("is-loading");
+  if (surface.classList.contains("has-error")) {
+    surface.classList.remove("is-complete");
+    surface.querySelectorAll(".response-progress li").forEach((step) => step.classList.remove("is-active"));
+    const answerState = surface.querySelector(".answer-state");
+    if (answerState) answerState.textContent = "Response ended with an error";
+    return;
+  }
   surface.classList.add("is-complete");
   surface.querySelectorAll(".response-progress li").forEach((step) => {
     step.classList.remove("is-active");
@@ -550,7 +576,11 @@ async function sendMessage(message) {
       }
     }
 
-    if (!receivedDone) showError("The response ended early. Please try again.");
+    if (!receivedDone) {
+      showError("The response ended early. Please try again.");
+      surface.classList.add("has-error");
+      finishSurface(surface);
+    }
   } catch (error) {
     surface.classList.remove("is-loading");
     if (error.name === "AbortError") {
@@ -570,9 +600,15 @@ async function sendMessage(message) {
 async function resetConversation() {
   newChatButton.disabled = true;
   try {
-    await fetch("/api/v1/chat/reset", { method: "POST" });
+    const response = await fetch("/api/v1/chat/reset", { method: "POST" });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || body.ok !== true) {
+      throw new Error(body.message || "The analysis could not be reset.");
+    }
   } catch (error) {
-    console.warn("reset request failed", error);
+    showError(error.message || "The analysis could not be reset.");
+    newChatButton.disabled = false;
+    return;
   }
   chatWindow.querySelectorAll(".analysis-response").forEach((node) => node.remove());
   clearError();

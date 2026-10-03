@@ -1,0 +1,26 @@
+# TASK_PACKET: Independent review of ResultScope Phase 4 candidate
+
+Review the exact local-main candidate produced by the preceding Phase 4 IMPLEMENT
+dispatch. REVIEW is read-only and must not edit, stage, commit, push, deploy, or
+approve its own work.
+
+## Required inspection
+
+- Read `PROMPT.md`, `AGENTS.md`, `docs/final-project-plan/phases/PHASE_4_SAFETY.md`,
+  this implementation packet, and the exact diff.
+- Inspect trust boundaries between system policy, user/history, retrieved corpus,
+  confirmed image/OCR data, provider output, and browser rendering.
+- Check sync `/api/v1/chat` and SSE `/api/v1/chat/stream` for output-before-validation,
+  malformed response, timeout/cancellation, provider/store failure, and terminal events.
+- Check citation provenance/current-request authorization, canonical prices/policies,
+  synthetic/release fail-closed behavior, health boundary, session/extraction ownership,
+  reset, limits, and secret/raw-image/error/log hygiene.
+- Check S01-S05 and benign controls, focused tests, full checks, report/evidence claims,
+  and whether live provider/release/G0/G1/G3/G4 status is accurately separated.
+
+## Acceptance
+
+Return severity-ordered findings with file/line evidence, or explicitly state no findings.
+State exact commands and outcomes, route identity/account evidence when available, and
+mark unavailable or unrun checks `NOT_RUN`. A receipt or worker success alone is not
+approval. Do not modify the repository.

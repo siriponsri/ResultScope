@@ -11,6 +11,7 @@ IntentKind = Literal["business", "lab", "mixed", "unsafe", "local", "unrelated"]
 BUSINESS_HINTS = (
     "opening hours", "open today", "what time", "business hours", "price", "cost",
     "how much", "service", "package", "panel", "book", "booking", "appointment",
+    "discount", "promotion",
     "walk-in", "walk in", "turnaround", "refund", "cancel", "address", "location",
     "contact", "เวลาเปิด", "เปิดกี่โมง", "ราคา", "ค่าบริการ", "แพ็กเกจ", "บริการ",
     "จอง", "walk-in", "เตรียมตัว", "รับผล", "คืนเงิน", "ยกเลิก", "ที่อยู่", "ติดต่อ", "ตรวจ",
@@ -20,6 +21,34 @@ BUSINESS_HINTS = (
 UNSAFE_HINTS = (
     "diagnose", "diagnosis", "prescribe", "prescription", "change my dose", "stop my medication",
     "วินิจฉัย", "สั่งยา", "ปรับยา", "หยุดยา", "เพิ่มยา", "ลดขนาดยา",
+)
+MEDICATION_CHANGE_PATTERN = re.compile(
+    r"\b(?:double|increase|decrease|adjust|change|stop|start|skip|take|use|try)\b"
+    r"(?:\s+(?:your|my|the|a|an))?"
+    r"(?:\s+[a-z][a-z0-9_-]*){0,3}"
+    r"\s+(?:dose|dosage|metformin|insulin|medication|medicine|tablets?|pills?)\b",
+    re.IGNORECASE,
+)
+MEDICATION_ADVICE_PATTERN = re.compile(
+    r"\b(?:take|use|start|stop|try)\s+(?:(?:your|my|the|a|an)\s+)?"
+    r"[a-z][a-z0-9_-]*(?=\s*(?:[.!?,;:]|$)|\s+(?:for|with|because|daily|twice|once)\b)",
+    re.IGNORECASE,
+)
+UNRELATED_TASK_PATTERN = re.compile(
+    r"\b(?:write|create|build|debug|fix|run|code)\b.{0,60}\b(?:python|javascript|typescript|sql|scraper|scrape|api|website|program)\b|"
+    r"\b(?:python|javascript|typescript|sql|scraper|scrape|api|website|program)\b.{0,60}\b(?:write|create|build|debug|fix|run|code)\b|"
+    r"\b(?:write|create|compose|draft|generate|make)\b.{0,80}\b(?:poem|story|song|joke|vacation|holiday|recipe|travel)\b|"
+    r"\b(?:poem|story|song|joke|vacation|holiday|recipe|travel)\b.{0,80}\b(?:write|create|compose|draft|generate|make)\b",
+    re.IGNORECASE,
+)
+NON_LAB_ACTIVITY_HINTS = (
+    "bake", "bread", "cook", "recipe", "vacation", "holiday", "travel", "poem", "story", "song", "joke",
+)
+PRIVILEGED_BUSINESS_HINTS = (
+    "i am the owner", "i'm the owner", "as the owner", "owner,", "change the price to",
+    "set the price", "override the policy", "ignore the policy", "grant access",
+    "ฉันเป็นเจ้าของ", "ผมเป็นเจ้าของ", "ในฐานะเจ้าของ", "ตั้งราคา",
+    "ข้ามนโยบาย", "เปิดเผยสิทธิ์",
 )
 LAB_TERM_HINTS = (
     "hb", "hba1c", "cbc", "fpg", "ferritin", "creatinine", "egfr", "cholesterol", "triglyceride",
@@ -52,14 +81,29 @@ def _contains_hint(message: str, hints: tuple[str, ...]) -> bool:
     return False
 
 
+def _contains_unquoted_hint(message: str, hints: tuple[str, ...]) -> bool:
+    unquoted = re.sub(r"[\"'“‘].*?[\"'”’]", " ", message, flags=re.DOTALL)
+    return _contains_hint(unquoted, hints)
+
+
 def route_intent(message: str, history: list[dict[str, str]] | None = None) -> IntentDecision:
     prior = history or []
     scope = classify_lab_scope(message, prior)
     has_business = _contains_hint(message, BUSINESS_HINTS)
     has_lab = scope.allowed or _contains_hint(message, LAB_TERM_HINTS)
 
-    if _contains_hint(message, UNSAFE_HINTS):
+    if (
+        _contains_hint(message, UNSAFE_HINTS)
+        or MEDICATION_CHANGE_PATTERN.search(message)
+        or MEDICATION_ADVICE_PATTERN.search(message)
+    ):
         return IntentDecision("unsafe", "unsafe_medical_request", False, scope)
+    if _contains_unquoted_hint(message, PRIVILEGED_BUSINESS_HINTS):
+        return IntentDecision("unsafe", "unauthorized_business_request", False, scope)
+    if UNRELATED_TASK_PATTERN.search(message):
+        return IntentDecision("unrelated", "outside_lab_scope", False, scope)
+    if has_lab and _contains_hint(message, NON_LAB_ACTIVITY_HINTS):
+        return IntentDecision("unrelated", "outside_lab_scope", False, scope)
     if has_business and has_lab:
         # A service/catalog question may mention a test name (e.g. CBC price)
         # without becoming a mixed clinical interpretation request. Keep the

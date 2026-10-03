@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str = "https://openrouter.ai/api/v1"
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "openai/gpt-4o-mini"
+    LLM_TIMEOUT_SECONDS: float = 60.0
     SYSTEM_PROMPT: str = DEFAULT_SYSTEM_PROMPT
 
     # Session storage
@@ -68,6 +69,11 @@ class Settings(BaseSettings):
     # Product behavior
     MAX_MESSAGE_CHARS: int = 12000
     MAX_HISTORY_MESSAGES: int = 20
+    MAX_HISTORY_CHARS: int = 24000
+    MAX_HISTORY_MESSAGE_CHARS: int = 4000
+    MAX_PROVIDER_OUTPUT_CHARS: int = 5000
+    CHAT_RATE_LIMIT_REQUESTS: int = 120
+    CHAT_RATE_LIMIT_WINDOW_SECONDS: int = 60
     KNOWLEDGE_MODE: str = "release"
     SESSION_SIGNING_KEY: str = ""
 
