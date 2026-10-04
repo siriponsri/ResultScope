@@ -3,8 +3,9 @@
 Preparation date: 2026-10-04. This v2 replaces the earlier teal visual direction with the owner-approved purple hero/chat and document drawer. Baseline commit:
 `c9236f59b73460ce3c41ba9c87d7cda43d87cee8`.
 
-This is an offline preparation-session candidate, not a commit on the owner's
-Windows machine. The delivered payload manifest identifies every replacement file.
+This is an offline preparation-session candidate. The delivered payload manifest
+identifies every replacement file; exact final-candidate evidence is recorded in
+[repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md).
 The runtime aggregate SHA-256 is `a70ef6e5ef13477d3f9738f299365e28f0c20b00c27f64f46fe267a8ae0bf28f`; see
 [RUNTIME_FILE_HASHES.json](RUNTIME_FILE_HASHES.json) for its construction and inputs.
 No commit, push, deployment, owner Brain update or local FO review is claimed here.
@@ -78,8 +79,8 @@ comparison and the vendor package's own verifier.
 The ZIP includes an outer package inventory and a short goal prompt. Its packaging
 check verifies member paths, sizes, checksums and absence of private/runtime files.
 
-The owner applies this overlay to the existing repository, then follows
-[REPO_HYGIENE_CLOSEOUT.md](REPO_HYGIENE_CLOSEOUT.md). No package pass substitutes for
+The owner applies this overlay to the existing repository, then follows the
+[repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md). No package pass substitutes for
 the final local Windows gate or authorization to call providers or deploy.
 
 Online readiness, approved business data/rights, cloud secret/quota operation,
