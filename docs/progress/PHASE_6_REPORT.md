@@ -2,7 +2,7 @@
 
 วันที่: 4 ตุลาคม 2569  
 สาขา: `main` ภายในเครื่อง  
-HEAD ที่ตรวจสอบ source และ `scripts/check.ps1`: `50884a654d892d29a2f0fa421498816e9f211c10`  
+HEAD ที่ตรวจสอบ source และ `scripts/check.ps1`: `16c39a065b92dfabe8f7b12ec21e1d2b73b537c1`  
 สถานะการเผยแพร่: ยังไม่มีการ push และยังไม่มีการ deploy; commit ถัดไปเป็น metadata ของรายงานเท่านั้น
 
 ## ขอบเขตที่ดำเนินการ
@@ -16,7 +16,7 @@ production และไม่เปลี่ยน historical gates G0/G1/G3/G4 
 | Phase 4B: evidence/provider boundary | PASS แบบ mocked/local | context packet เป็น untrusted data, server citation allowlist, sync/SSE parity, Clef disabled |
 | Phase 5: first-use UX | PASS แบบ mocked/local | หน้า home จริง, PNG/JPEG upload review/correction, retry/reset, desktop/mobile evidence |
 | Phase 6: เอกสารและ capability matrix | PASS แบบ local closeout | `RELEASE_CHECKLIST.md`, `docs/product/CAPABILITY_MATRIX.md`, architecture/message-flow, รายงานชุดนี้ และ `docs/progress/DEMO_SCRIPT_PHASE_6.md` |
-| Live provider quality | NOT_RUN | ไม่มี key จริงและ owner ไม่อนุญาต live call |
+| Live provider quality | PARTIAL / BLOCKED | ตรวจ live bounded แล้ว; รายละเอียดใน `docs/progress/LIVE_PROVIDER_VERIFICATION_20261004.md` |
 | Human usability validation | NOT_RUN | ไม่มีผู้ทดสอบอิสระ; screenshot ไม่ใช่หลักฐานความเข้าใจของมนุษย์ |
 | Independent O1/O2 final review | NOT_RUN | ต้องใช้ receipt ของ review exact SHA; ไม่อ้าง approval จาก MAIN inspection |
 
@@ -75,5 +75,21 @@ uvicorn main:app --reload
 ```
 
 สำหรับ Admin Settings ให้เปิด `LOCAL_DEMO_MODE=true` เฉพาะ local และเข้าที่
-`/admin/login`. ห้ามใส่ key ใน chat, Git, report หรือ Project Brain. การทดสอบ
-live ยังไม่ถูกรันและไม่มีการเติมเครดิต เปิด auto top-up หรือ deploy.
+`/admin/login`. ห้ามใส่ key ใน chat, Git, report หรือ Project Brain. ไม่มีการเติม
+เครดิต เปิด auto top-up หรือ deploy.
+
+## Live verification addendum วันที่ 4 ตุลาคม 2569
+
+Owner อนุญาต live calls แบบจำกัดด้วยข้อมูลสังเคราะห์และ key จาก local Admin
+Settings เท่านั้น ผลจริงถูกบันทึกใน `docs/progress/LIVE_PROVIDER_VERIFICATION_20261004.md`.
+Typhoon LLM ใช้ `5/5` attempts และ live transport ผ่าน; public-reference
+generated answers ใน main app 3 ครั้งถูก output validation ปฏิเสธ แต่ direct
+evidence-packet response ครั้งสุดท้ายผ่าน validator พร้อม citation. Typhoon OCR ใช้
+`6/5` attempts ซึ่งเกินงบหนึ่งครั้งและหยุดทันที;
+มีทั้ง malformed extraction หนึ่งครั้ง และ extraction ที่อ่านค่า/หน่วย/ช่วงอ้างอิง
+ตรง expected พร้อม review/confirm ผ่านในครั้งต่อมา. SystemOne ใช้ `6/5` attempts
+เมื่อนับ Admin probe, main-app shadow calls และ runner; ผล typed choice จาก runner
+เป็น `lab` ตรง expected และยังเป็น shadow-only.
+
+ข้อค้นพบนี้ไม่ใช่ clinical validation และยังไม่เปลี่ยน online readiness จาก
+`BLOCKED`. ไม่มีการเติมเครดิต เปิด auto top-up push หรือ deploy.
