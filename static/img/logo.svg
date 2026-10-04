@@ -1,8 +1,1 @@
-<svg width="280" height="64" viewBox="0 0 280 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" rx="18" fill="#13251F"/>
-  <path d="M20 18V46M44 18V46" stroke="#F2F0E8" stroke-width="3" stroke-linecap="round"/>
-  <path d="M20 18H28M36 18H44M20 46H28M36 46H44" stroke="#F2F0E8" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="32" cy="32" r="6" fill="#D6FF65"/>
-  <text x="82" y="34" fill="#13251F" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.4">ResultScope</text>
-  <text x="83" y="50" fill="#6A746E" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="700" letter-spacing="2.1">LAB INTELLIGENCE</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 370 68" style="color:#4b0082"><title>ResultScope Laboratory Assistant</title><g><rect x="5" y="5" width="54" height="54" rx="11" fill="none" stroke="currentColor" stroke-width="4"/><path d="M17 22h30M17 32h30M17 42h30" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="26" cy="22" r="4.5"/><circle cx="38" cy="32" r="4.5"/><circle cx="30" cy="42" r="4.5"/></g></g><text x="80" y="31" font-family="Arial,sans-serif" font-size="28" font-weight="600" fill="#21172f">ResultScope</text><text x="81" y="53" font-family="Arial,sans-serif" font-size="14" fill="#61586f">Laboratory Assistant</text></svg>

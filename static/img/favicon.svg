@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#13251F"/>
-  <path d="M20 18v28M44 18v28M20 18h8M36 18h8M20 46h8M36 46h8" fill="none" stroke="#F2F0E8" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="32" cy="32" r="6" fill="#D6FF65"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" style="color:#4b0082"><title>ResultScope report and reference ranges</title><rect x="5" y="5" width="54" height="54" rx="11" fill="none" stroke="currentColor" stroke-width="4"/><path d="M17 22h30M17 32h30M17 42h30" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="26" cy="22" r="4.5"/><circle cx="38" cy="32" r="4.5"/><circle cx="30" cy="42" r="4.5"/></g></svg>

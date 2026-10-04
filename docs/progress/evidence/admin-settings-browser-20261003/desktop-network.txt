@@ -1,8 +1,0 @@
-7. [POST] http://127.0.0.1:8123/api/v1/admin/login => [200] OK
-13. [GET] http://127.0.0.1:8123/api/v1/admin/csrf => [200] OK
-14. [GET] http://127.0.0.1:8123/api/v1/admin/config => [200] OK
-15. [PUT] http://127.0.0.1:8123/api/v1/admin/config => [200] OK
-16. [GET] http://127.0.0.1:8123/api/v1/admin/csrf => [200] OK
-17. [GET] http://127.0.0.1:8123/api/v1/admin/config => [200] OK
-
-Note: 11 static requests not shown, run with "static" option to see them.

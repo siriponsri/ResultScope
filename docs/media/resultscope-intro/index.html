@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ResultScope product introduction - Hyperframes source</title><style>
+@font-face{font-family:Plex;src:url('../../../static/fonts/plex-400.woff2')}*{box-sizing:border-box}body{margin:0;background:#f8f8ff;color:#21172f;font-family:Plex,Arial,sans-serif}#intro{position:relative;width:1920px;height:1080px;overflow:hidden;background:#f8f8ff;padding:90px}#brand{display:flex;align-items:center;gap:20px;font-size:32px}#brand img{width:64px}#copy{position:absolute;left:90px;top:270px;width:730px}h1{font-size:90px;line-height:1.06;letter-spacing:-.04em;margin:0 0 35px;font-weight:600}#subtitle{font-size:30px;line-height:1.5;color:#61586f}#points{font-size:27px;line-height:1.9;color:#4b0082;padding:0;list-style:none}#screen,#report{position:absolute;right:60px;top:130px;width:940px;height:800px;object-fit:contain}#note{position:absolute;left:90px;bottom:65px;font-size:22px;color:#61586f}#controls{position:fixed;bottom:12px;right:12px}button{padding:10px 20px;font:16px Arial;background:#4b0082;color:white;border:0;border-radius:5px} @media print{#controls{display:none}}
+</style></head><body><div id="intro" data-composition-id="resultscope-intro" data-start="0" data-duration="12" data-width="1920" data-height="1080"><div id="brand"><img src="../../../static/img/mark.svg" alt="">ResultScope Laboratory Assistant</div><div id="copy"><h1 id="headline">Understand your laboratory results.</h1><p id="subtitle">Start a conversation. Keep your report close.</p><ul id="points"><li id="point-a">Review what was read.</li><li id="point-b">Keep the reference range in view.</li><li id="point-c">Understand the limits.</li></ul></div><img id="screen" src="../../assets/screenshots/01-workspace-desktop.png" alt="Actual redesigned ResultScope workspace in synthetic mode"><img id="report" src="../../assets/screenshots/03-review-extracted-values.png" alt="Actual report drawer with a labeled mock OCR response"><p id="note">Local product prototype. Educational information, not a diagnosis.</p></div><div id="controls"><button id="play" type="button">Replay introduction</button></div><script src="gsap.min.js"></script><script>
+window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});
+tl.from('#brand',{opacity:0,y:10,duration:.6,ease:'power2.out'},.2)
+.from('#headline',{opacity:0,y:28,duration:.85,ease:'power3.out'},.5)
+.from('#subtitle',{opacity:0,x:-12,duration:.7,ease:'expo.out'},1.2)
+.from('#screen',{opacity:0,scale:.985,duration:1,ease:'power2.out'},1.6)
+.from('#point-a',{opacity:0,y:12,duration:.5,ease:'power3.out'},3)
+.from('#point-b',{opacity:0,x:-10,duration:.5,ease:'expo.out'},4.4)
+.from('#point-c',{opacity:0,y:8,duration:.5,ease:'power2.out'},5.8)
+.to('#screen',{opacity:0,duration:.5,ease:'power1.out'},6.5)
+.from('#report',{opacity:0,duration:.6,ease:'power1.out'},6.5)
+.from('#note',{opacity:0,duration:.6,ease:'power1.out'},11.4);
+window.__timelines['resultscope-intro']=tl;tl.pause(12);document.getElementById('play').onclick=()=>tl.restart();
+</script></body></html>

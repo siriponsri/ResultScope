@@ -1,59 +1,14 @@
-:root {
-  --pointer-x: 68%;
-  --pointer-y: 42%;
-  --ink-950: #061020;
-  --ink-900: #09162b;
-  --ink-850: #0d1b35;
-  --ink-800: #142341;
-  --ink-700: #273858;
-  --paper-50: #f8fafc;
-  --paper-100: #eef3f7;
-  --paper-200: #dfe8ef;
-  --text-on-dark: #f5f8fb;
-  --text-on-dark-muted: #aebdd0;
-  --text-on-light: #0b1729;
-  --text-on-light-muted: #5e6d7e;
-  --cyan-300: #83ecff;
-  --cyan-400: #40dff4;
-  --cyan-500: #08bfd8;
-  --violet-400: #9b86ff;
-  --violet-500: #7359f2;
-  --lime-300: #b9f26a;
-  --amber-400: #ffbd5b;
-  --red-400: #ff766f;
-  --line-dark: rgba(185, 223, 244, 0.17);
-  --line-dark-strong: rgba(185, 223, 244, 0.34);
-  --line-light: #d8e2ea;
-  --line-light-strong: #b8c7d3;
-  --surface-dark: rgba(8, 18, 39, 0.94);
-  --surface-dark-raised: #101f3a;
-  --surface-light: #fbfcfd;
-  --surface-light-soft: #eff4f7;
-  --font-display: "Manrope", "IBM Plex Sans Thai", sans-serif;
-  --font-body: "IBM Plex Sans Thai", "Manrope", sans-serif;
-  --font-mono: "IBM Plex Mono", "Cascadia Mono", monospace;
-  --text-2xs: 0.6875rem;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-md: 1.1875rem;
-  --text-lg: 1.5rem;
-  --text-xl: 2rem;
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
-  --space-3xl: 4.5rem;
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.875rem;
-  --rule: 1px;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.22, 1.35, 0.36, 1);
-  --duration-fast: 140ms;
-  --duration-base: 320ms;
-  --duration-slow: 720ms;
+@font-face{font-family:"Plex";font-weight:400;font-style:normal;font-display:swap;src:url("/static/fonts/plex-400.woff2") format("woff2")}
+@font-face{font-family:"Plex";font-weight:500;font-style:normal;font-display:swap;src:url("/static/fonts/plex-500.woff2") format("woff2")}
+@font-face{font-family:"Plex";font-weight:600;font-style:normal;font-display:swap;src:url("/static/fonts/plex-600.woff2") format("woff2")}
+@font-face{font-family:"Plex";font-weight:700;font-style:normal;font-display:swap;src:url("/static/fonts/plex-700.woff2") format("woff2")}
+@font-face{font-family:"Noto Thai";src:url("/static/fonts/NotoSansThai.ttf") format("truetype");font-weight:100 900;font-display:swap}
+:root{
+  --paper:#f8f8ff;--surface:#fff;--ink:#21172f;--muted:#61586f;
+  --primary:#4b0082;--primary-hover:#390064;--accent:#8a2be2;--lavender:#6a5acd;--secondary:#483d8b;
+  --tint:#f1ebfc;--line:#ded8e9;--control-line:#8d819d;
+  --amber:#8a521d;--amber-tint:#fff5e8;--red:#a62e4a;--red-tint:#fff1f4;
+  --font:"Plex","Noto Thai",sans-serif;--radius:8px;--focus:#6a5acd;
+  --font-body:var(--font);--font-display:var(--font);--font-mono:ui-monospace,monospace;
+  --teal:var(--primary);--teal-dark:var(--primary-hover);--teal-tint:var(--tint);
 }

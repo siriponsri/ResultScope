@@ -43,7 +43,7 @@ STYLE
 
 class Settings(BaseSettings):
     # App / brand
-    APP_NAME: str = "ResultScope"
+    APP_NAME: str = "ResultScope Laboratory Assistant"
     APP_TAGLINE: str = "Laboratory results, in context."
     OWNER_NAME: str = "Your Name"
     APP_ENV: str = "development"

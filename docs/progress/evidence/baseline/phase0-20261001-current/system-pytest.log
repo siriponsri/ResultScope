@@ -1,4 +1,0 @@
-﻿TIMESTAMP=2026-10-01T22:29:10+07:00
-COMMAND=py -m pytest -q
-Windows Python launcher reported No installed Python found.
-EXIT_CODE=112

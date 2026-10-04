@@ -1,7 +1,0 @@
-# REVIEW_PACKET: Targeted Phase 1 corpus-validation correction
-
-Review the exact local-main candidate produced by the preceding IMPLEMENT dispatch. Independently inspect the repository diff and the current `validation/validate_corpus.py`, `tests/test_corpus_validation.py`, `evaluation/cases.jsonl`, and appended `docs/progress/PHASE_1_REPORT.md` correction note.
-
-Verify all five owner findings: malformed top-level/nested input never false-passes or raises unexpectedly; release provenance is backed by an in-root existing local snapshot whose bytes match SHA-256 (including URL snapshot semantics); structural validity is distinct from release readiness and an approved-source path can pass without making pending FAQ permanent or allowing planning/synthetic evidence; only explicitly classified public business contacts with approved public provenance bypass PII detection; Q09 contains prior turns plus a distinct follow-up.
-
-Run focused corpus tests if the read-only route permits it. Report line-specific blockers, inspected HEAD, exact commands/results, and unrun checks. A terminal receipt is not approval unless the repository was actually inspected. Do not stage, commit, edit files, access secrets or external systems, or begin RAG/Vision/UI/Phase 2. Independent review is PASS only if the worker demonstrates candidate inspection; otherwise report NOT_RUN.

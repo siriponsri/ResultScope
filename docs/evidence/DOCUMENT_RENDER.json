@@ -1,0 +1,27 @@
+{
+  "motion": {
+    "duration": 12,
+    "checks": [
+      {
+        "time": 0,
+        "seek": 0
+      },
+      {
+        "time": 4,
+        "seek": 4
+      },
+      {
+        "time": 8,
+        "seek": 8
+      },
+      {
+        "time": 12,
+        "seek": 12
+      }
+    ],
+    "images": true
+  },
+  "errors": [],
+  "pdf": "ResultScope_User_Guide.pdf",
+  "note": "Browser seek/render only; Hyperframes CLI and MP4 export NOT_RUN."
+}

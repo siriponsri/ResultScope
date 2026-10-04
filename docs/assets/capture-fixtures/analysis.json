@@ -1,0 +1,99 @@
+{
+  "rulebook_version": "2026.08",
+  "category": "hematology",
+  "scope_reason": "lab_term",
+  "count": 3,
+  "flagged_count": 3,
+  "values": [
+    {
+      "marker": "Hb",
+      "value": 10.8,
+      "unit": "g/dL",
+      "reference_low": 12.0,
+      "reference_high": 16.0,
+      "flag": "low",
+      "range_state": "valid"
+    },
+    {
+      "marker": "MCV",
+      "value": 72.0,
+      "unit": "fL",
+      "reference_low": 80.0,
+      "reference_high": 100.0,
+      "flag": "low",
+      "range_state": "valid"
+    },
+    {
+      "marker": "Ferritin",
+      "value": 7.0,
+      "unit": "ng/mL",
+      "reference_low": 15.0,
+      "reference_high": 150.0,
+      "flag": "low",
+      "range_state": "valid"
+    }
+  ],
+  "trace": [
+    {
+      "rule_id": "SCOPE-001",
+      "outcome": "allow",
+      "detail": "scope reason=lab_term; category=hematology",
+      "group": "scope",
+      "title": "Recognized laboratory vocabulary",
+      "effect": "Allow the request into the laboratory workflow and record its first matched category."
+    },
+    {
+      "rule_id": "PARSE-001",
+      "outcome": "matched",
+      "detail": "Extracted 3 explicit marker-value item(s) in message order.",
+      "group": "parsing",
+      "title": "Explicit marker and numeric value",
+      "effect": "Extract only the literal fields present in the user's message."
+    },
+    {
+      "rule_id": "RANGE-003",
+      "outcome": "applied",
+      "detail": "Applied to: Hb, MCV, Ferritin",
+      "group": "range",
+      "title": "Below supplied interval",
+      "effect": "Set deterministic status to low."
+    },
+    {
+      "rule_id": "GROUND-001",
+      "outcome": "enforced",
+      "detail": "Extracted fields are immutable LLM inputs.",
+      "group": "grounding",
+      "title": "Immutable extracted facts",
+      "effect": "Require the LLM to preserve those fields exactly and integrate them into one explanation."
+    },
+    {
+      "rule_id": "GROUND-002",
+      "outcome": "enforced",
+      "detail": "Unknown flags cannot be upgraded by the LLM.",
+      "group": "grounding",
+      "title": "Unknown remains unknown",
+      "effect": "The LLM may give general education but must not present high, low, or normal as a deterministic finding."
+    },
+    {
+      "rule_id": "SAFETY-001",
+      "outcome": "enforced",
+      "detail": "Educational response boundary attached.",
+      "group": "safety",
+      "title": "Educational interpretation only",
+      "effect": "Prohibit diagnosis, prescribing, dose changes, and treatment plans."
+    },
+    {
+      "rule_id": "OUTPUT-001",
+      "outcome": "enforced",
+      "detail": "One integrated explanation requested.",
+      "group": "output",
+      "title": "Single integrated answer",
+      "effect": "Return one coherent explanation that incorporates verified facts; keep internal rule details in a disclosure view."
+    }
+  ],
+  "contract": {
+    "range_authority": "user_supplied_only",
+    "unknown_means": "not deterministically flaggable",
+    "llm_role": "integrated educational explanation"
+  }
+}

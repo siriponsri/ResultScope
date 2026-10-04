@@ -1,34 +1,25 @@
-# ADR: Deterministic Guard and Optional Model Guard
+# Decision: Python controls, optional shadow models
 
-Status: accepted for Phase 4 local prototype
+Status: implemented in the current local prototype. Documentation reviewed 2026-10-04.
 
-## Decision
+Python remains authoritative for scope, privileged business routing, source
+selection, supplied-range arithmetic, extraction confirmation and output validation.
+A model cannot grant itself authorization, invent a retrieved citation, change a
+supplied range or convert synthetic business records into approved information.
 
-Use deterministic application controls as the mandatory guard layer:
+JSON and SSE run the same answer-validation boundary. The SSE response is not a
+raw-token bypass. Invalid output fails closed with sanitized stable error codes.
+Logs must not include raw provider answers, keys, patient content or image bytes.
 
-- scope and privileged-business routing happen before provider invocation;
-- server-selected corpus mode and retrieval determine canonical business facts;
-- provider output is bounded and checked for unsafe clinical language,
-  unsupported numbers, and forged source markers;
-- sync and SSE use the same post-answer validation before persistence or output;
-- session ownership, extraction confirmation, reset, image limits, provider
-  timeout, and local request limits remain application responsibilities.
+Every provider transport path reserves a persistent local attempt before HTTP.
+`PROVIDER_NETWORK_ENABLED=false` blocks transport before reservation. Consumed,
+failed and unfinished attempts are never refunded. The ledger does not reset when
+the app restarts. Admin tests and model listing share the same accounting boundary.
 
-An external guard model/service is optional future work and is not installed,
-called, or required for this phase. If introduced later, an unavailable or
-ambiguous guard must fail closed and must not replace citation, price, tenant,
-or clinical truth checks.
+SystemOne is a distinct optional shadow adapter. Its output does not override Python.
+Clef is disabled. A future external guard requires its own contract and validation;
+it cannot replace source-ID, URL, number, authorization or session checks.
 
-## Rationale
-
-These decisions control authorization, provenance, and canonical facts at the
-boundary where the application has the required data. A model guard can classify
-language but cannot establish whether a citation was retrieved in this request,
-whether a price is canonical, or whether a session owns an extraction.
-
-## Consequences
-
-The prototype has reproducible local tests and no new paid dependency. Residual
-prompt-injection resistance and provider quality require a separately authorized
-live evaluation. A shared rate limiter and formal authentication remain required
-before a multi-instance or real-patient deployment.
+This keeps essential decisions inspectable and testable. It does not prove live
+model safety, defeat every prompt injection, or establish distributed cloud controls.
+See [threat model](THREAT_MODEL.md) and [readiness](../operations/READINESS.md).

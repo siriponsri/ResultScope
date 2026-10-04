@@ -1,0 +1,776 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "c9236f59b73460ce3c41ba9c87d7cda43d87cee8",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "dbae3fcea795f22195d3a27d98201cd178b7779b329c5ece3aa4bcfc8acfd1cc",
+      "size": 1199
+    },
+    {
+      "path": ".hallmark/log.json",
+      "sha256": "7d5f171a5de37a6cfc2bebf292a051f9f4db1500e7d8606a0981010a336648d4",
+      "size": 1079
+    },
+    {
+      "path": ".hallmark/preflight.json",
+      "sha256": "d427e2070100b534d129ea4912d5e3ab943a98b08f103e6af66b4d4f350b82d3",
+      "size": 462
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "7c53557b2869ff297095c0cbd36dda7567118cc19d9ea7042e17eb40e60f13a5",
+      "size": 2360
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "sha256": "b9a29db5da7d7106a9dd072c6894bc94003f6276696760c813b58b7420db227f",
+      "size": 4004
+    },
+    {
+      "path": "BUSINESS_BRIEF.md",
+      "sha256": "d41ddbdd096e6f289e95f7f80895bd40b3b44568b648c2557f7bf42bf6c0eee7",
+      "size": 3590
+    },
+    {
+      "path": "CODEX_PROMPT.md",
+      "sha256": "229407b6b68bfa8965b83e311fb247a3b7cb1c35c9caee0a91625cbd5bf7df1a",
+      "size": 2073
+    },
+    {
+      "path": "CODEX_TERRA_GOAL.md",
+      "sha256": "4c6cbf18e51551ca3fb3afc19e47cd40b71dab2cbe42e29a2e6864848912602a",
+      "size": 3624
+    },
+    {
+      "path": "DEPLOY_CHECKLIST.md",
+      "sha256": "4e0be294a6f2a7ed574139ab6d08d84b74e029463ec242d62b6fc49ada1e14f5",
+      "size": 1615
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "27dfbed7808dcc49553e51012c498ac6d4994dfe30fead671bb5fbe24a8e4869",
+      "size": 3208
+    },
+    {
+      "path": "PATCH_MANIFEST.txt",
+      "sha256": "21d735665dd3045941694ed65eb2bd4d05b31bc834e2273bae0de1a0b7b0e78d",
+      "size": 588
+    },
+    {
+      "path": "PATCH_NOTES_TH.md",
+      "sha256": "8d3e7bb47aa9ee9ecab7f397e66f4c7d0a62883fee154b170fda12f2d7573e55",
+      "size": 2993
+    },
+    {
+      "path": "README.md",
+      "sha256": "d8b6f61417b9aa49aef359c72803d16725d83b725ac58044e8535186f2e4537b",
+      "size": 11525
+    },
+    {
+      "path": "RELEASE_CHECKLIST.md",
+      "sha256": "998d176cb33e95b4a518774c34bf971fc93ea21dacada24b33404a804a33121f",
+      "size": 5538
+    },
+    {
+      "path": "docs/DESIGN_RESEARCH.md",
+      "sha256": "f371c5c99e9c4b41700f5ceee3c3fccbbdf07881a77b5622781765854ff3fe72",
+      "size": 2444
+    },
+    {
+      "path": "docs/DETERMINISTIC_RULEBOOK.md",
+      "sha256": "d003e760bb1cba4a93de83ac049f29a0cd09c71b6d7f1d6f4a81539a2004e7e8",
+      "size": 3735
+    },
+    {
+      "path": "docs/architecture/MESSAGE_FLOW_PHASE4_6.md",
+      "sha256": "ef0ea1a262049212268570a25b251c25fbcedb88ba05cb30ad781677352155e3",
+      "size": 3320
+    },
+    {
+      "path": "docs/business/BOT_POLICY.md",
+      "sha256": "12b82e8252c1c7ca98a552b9085f1d119850e2e830433450ca218e2a6e8403a9",
+      "size": 2589
+    },
+    {
+      "path": "docs/business/BRIEF.md",
+      "sha256": "f87e25af38859d9c26d6e755460f19ed4d17b9aaa1a13a11dde9e6560ddb54f7",
+      "size": 2491
+    },
+    {
+      "path": "docs/business/OWNER_QUESTIONS.md",
+      "sha256": "769166b4a8025af75966bb519f3a5104da6b02bcdea04ddb2702d5932710e5fe",
+      "size": 1753
+    },
+    {
+      "path": "docs/final-project-plan/00_START_HERE.md",
+      "sha256": "66d021a469d7c7a20e8dc50c62f6b2596e46d313496e26f5a26a98e69e3f0cb5",
+      "size": 6478
+    },
+    {
+      "path": "docs/final-project-plan/01_MASTER_PLAN.md",
+      "sha256": "7b30be3e1e3bf1563229eb6c55a9a1574f2f16a193bbbc134657ae33731bb61e",
+      "size": 11226
+    },
+    {
+      "path": "docs/final-project-plan/02_SOURCE_AUDIT_AND_RUBRIC.md",
+      "sha256": "f9f1618e5300fd37f743a44920b2fbb1cb510a230f95a85fa940a1238d8d73aa",
+      "size": 7755
+    },
+    {
+      "path": "docs/final-project-plan/03_FO_WORKFLOW_AND_LOCAL_SETUP.md",
+      "sha256": "9eb208fde3ad2f32b6b7cd6329eaefc1ab00302521dbfbc26721f8735c3ecbe6",
+      "size": 7304
+    },
+    {
+      "path": "docs/final-project-plan/04_ARCHITECTURE_AND_CONTRACTS.md",
+      "sha256": "28a57fc54b800594364501f436c7a17e70efbd47599c5154612f86c1e14ee93a",
+      "size": 10230
+    },
+    {
+      "path": "docs/final-project-plan/05_UI_DESIGN_SPEC.md",
+      "sha256": "8099b10a9b8cce881659f8448ca33d4345d4530773e5dc240fede29e0715b2bf",
+      "size": 7371
+    },
+    {
+      "path": "docs/final-project-plan/06_REFERENCE_REPO_DECISIONS.md",
+      "sha256": "4eee9181429bfb44a6039304b50b5b620fec0729c59957bdfde30e54dccfada5",
+      "size": 7467
+    },
+    {
+      "path": "docs/final-project-plan/07_EVALUATION_AND_SUBMISSION.md",
+      "sha256": "5ca16fb44da4b302b36f1d7d3d3af4cb0c5c263cc1a73cfc70ed2d56156d0608",
+      "size": 11909
+    },
+    {
+      "path": "docs/final-project-plan/08_PRODUCT_CATALOG_ROADMAP.md",
+      "sha256": "ec1090842f4489c9a96fc2745822941d2ebb559cae7acdbb4297bcd443359c26",
+      "size": 5388
+    },
+    {
+      "path": "docs/final-project-plan/09_MAIN_START_PROMPT.md",
+      "sha256": "79200348ebd9b841bc0878cd0cd9a11e2859cfb3d3e4694065f6fd06c8a73bc3",
+      "size": 4748
+    },
+    {
+      "path": "docs/final-project-plan/MANIFEST.json",
+      "sha256": "b7cfb297a6850070a4e79aa4d5ca74496beb05334d1ea85f476149e2cdb7b29c",
+      "size": 3552
+    },
+    {
+      "path": "docs/final-project-plan/SOURCE_REGISTER.json",
+      "sha256": "bfdca86a0eae8544e637419d47e18a46cf1ec60e9ba3ebcca88ea1cf895107eb",
+      "size": 5819
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_0_BASELINE.md",
+      "sha256": "f4da1d9976def1863ad2348ff489a32a2a6216fc43adf5b1d0f421ca1305361c",
+      "size": 4372
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_1_BUSINESS_KB.md",
+      "sha256": "bb9d7c6aa79e683013a6d49cb32578c7a0c1d59311f97c8484f0e2d2c9f8f89d",
+      "size": 5732
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_2_RAG_AND_API.md",
+      "sha256": "557e0540e776b2a0b577552489afe70282c7e5304e6099baa0406b912a0449a0",
+      "size": 5708
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_3_VISION.md",
+      "sha256": "35cec6edd1730f1594eeafaffd49718b21b89948fac7972a817eca6df4d852d8",
+      "size": 4700
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_4_SAFETY.md",
+      "sha256": "f631f85b051c5aa43380105960e7d632eef9414f9dc68171b1a1d1121dd81fa0",
+      "size": 5091
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_5_UI_AND_CATALOG_DEMO.md",
+      "sha256": "d958c47bc6c1ac3c7e320fb37a77cf3fe3ee715a0d565226e1a1021a484fb155",
+      "size": 4851
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_6_EVALUATION_RELEASE.md",
+      "sha256": "8557cabc5dd5df6a59a123cc6ada5a69304732553114fe3c243318198753f7f3",
+      "size": 5991
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_7_PILOT_EXTENSIONS.md",
+      "sha256": "6bcb0bc342a1b89d09861c8654a907a31abce1aacaacf2633359fffbe7ab00b1",
+      "size": 4400
+    },
+    {
+      "path": "docs/final-project-plan/phases/PHASE_8_COMMERCIAL_PRODUCT.md",
+      "sha256": "79facd7132a53695e511f7cda8e349239342b0a57cd91c174c6490d7f33546ce",
+      "size": 4227
+    },
+    {
+      "path": "docs/final-project-plan/templates/DECISIONS_AND_CONTRIBUTIONS.md",
+      "sha256": "cf39fb50f31d70d309b220b67fda48c9ab8755536f99edffd77d3da5fd5a0fe4",
+      "size": 2062
+    },
+    {
+      "path": "docs/final-project-plan/templates/EVALUATION_TABLES.md",
+      "sha256": "b39e9cef8637bbc66f12b79f470ed3c902c3557572f177f1b5fbda26da4c3946",
+      "size": 2704
+    },
+    {
+      "path": "docs/final-project-plan/templates/PHASE_REPORT_TEMPLATE.md",
+      "sha256": "580ee8ddbd2189eb4bead8a3add9900291f2cc916302fe282e2b12c0df3823c1",
+      "size": 1340
+    },
+    {
+      "path": "docs/product/CAPABILITY_MATRIX.md",
+      "sha256": "b86530f10900cf68c2400f0fb8f9cb8bdd59bea9e1c3a38cb9444fce0dbd1e44",
+      "size": 1757
+    },
+    {
+      "path": "docs/product/DEMO_SCRIPT_180S.md",
+      "sha256": "746b7663807c872e05097facdd5a2f4180dd007d989abd1944c8cf0b5ba29a6a",
+      "size": 1321
+    },
+    {
+      "path": "docs/progress/ADMIN_SETTINGS_REPORT_20261003.md",
+      "sha256": "a3c74a20c16a1038b8c299a7dcd9737c3c3851bd9d84a216c2d3e3905d84a3ec",
+      "size": 7913
+    },
+    {
+      "path": "docs/progress/BASELINE.md",
+      "sha256": "230021bd2c1f88d8140ea6cdf12b2fa1c045fc2b0ba7bcf11f5de3784e02d648",
+      "size": 4272
+    },
+    {
+      "path": "docs/progress/DEMO_SCRIPT_PHASE_6.md",
+      "sha256": "8f5dd285cda657aea98a2247269ccb341d1baeb62e827c2bd6af59079a991938",
+      "size": 4489
+    },
+    {
+      "path": "docs/progress/LIVE_PROVIDER_VERIFICATION_20261004.md",
+      "sha256": "52186de03e1640c6508f3b03fb519eb9837082149aea5c6454bc97386e948469",
+      "size": 11632
+    },
+    {
+      "path": "docs/progress/OFFLINE_PROVIDER_REMEDIATION_20261004.md",
+      "sha256": "6f524a0a87528206ff056e27d793499fd03e3ec9dba97d02c828e9dd50eba753",
+      "size": 7480
+    },
+    {
+      "path": "docs/progress/PHASE_0_REPORT.md",
+      "sha256": "bbcfb52ea2a76386ecf12eb281440306b07d5553ffc4375efe584366a3dcf1c2",
+      "size": 11541
+    },
+    {
+      "path": "docs/progress/PHASE_1_IMPLEMENT_HANDOFF.md",
+      "sha256": "91f0c8ada4d3672ce56181d4a86def69220f729a12513788ba4f1e6a6fd4f799",
+      "size": 3579
+    },
+    {
+      "path": "docs/progress/PHASE_1_REPORT.md",
+      "sha256": "620f8eb774238b71627f56ce44cb7fb43dc3979a807fceb657b5e9921127736a",
+      "size": 11117
+    },
+    {
+      "path": "docs/progress/PHASE_2_REPORT.md",
+      "sha256": "f925884a9089b91d9997244f42196713d69790a9fe4bc1243ae994c761950e8b",
+      "size": 12853
+    },
+    {
+      "path": "docs/progress/PHASE_3_REPORT.md",
+      "sha256": "3dcc9d8c5d51f33e82e47dc03ac376f0ca418488d04cfb4a17260284cd935b41",
+      "size": 4957
+    },
+    {
+      "path": "docs/progress/PHASE_4A_REPORT.md",
+      "sha256": "0bbc7a0be6129772ee16ce2de3445386c5125150d801da36b908c157cbe0caee",
+      "size": 2083
+    },
+    {
+      "path": "docs/progress/PHASE_4B_REPORT.md",
+      "sha256": "472412d5ef42d2554a5c4b43ee6c238c494b98bbadccc3da16e90448bc78dfad",
+      "size": 2492
+    },
+    {
+      "path": "docs/progress/PHASE_4_REPORT.md",
+      "sha256": "ed8c012358a27dc19bab687330fd0818e543627cee69b795c0d9eca9d68f0c5e",
+      "size": 10182
+    },
+    {
+      "path": "docs/progress/PHASE_5_REPORT.md",
+      "sha256": "91b23b3b2681bdbf0eb070d16c80dd542d94e38693f3faf2119bb7e831ccc86a",
+      "size": 2313
+    },
+    {
+      "path": "docs/progress/PHASE_6_REPORT.md",
+      "sha256": "5f624de356c5f0ed891204db6717ce118667bc65b59ad6dda77d0481535a8fad",
+      "size": 8265
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_ADMIN_SETTINGS_20261003.txt",
+      "sha256": "6a6141a8d12540e136ce7503c1bdb8c310eccb229df50ec67e95064a21dd3551",
+      "size": 4112
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_ADMIN_SETTINGS_REVIEW_20261003.txt",
+      "sha256": "371ff35a855f439322b756b1977e4f8726aa034881473aeb94bbe0001e288f52",
+      "size": 1336
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_COURSEWORK_DEMO_20261002.txt",
+      "sha256": "5a58973997f4be6135d7315cd58787a9727a241dfb074e0197aa91e041ccb7b4",
+      "size": 3084
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_COURSEWORK_DEMO_REVIEW_20261002.txt",
+      "sha256": "68afdbba33ce8ea8a3f6a15039f9543c0a657a891f5b94f85d333aaf2ac9edef",
+      "size": 1309
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE4-6_REVIEW_20261003.txt",
+      "sha256": "01f8c3bd753fc6267243eecd5f5045b7f43beb9c3c14f4baae4431a639a3a6bc",
+      "size": 1169
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_0_IMPLEMENT.txt",
+      "sha256": "949cdf0234c55ed9d0db437462e6f758e79d1561128119bd031b020902dfba16",
+      "size": 2133
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_0_REVALIDATION_20261002.txt",
+      "sha256": "1173e5a9485f64e31f55475a9434bf3b7b1523d9b6eb578ab892763f0c61baac",
+      "size": 1914
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_0_REVIEW.txt",
+      "sha256": "25d1f69346eabbeadec0ed0411593bf0dd6f13e2ac28b2842e47e64c5f68ff95",
+      "size": 1008
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_0_REVIEW_20261002.txt",
+      "sha256": "d4240b7c6d49ce98ee555474a261923fc88384169b693f5cd2a8276494836234",
+      "size": 1126
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_1_CORRECTION_20261002.txt",
+      "sha256": "792c289e3de71fb7a42c7147defa28a4d1d555e8a90f71ac00b48b2e3d3ad4b7",
+      "size": 2765
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_1_CORRECTION_REVIEW_20261002.txt",
+      "sha256": "99c01debbdb5fa92047b78df6073267aad5882a7dfa9e357a26f97cccc4e27b3",
+      "size": 1370
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_1_IMPLEMENT_20261002.txt",
+      "sha256": "7053f090f08e44dfbcf2f07debcc14d5b917643eca4cc0c778a3a137339fdef9",
+      "size": 4928
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_1_REVIEW_20261002.txt",
+      "sha256": "c6d359f8b30970341676d6ae915acc4c5ba057c1ffc8207610a8fb1fb7418c89",
+      "size": 2358
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_2_20261002.txt",
+      "sha256": "34a919fce590603d61c8af5e71a75d1debc3e82044b4292118d554ded0069aba",
+      "size": 4972
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_2_REVIEW_20261002.txt",
+      "sha256": "2cca128ca0680d23cbc476bf41b06545513ddf28bf4e4d7afa1899057aa18615",
+      "size": 2497
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_3_20261002.txt",
+      "sha256": "a6fac961684f0d2e04f019af35cfca686ce3a277b4db8252c6719a05977df880",
+      "size": 3842
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_3_REVIEW_20261002.txt",
+      "sha256": "a5d41eb0898c8cce1a5f37c3ec3b6e0d6985634319ddb08a55bd0a8635ca9c2c",
+      "size": 1799
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_4_IMPLEMENT_20261003.txt",
+      "sha256": "d19bf5474ddb6c58fd9b8c2047de9fa3a96b6979473195d1fb082a7da7214673",
+      "size": 4026
+    },
+    {
+      "path": "docs/progress/TASK_PACKET_PHASE_4_REVIEW_20261003.txt",
+      "sha256": "889edf98834d0d537d5cb52d0cfb78ec2fb40df55d2465b53bbc7bb30d0e6298",
+      "size": 1460
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003.md",
+      "sha256": "0b38e8c7b3fc8d2a8850bc753bd10b3e47c1b4d08ae4c10478062412e0b39f64",
+      "size": 1811
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/desktop-home-en.png",
+      "sha256": "30f5156cc374be647d70323996dd0858f7e21d14f15beb31664c3db33cad3cbf",
+      "size": 664809
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/desktop-network.txt",
+      "sha256": "eeb4a823e803477ec1ad4df1de2aded408a6e72914075696b22ab3ca8bab0a35",
+      "size": 453
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/desktop-settings-en.png",
+      "sha256": "283102f2600e01cec0f0a5d6781df7ae5b82158037915d2e0fb05fc69f6473e3",
+      "size": 87464
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/desktop-settings-en.yml",
+      "sha256": "579c2a7a8de50e0523a42ec6840788f8cc27f6a3583648890a2ad6e2cb9ae067",
+      "size": 6019
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/desktop-settings.png",
+      "sha256": "93731bf45a2ad26957ea67886cc79d8ec06a74d37dfd1314f67334274a029bec",
+      "size": 88562
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-home-en.png",
+      "sha256": "4502348b5de4a7471c6a239c31268d4b68bf675829433e148f14cd4792bce1d0",
+      "size": 328212
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-home-en.yml",
+      "sha256": "90ab7f2c18a106431b32a3e273e2ffd9e794bbda442b5b89ac8d15ec38e4f4d2",
+      "size": 4390
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-network-after-mock.txt",
+      "sha256": "2d1321939e913661ea014eafe29c744d99af35af67e219d58f200f4d55fb4d1c",
+      "size": 530
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-network.txt",
+      "sha256": "eeb4a823e803477ec1ad4df1de2aded408a6e72914075696b22ab3ca8bab0a35",
+      "size": 453
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-settings-en.png",
+      "sha256": "5fdc93037b7175482b81915884c9505f530ad6f14d4755ca6820c7251e9f7f87",
+      "size": 81130
+    },
+    {
+      "path": "docs/progress/evidence/admin-settings-browser-20261003/mobile-settings-en.yml",
+      "sha256": "929d838a82fc884d3e3324b4ae8487ade8070050c3d8951dbb6d2142298952e3",
+      "size": 5994
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/agentkit-fo-implement-timeout-76c54d3593b6499fae703e250d72f962.txt",
+      "sha256": "3b3c9bfe4f2c0c131ee6531ba25305b13323b1cd293d44cc9b90e79046b7f844",
+      "size": 1322
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/agentkit-fo-implement-timeout-8cd0746a1d4d4b89a5f241d99d9ef108.txt",
+      "sha256": "441432cdec90345728a4750ea16081bb6ede3d52ed6b6398415c17c65c032f7b",
+      "size": 825
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/agentkit-fo-review-b70d22ee0624499a8092b0c858ee3ad5.txt",
+      "sha256": "09126f737fa31970a60e9c02e248c51b5c5354f99456823871067db5a77afa5a",
+      "size": 960
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/brain-handoff-20261002.json",
+      "sha256": "31c255e56e1eb7effdeef99d0423e345a158523d94a007811c5bdb635477f9de",
+      "size": 4010
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/brain-handoff.json",
+      "sha256": "0968ce95edbc4556827d1fa5a934627595d8b6f44e3afd3289e3829acb6a0e8b",
+      "size": 4122
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/check-final-20261002-current.log",
+      "sha256": "35b2f4d317f57eb6683c1fb492f3681a00ab0601e5599953ed0e164a4c13418a",
+      "size": 447
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/check-final-20261002.log",
+      "sha256": "2c5b851381b9303622e8c7c904b3f0c8218385536242f47faacfda66f80f9cf4",
+      "size": 424
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/check-revalidation-20261001.log",
+      "sha256": "981074d0aaef758f6df4b2bd0bceb1867fe67c37bcf6c728c63453ef41f8320b",
+      "size": 6138
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/check.log",
+      "sha256": "6e6f8ff573f99ea6dec7c68cc2a9dc8027711f8ea309c7816c76f9b2d43300b0",
+      "size": 309
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/compileall-direct.log",
+      "sha256": "adc434c79d1e2b6fd227287d39981557efd94c95e63713e029314d05d72f9d63",
+      "size": 232
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/desktop-home-20261002.png",
+      "sha256": "2bc5dd9ad89e811f0b0438527d26c6402837c05c29cd86f04bfcbe7ae47889f7",
+      "size": 2756475
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/desktop-out-of-scope-20261002.png",
+      "sha256": "d0d6112749f9b81a71ee797f38bcc5b841a3da3a5294452d2901ffad1d0b1479",
+      "size": 2026959
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/inventory.txt",
+      "sha256": "26df39ea91ae413b4f808b4e981bf6ba97adb99b5fd8b7df1511d84a86bc8076",
+      "size": 15057
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/manual-browser-20261002.md",
+      "sha256": "51e4d6914bfa2f7f479e50a795a48396d0b03e439eda00e72ece4438820ad52a",
+      "size": 4876
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/manual-limitations.txt",
+      "sha256": "889838ead63c29c7e17b840d2cb359f66c9c88030d22df987673a4deeb42c6b8",
+      "size": 1446
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/mobile-analysis-20261002.png",
+      "sha256": "5a3398663211da1554ba01cad592f40e7f8ea39a601fa95da809511cf45ac20f",
+      "size": 213284
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/phase0-closeout-reconciliation-20261002.md",
+      "sha256": "f2bae1787426399fe321ca89c508c232bb7ed2938c3ae9f03aeb6fe7c674ca9b",
+      "size": 3698
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/pip-freeze.log",
+      "sha256": "0b8f703fa9c4117600070e9b80f43eba4c47d7db0c76cb5200f0db5fdb66e96d",
+      "size": 202
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/pytest-direct.log",
+      "sha256": "299585f3d0bb21a49ccfed11041f77df4e45a86f50402c0dba76f9ac1afaf6a7",
+      "size": 187
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/python-version.log",
+      "sha256": "a98ecc0846a2ef47cc50d875c12a1d088a381b5a32c829d478b8e5732ce074fd",
+      "size": 184
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/revalidation-20261001.log",
+      "sha256": "fc904e0b8ce38448ba4b7c65919d9ae79ee7ee84197438bdf1204806d9ae9b4d",
+      "size": 687
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/route-config-ui-inventory.txt",
+      "sha256": "705785f849bb98eb5b4f99c9b6399dbeb19871316444a725ca573c2cddbd838f",
+      "size": 2153
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/runtime-openapi-revalidation-20261001.log",
+      "sha256": "12e4dcaaddbcbbf21ee652f068e1ca313ae312e32a9ebf6780d97633dffac417",
+      "size": 810
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/source-comparison.log",
+      "sha256": "0e22df90bf83be19713a4498b1e69cf8830126cefe39c088f4a96a64dc0c785b",
+      "size": 210
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001-current/system-pytest.log",
+      "sha256": "40d5df98e1b1687c07a74f5cb0829e3828f42603a6d1dd9a27595a7b796d1880",
+      "size": 137
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/agentkit-dispatch-blocker.txt",
+      "sha256": "ead93f3a9324ba4eee5176f471b81205c069ac1c0b3520f7a0d15e4cc699f96f",
+      "size": 973
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/baseline-command.log",
+      "sha256": "f9b37c1869b3d7b0793e4870d726cf91dbd771d374a9eb3822cc795d174ea725",
+      "size": 9026
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/compileall-direct.log",
+      "sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35",
+      "size": 12
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/inventory.txt",
+      "sha256": "54a04113aa777e4d167a641495511be9559ced5d4cbbb1f5118424244b1f99b4",
+      "size": 5091
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/manual-limitations.txt",
+      "sha256": "0dcbee4f43f282f44e1936a729cb3842f7a193625d9200a685849300dc0b87f8",
+      "size": 360
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/pytest-direct.log",
+      "sha256": "af9ed8c4bee9f312844daa55006abf81c3da7773c6e275522a6dc7807a817c69",
+      "size": 600
+    },
+    {
+      "path": "docs/progress/evidence/baseline/phase0-20261001/runtime-smoke.log",
+      "sha256": "712da30caa1bd9d6b3a0785a739099b818630710fa7d4f0949160e17b2dd089f",
+      "size": 1143
+    },
+    {
+      "path": "docs/progress/evidence/brain-handoff-phase2-20261002.json",
+      "sha256": "4c5f380d245ce1b2b085f94135925bb5113e2a2c9b9edaf6aa289610b2b3e998",
+      "size": 4503
+    },
+    {
+      "path": "docs/progress/evidence/brain-handoff-phase4-20261003.json",
+      "sha256": "144520430b9a16caee150a47162361113fdf27a8e12a43c37aaf9e4634b3ccff",
+      "size": 3365
+    },
+    {
+      "path": "docs/progress/evidence/brain-session-phase2-20261002.json",
+      "sha256": "0bc4dc7a409bb0049923df033d80cea17e4066c68dd4db7a619dae280855d2b7",
+      "size": 1826
+    },
+    {
+      "path": "docs/progress/evidence/coursework-demo-checksums-20261002.json",
+      "sha256": "1af71b3b06dea657e88c85325328a46e9bd616941932c7cd5cc3447d41bca5a9",
+      "size": 1662
+    },
+    {
+      "path": "docs/progress/evidence/coursework-demo-evaluation.json",
+      "sha256": "3d86f54d3782700588766def8876ccce09769ae069730900320e942030cf6afe",
+      "size": 8203
+    },
+    {
+      "path": "docs/progress/evidence/phase1-check-20261002.log",
+      "sha256": "6e64249c37eea5b76fafe6d90233e8978f414f72be481aa9ccd4a4936c36680c",
+      "size": 356
+    },
+    {
+      "path": "docs/progress/evidence/phase2-baseline-20261002.md",
+      "sha256": "6199a9f35e47c53c5f5626ed932a734eec11794b9bbb95d15a8b0e5e4f47de62",
+      "size": 2328
+    },
+    {
+      "path": "docs/progress/evidence/phase2-retrieval-run.json",
+      "sha256": "140d94b855aa3d22d8a28c33c1810f47fe58815bafb385d4b5d366de7254da53",
+      "size": 2535
+    },
+    {
+      "path": "docs/progress/evidence/phase3-after-20261002.md",
+      "sha256": "360d5bcee1729d474f28f1c472985c08176110b989d5f48293987b8e154dcb47",
+      "size": 5275
+    },
+    {
+      "path": "docs/progress/evidence/phase3-baseline-20261002.md",
+      "sha256": "f210493669c38477bbc99d755b8c4210948caad074db3e27ca19fbe64f8bfe9c",
+      "size": 1862
+    },
+    {
+      "path": "docs/progress/evidence/phase3-browser-20261002/desktop-image-confirmed.png",
+      "sha256": "377901d9493b930273a1f565cabeca9d2d3377b5e0d1884011277e04eebac517",
+      "size": 733068
+    },
+    {
+      "path": "docs/progress/evidence/phase3-browser-20261002/desktop-image-review.png",
+      "sha256": "f655f87e763babf4e7c5a3c717d1ede66c0111c988f6a7644e37f72e63000b6f",
+      "size": 791906
+    },
+    {
+      "path": "docs/progress/evidence/phase3-browser-20261002/desktop-image-unavailable.png",
+      "sha256": "f99677077500fa9066d2b1b9987a838c5cabb63b572f4559a865473d740bebd3",
+      "size": 775933
+    },
+    {
+      "path": "docs/progress/evidence/phase3-browser-20261002/desktop-intake.png",
+      "sha256": "2645290a75905d06eafc91314ca3664e9138910a886caa467047baa9dcf0b2d8",
+      "size": 772278
+    },
+    {
+      "path": "docs/progress/evidence/phase3-browser-20261002/mobile-intake.png",
+      "sha256": "e0039e357c45b465c6bf5f3328e6760b648cec4bf8b55afca1a3848f244f0ae8",
+      "size": 331498
+    },
+    {
+      "path": "docs/progress/evidence/phase4-6-cases-20261003.md",
+      "sha256": "9259f53e4861067245e101e51aae7dc94e3804db8d424e4bc8d4e4b673787db2",
+      "size": 4272
+    },
+    {
+      "path": "docs/progress/evidence/phase4-after-20261003.md",
+      "sha256": "2a7c1b8b92afadee8ef794ccf767aef0ecbc66c4eebae7f98d052c76c3006ee3",
+      "size": 16191
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003-remediation.md",
+      "sha256": "0a71544286066d8961cb1fb4facaea89527587bac943b930cafc7d23379fe43f",
+      "size": 1571
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003-remediation/desktop-intake.png",
+      "sha256": "15bd3fa39cb35561da2a27f4347adcf22fc1cf6101308190d5d6c4378ac834c8",
+      "size": 737780
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003-remediation/mobile-intake.png",
+      "sha256": "a3375ba06fd906b4c3110ec8c8d808a8cd28910eb66b3c26b204f92734c509ac",
+      "size": 331451
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003/desktop-intake.png",
+      "sha256": "b41e66ab55c92c8b93bbfd32146ac0ef5e057744a2b9dcc0f7fd0f6a674a2618",
+      "size": 737783
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003/mobile-intake.png",
+      "sha256": "9a7e71e8d33491dcecdf1333aaeccb4bc01a7822848541836898dc258415cfd7",
+      "size": 331229
+    },
+    {
+      "path": "docs/progress/evidence/phase4-browser-20261003/xss-safe-response.png",
+      "sha256": "9e88225544ced8a8011cbfba203ed0f6c424244cb49bc7f3711571a8b1af0522",
+      "size": 445734
+    },
+    {
+      "path": "docs/progress/evidence/phase5-browser-20261003/desktop-home.png",
+      "sha256": "7a8e5b2a6406592172287db6dcff1ea9e65e764fca4bb880f3e1d9cd2f0e50cf",
+      "size": 751213
+    },
+    {
+      "path": "docs/progress/evidence/phase5-browser-20261003/mobile-home-390.png",
+      "sha256": "809544692d513b9669b5330e66b622c8416c2ca8676b7a4bd6133b6f3df95b53",
+      "size": 301591
+    },
+    {
+      "path": "docs/security/ADR-GUARD.md",
+      "sha256": "e4f6c80fc69430991cad1f8959e0b12cb23828f4aa0bf41c102f0bf417fdc4d8",
+      "size": 1584
+    },
+    {
+      "path": "docs/security/THREAT_MODEL.md",
+      "sha256": "932679e5ac1e58c88b9a989e3ee2ab7a63e511f92af67ffa6d22cefc72d11c58",
+      "size": 3699
+    },
+    {
+      "path": "knowledge/source_manifest.json",
+      "sha256": "d5758cedfabbb5e1ba98ab3dfc916fb14025e66a63bf2948f58785aaf29aa53a",
+      "size": 3296
+    },
+    {
+      "path": "scripts/install-hallmark.ps1",
+      "sha256": "6b94add3375cd46d06a08d3480510bec9df6816c382eb97f67f48a45c3ab7ecd",
+      "size": 458
+    },
+    {
+      "path": "static/js/scene.js",
+      "sha256": "6517b2b94331a2c5a0a0a31107cbc79b503abfbc8d311020ace511934f0098e2",
+      "size": 4411
+    }
+  ]
+}

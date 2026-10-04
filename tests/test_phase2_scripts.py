@@ -31,7 +31,7 @@ def test_release_build_script_fails_closed_from_repository_root():
 
 
 def test_retrieval_evidence_script_runs_from_repository_root():
-    output = ROOT / "docs" / "progress" / "evidence" / "phase2-script-test-retrieval.json"
+    output = ROOT / "docs" / "evidence" / "runs" / "phase2-script-test-retrieval.json"
     try:
         result = subprocess.run(
             [PYTHON, "scripts/evaluate_retrieval.py", "--mode", "synthetic", "--output", str(output)],

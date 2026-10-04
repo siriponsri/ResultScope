@@ -1,0 +1,196 @@
+{
+  "description": "Real redesigned pages; all mocked stages labeled explicitly. Not live provider or clinical validation.",
+  "base_commit": "c9236f59b73460ce3c41ba9c87d7cda43d87cee8",
+  "interactions": {
+    "confirmed_fields_readonly": true,
+    "mobile_modal": true,
+    "mobile_focus_trap": true,
+    "escape_closes": true,
+    "focus_restored": true,
+    "discard_clears_preview": true,
+    "active_report_locked": true,
+    "native_scroll_motion": true,
+    "reduced_motion_static": true,
+    "missing_gsap_fallback": true
+  },
+  "screenshots": [
+    {
+      "file": "00-landing-desktop.png",
+      "route": "/",
+      "mode": "real landing, approved purple atmosphere",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "viewport",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "01-workspace-desktop.png",
+      "route": "/",
+      "mode": "real UI, provider offline",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "02-example-loaded.png",
+      "route": "/",
+      "mode": "real example control, synthetic values",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "07-provider-unavailable.png",
+      "route": "/",
+      "mode": "real offline/missing-configuration route",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "11-scope-boundary.png",
+      "route": "/",
+      "mode": "real deterministic scope refusal",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "03-review-extracted-values.png",
+      "route": "/",
+      "mode": "mock OCR response in real review UI",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "04-confirmed-values.png",
+      "route": "/",
+      "mode": "mock confirmation endpoint in real UI",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "05-result-summary.png",
+      "route": "/",
+      "mode": "mock SSE payload in real result UI",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "06-source-details.png",
+      "route": "/",
+      "mode": "synthetic source rendering, not live grounding evidence",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "12-follow-up.png",
+      "route": "/",
+      "mode": "mock SSE follow-up in real UI",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "08-admin-login.png",
+      "route": "/admin/login",
+      "mode": "real local-demo login page",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "page",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "09-provider-settings.png",
+      "route": "/admin/settings",
+      "mode": "real settings read; empty synthetic capture environment; no save or provider test",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "region": "page",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "14-landing-mobile.png",
+      "route": "/",
+      "mode": "real landing at 390px",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "region": "viewport",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "10-workspace-mobile.png",
+      "route": "/",
+      "mode": "real UI, 390px viewport",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "15-report-mobile.png",
+      "route": "/",
+      "mode": "mock OCR, mobile document dialog",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "region": "viewport",
+      "horizontal_overflow": false
+    },
+    {
+      "file": "13-result-mobile.png",
+      "route": "/",
+      "mode": "mock SSE result, 390px viewport",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "region": "workspace",
+      "horizontal_overflow": false
+    }
+  ],
+  "browser_external_requests_blocked": [],
+  "js_errors": []
+}

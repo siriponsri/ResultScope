@@ -18,7 +18,7 @@ def test_rulebook_endpoint_and_home_surface():
     home = client.get("/")
     assert home.status_code == 200
     assert "Understand your" in home.text
-    assert "View all rules" in home.text
+    assert "View calculation rules" in home.text
     assert 'lang="en"' in home.text
     assert 'id="image-input"' in home.text
     assert 'id="image-review"' in home.text

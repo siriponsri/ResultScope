@@ -1,67 +1,41 @@
-# AGENTS.md — ResultScope local development rules
+# ResultScope development rules
 
-## Goal
+## Product and scope
 
-Turn the Week 7 FastAPI/Vercel chatbot starter into a credible lab-intelligence product prototype without breaking the simple deployment path.
+Build ResultScope Laboratory Assistant, a laboratory information product prototype.
+Read PRODUCT.md, DESIGN.md, docs/README.md and docs/operations/READINESS.md first.
+The active design is the owner-approved C + 2 purple landing and conversation with a report drawer. It replaces the historical
+spectral instrument direction. Historical instructions are evidence, not new work orders.
 
-## Non-negotiables
+## Engineering boundaries
 
-1. Preserve FastAPI root `main.py` + Vercel zero-config compatibility. Do not recreate the removed legacy `api/index.py` adapter or `vercel.json` unless a verified platform requirement changes.
-2. Keep OpenAI-compatible provider portability.
-3. Do not expose API keys to the browser or commit `.env`.
-4. Unrelated prompts must be rejected before LLM invocation.
-5. Do not turn the product into a general medical chatbot.
-6. Do not add diagnosis, prescribing, dose changes, or treatment plans.
-7. Prefer user-supplied units/reference ranges; do not hard-code universal “normal” ranges as truth.
-8. Keep local setup Windows-friendly.
-9. Every significant behavior change must include or update a test.
-10. Do not add heavy frameworks unless the current HTML/CSS/JS + FastAPI stack cannot meet the requirement.
+- Keep FastAPI main.py, Jinja templates and vanilla JavaScript. Preserve Windows setup.
+- Python owns scope, range comparisons, evidence checks and output validation.
+- Preserve source provenance, release/synthetic separation and the strict validator.
+- Never invent reference ranges, diagnoses, prescriptions or treatment changes.
+- Preserve report-supplied units and ranges; missing ranges remain unknown.
+- No external provider call without an explicit authorized cycle and attempt budget.
+- PROVIDER_NETWORK_ENABLED=false is the offline guard; provider toggles are not a substitute.
+- Preserve keys, sessions, stored data and the existing budget ledger. Never reset counters to retry.
+- Keep keys server-side. Never log bodies, patient data, keys or arbitrary exception details.
+- SystemOne stays shadow-only. Paid fallback and Clef remain disabled.
+- No automatic push, deployment, migration, remote branch deletion or unrelated worktree changes.
+- MAIN integrates and commits on local main. Use real FO review when available; report NOT_RUN otherwise.
+- PROMPT.md is local owner communication and must remain excluded from Git.
 
-## Design rules
+## UI and documentation
 
-Use Hallmark when available as an audit/redesign critic.
+- Follow DESIGN.md: self-hosted fonts/scripts, solid reading surfaces, approved purple gradients in hero/chat, visible focus.
+- Preserve native scrolling, the mobile report dialog, and static/reduced-motion fallbacks.
+- Preserve every intake, confirmation, reset, cancellation, source and error-recovery path.
+- Document all maintained product/developer guidance in English. Preserve Thai corpus and
+  evaluation content, original source files and historical evidence in their original language.
+- Do not describe a mock screenshot as live validation or an integration roadmap as implemented.
+- Preserve license notices. No mass deletion by filename, age or language.
 
-Avoid:
-- generic aurora gradients that are unrelated to laboratory signal or interaction;
-- glass cards;
-- decorative blobs/orbs;
-- generic 3-column SaaS feature-card grids;
-- excessive pills;
-- robot/brain/sparkle iconography;
-- ChatGPT visual cloning.
+## Verification
 
-Prefer:
-- clinical/editorial information design;
-- the spectral-instrument direction in `DESIGN.md`;
-- one integrated analysis object rather than separate deterministic and AI answers;
-- direct selection of extracted values and progressive rule disclosure;
-- strong typography and hierarchy;
-- clear data affordances;
-- accessible contrast/focus states;
-- responsive behavior;
-- calm, precise language;
-- visible lab-only product boundary.
-
-## Architecture direction
-
-`scope gate → store → LLM`, not `LLM decides everything`.
-
-For the coursework branch, do not add OCR, RAG, authentication, billing, or full patient profiles unless explicitly requested.
-
-## Before marking work complete
-
-Run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
-```
-
-Then manually test:
-- desktop;
-- narrow mobile viewport;
-- one in-scope lab prompt;
-- one lab follow-up;
-- one out-of-scope prompt;
-- new-analysis reset;
-- missing API-key error;
-- Vercel environment assumptions.
+Run focused tests for behavior changes, then scripts/check.ps1 once the candidate is ready.
+Check real desktop and 390px mobile flows, keyboard focus, uploaded-field confirmation,
+out-of-scope refusal, safe errors and reset. Use synthetic fixtures; live calls default to zero.
+Record candidate SHA, test scope and blockers. Never claim production or clinical readiness.

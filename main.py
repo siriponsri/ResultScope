@@ -22,7 +22,7 @@ logging.basicConfig(
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Lab-only neuro-symbolic education assistant based on an OpenAI-compatible LLM.",
+    description="Laboratory information assistant with source-linked explanations, report review, and deterministic range checks.",
     version="0.1.0",
 )
 

@@ -1,0 +1,13 @@
+# Provenance snapshots are byte-addressed; preserve bytes across Windows/Linux.
+knowledge/** -text
+evaluation/** -text
+docs/coursework-demo/** -text
+addons/resultscope_evidence_v1/** -text
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.woff2 binary
+*.ttf binary
+# This CSV's upstream package checksum pins CRLF; keep all other whitespace checks.
+addons/resultscope_evidence_v1/data/records-review.csv whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

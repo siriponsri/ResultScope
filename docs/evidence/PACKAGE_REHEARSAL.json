@@ -1,0 +1,63 @@
+{
+  "baseline_commit": "c9236f59b73460ce3c41ba9c87d7cda43d87cee8",
+  "package_version": "v2 C + 2",
+  "environment": "isolated Linux clone; Python 3.12; provider networking disabled",
+  "copied_payload": "PASS",
+  "cleanup_removed": 144,
+  "archive_originals": 154,
+  "repository_tests": 237,
+  "addon_tests": 50,
+  "staged_diff_check": "PASS",
+  "pinned_staged_bytes": "PASS",
+  "unrelated_staged_files": 0,
+  "provider_calls": 0,
+  "windows_check": "NOT_RUN",
+  "commands": [
+    {
+      "check": "copied_payload",
+      "exit_code": 0
+    },
+    {
+      "check": "cleanup_dry_run",
+      "exit_code": 0
+    },
+    {
+      "check": "cleanup_apply",
+      "exit_code": 0
+    },
+    {
+      "check": "integrated_payload",
+      "exit_code": 0
+    },
+    {
+      "check": "rehearsal_pytest",
+      "exit_code": 0
+    },
+    {
+      "check": "rehearsal_addon",
+      "exit_code": 0
+    },
+    {
+      "check": "rehearsal_structure",
+      "exit_code": 0
+    },
+    {
+      "check": "staged_diff",
+      "exit_code": 0
+    }
+  ],
+  "post_test_integrated_verification": {
+    "integrated": "PASS",
+    "remaining_cleanup_paths": 0,
+    "after_cleanup": 0,
+    "after_pytest_237_passed": 0,
+    "after_staging": 0,
+    "git_deleted_entries": 143,
+    "git_rename_entries": 1,
+    "staged_diff_check": "PASS"
+  },
+  "recheck_notes": [
+    "A later read found legacy paths present in the transient clone; cause was not established. Guarded cleanup was rerun, followed by 237 passing tests and integrated verification with zero remaining cleanup paths.",
+    "A temporary harness incorrectly required 144 Git D entries; Git represented one as a rename. A repeat staging command also included already-staged absent paths. The delivered Windows contract already checks index membership before staging deletions. No application or cleanup implementation change was needed."
+  ]
+}

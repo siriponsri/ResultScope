@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "docs" / "progress" / "evidence" / "phase2-retrieval-run.json",
+        default=ROOT / "docs" / "evidence" / "runs" / "phase2-retrieval-run.json",
     )
     args = parser.parse_args()
     if args.mode == "release":
@@ -75,9 +75,9 @@ def main() -> int:
     }
     output = args.output.resolve()
     try:
-        output.relative_to((ROOT / "docs" / "progress" / "evidence").resolve())
+        output.relative_to((ROOT / "docs" / "evidence" / "runs").resolve())
     except ValueError:
-        parser.error("--output must remain under docs/progress/evidence")
+        parser.error("--output must remain under docs/evidence/runs")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"RETRIEVAL EVALUATION: {'PASS' if passed == len(rows) else 'FAIL'} ({passed}/{len(rows)})")

@@ -1,6 +1,6 @@
 # ResultScope deterministic rulebook
 
-Version: **2026.08**
+Documentation revision: **2026-10-04**. The runtime rule version remains owned by `services/deterministic_rules.py`.
 
 ## Purpose
 
@@ -60,8 +60,8 @@ The generated pre-answer contract contains the runtime facts, applicable rules, 
 Each analysis is rendered as one interactive result canvas:
 
 - select a value to update its reference-range visualization;
-- read the streamed narrative in the same object;
-- open **How this answer was grounded** to inspect the exact applied rule trace;
+- read the validated explanation in the same object (the SSE path validates the completed answer before displaying its deltas);
+- open **Calculation details** to inspect the exact applied rule trace;
 - follow-up questions create a new context-linked analysis object without pretending that a new numeric result was parsed.
 
 The visual layer never computes a status. It only renders the server-issued deterministic analysis metadata.

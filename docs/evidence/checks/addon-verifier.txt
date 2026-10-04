@@ -1,0 +1,57 @@
+CORPUS_HASH_AND_STRUCTURE_PASS 17 sources 26 records
+GUIDELINE_HASH_AND_STRUCTURE_PASS 2 sources 3 educational notes
+test_authorization_required (test_evidence.ClefTests.test_authorization_required) ... ok
+test_bad_probabilities (test_evidence.ClefTests.test_bad_probabilities) ... ok
+test_disabled_never_calls (test_evidence.ClefTests.test_disabled_never_calls) ... ok
+test_forged_choice (test_evidence.ClefTests.test_forged_choice) ... ok
+test_malformed_response (test_evidence.ClefTests.test_malformed_response) ... ok
+test_mocked_transport_envelope (test_evidence.ClefTests.test_mocked_transport_envelope) ... ok
+test_shadow_contract (test_evidence.ClefTests.test_shadow_contract) ... ok
+test_transport_redacts_errors (test_evidence.ClefTests.test_transport_redacts_errors) ... ok
+test_all_source_bytes_match (test_evidence.EvidenceTests.test_all_source_bytes_match) ... ok
+test_alt_keeps_both_sources_and_sexes (test_evidence.EvidenceTests.test_alt_keeps_both_sources_and_sexes) ... ok
+test_bad_query_rejected (test_evidence.EvidenceTests.test_bad_query_rejected) ... ok
+test_censored_value_unknown (test_evidence.EvidenceTests.test_censored_value_unknown) ... ok
+test_compare_requires_explicit_selection (test_evidence.EvidenceTests.test_compare_requires_explicit_selection) ... ok
+test_forbidden_source_path (test_evidence.EvidenceTests.test_forbidden_source_path) ... ok
+test_invalid_numeric (test_evidence.EvidenceTests.test_invalid_numeric) ... ok
+test_latin_alias_token_boundaries (test_evidence.EvidenceTests.test_latin_alias_token_boundaries) ... ok
+test_limit_reports_truncation (test_evidence.EvidenceTests.test_limit_reports_truncation) ... ok
+test_lipid_not_treated_as_ri (test_evidence.EvidenceTests.test_lipid_not_treated_as_ri) ... ok
+test_missing_analyte_abstains (test_evidence.EvidenceTests.test_missing_analyte_abstains) ... ok
+test_no_patient_classification (test_evidence.EvidenceTests.test_no_patient_classification) ... ok
+test_no_source_inherits_parent_date (test_evidence.EvidenceTests.test_no_source_inherits_parent_date) ... ok
+test_no_unit_guess (test_evidence.EvidenceTests.test_no_unit_guess) ... ok
+test_packet_is_external_data (test_evidence.EvidenceTests.test_packet_is_external_data) ... ok
+test_packet_rejects_forged_ids (test_evidence.EvidenceTests.test_packet_rejects_forged_ids) ... ok
+test_record_cannot_become_release (test_evidence.EvidenceTests.test_record_cannot_become_release) ... ok
+test_salt_does_not_guess_alt (test_evidence.EvidenceTests.test_salt_does_not_guess_alt) ... ok
+test_sex_filter (test_evidence.EvidenceTests.test_sex_filter) ... ok
+test_source_filter_does_not_leak (test_evidence.EvidenceTests.test_source_filter_does_not_leak) ... ok
+test_source_specific_arithmetic (test_evidence.EvidenceTests.test_source_specific_arithmetic) ... ok
+test_source_tamper_fails (test_evidence.EvidenceTests.test_source_tamper_fails) ... ok
+test_thai_glucose_keeps_source_difference (test_evidence.EvidenceTests.test_thai_glucose_keeps_source_difference) ... ok
+test_tree_is_complete_unique (test_evidence.EvidenceTests.test_tree_is_complete_unique) ... ok
+test_unknown_source_rejected (test_evidence.EvidenceTests.test_unknown_source_rejected) ... ok
+test_unrelated_abstains (test_evidence.EvidenceTests.test_unrelated_abstains) ... ok
+test_guidelines_are_not_numeric_rules (test_guidance.GuidelineTests.test_guidelines_are_not_numeric_rules) ... ok
+test_hb_never_matches_substring (test_guidance.GuidelineTests.test_hb_never_matches_substring) ... ok
+test_tampered_pdf_rejected (test_guidance.GuidelineTests.test_tampered_pdf_rejected) ... ok
+test_thai_ferritin_has_page_and_license (test_guidance.GuidelineTests.test_thai_ferritin_has_page_and_license) ... ok
+test_tree_covers_every_note (test_guidance.GuidelineTests.test_tree_covers_every_note) ... ok
+test_cross_origin_rejected (test_preview.HTTPTests.test_cross_origin_rejected) ... ok
+test_guideline_search_is_separate (test_preview.HTTPTests.test_guideline_search_is_separate) ... ok
+test_guideline_source_is_allowlisted (test_preview.HTTPTests.test_guideline_source_is_allowlisted) ... ok
+test_host_header_rejected (test_preview.HTTPTests.test_host_header_rejected) ... ok
+test_invalid_body (test_preview.HTTPTests.test_invalid_body) ... ok
+test_no_arbitrary_source_path (test_preview.HTTPTests.test_no_arbitrary_source_path) ... ok
+test_no_env_route (test_preview.HTTPTests.test_no_env_route) ... ok
+test_no_mode_override (test_preview.HTTPTests.test_no_mode_override) ... ok
+test_page_no_external_script (test_preview.HTTPTests.test_page_no_external_script) ... ok
+test_pdf_snapshot (test_preview.HTTPTests.test_pdf_snapshot) ... ok
+test_search_real_corpus (test_preview.HTTPTests.test_search_real_corpus) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.576s
+
+OK

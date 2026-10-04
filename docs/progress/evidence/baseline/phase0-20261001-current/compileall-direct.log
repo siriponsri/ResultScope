@@ -1,4 +1,0 @@
-﻿TIMESTAMP=2026-10-01T22:29:10+07:00
-COMMAND=.\\.venv\\Scripts\\python.exe -m compileall -q main.py config.py routers services tests
-Project venv interpreter returned Access is denied for configured base executable.
-EXIT_CODE=103

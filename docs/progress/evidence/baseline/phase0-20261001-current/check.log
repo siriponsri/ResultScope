@@ -1,4 +1,0 @@
-﻿TIMESTAMP=2026-10-01T22:29:10+07:00
-COMMAND=powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\check.ps1
-Fresh run output was captured before normalization; project .venv Python returned Access is denied for configured executable. See inventory.txt and timestamped session output.
-EXIT_CODE=1

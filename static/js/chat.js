@@ -51,7 +51,7 @@ function renderMarkdown(rawText) {
 }
 
 function scrollToNode(node, block = "start") {
-  node?.scrollIntoView({ behavior: "smooth", block });
+  node?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block });
 }
 
 function showConversation() {
@@ -83,8 +83,7 @@ function createAnalysisSurface(message) {
   const head = createElement("header", "response-header");
   const identity = createElement("div", "response-identity");
   identity.append(
-    createElement("span", "response-run", `RUN ${String(runCount).padStart(2, "0")}`),
-    createElement("h2", "response-title", runCount === 1 ? "Integrated result summary" : "Follow-up in the same context")
+    createElement("h2", "response-title", runCount === 1 ? "Result summary" : "Follow-up in the same context")
   );
 
   const progress = createElement("ol", "response-progress");
@@ -98,7 +97,7 @@ function createAnalysisSurface(message) {
 
   const source = createElement("details", "source-disclosure");
   const sourceSummary = createElement("summary", "");
-  sourceSummary.append(createElement("span", "", "Message sent to the system"), createElement("b", "", "View full text"));
+  sourceSummary.append(createElement("span", "", "Message sent to the system"), createElement("b", "", "Show your message"));
   source.append(sourceSummary, createElement("pre", "source-text", message));
 
   const body = createElement("div", "response-body");
@@ -106,7 +105,7 @@ function createAnalysisSurface(message) {
   metricZone.setAttribute("aria-label", "Extracted and checked values");
   metricZone.innerHTML = `
     <div class="zone-heading">
-      <div><span>Verified data layer</span><h3>Reading literal values</h3></div>
+      <div><span>Values from your information</span><h3>Reading literal values</h3></div>
       <strong class="rule-version">Rules —</strong>
     </div>
     <div class="metric-loading" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -116,8 +115,8 @@ function createAnalysisSurface(message) {
   narrativeZone.setAttribute("aria-label", "Explanation from verified data");
   narrativeZone.innerHTML = `
     <div class="zone-heading">
-      <div><span>Integrated explanation</span><h3>Preparing verified facts</h3></div>
-      <strong class="answer-state">Waiting for checked values</strong>
+      <div><span>Explanation</span><h3>Preparing your explanation</h3></div>
+      <strong class="answer-state">Checking supplied values</strong>
     </div>
     <div class="narrative-output"><p class="narrative-wait"><i></i> The explanation will appear after the extracted values are checked.</p></div>
   `;
@@ -134,7 +133,7 @@ function createAnalysisSurface(message) {
   const evidence = createElement("details", "rule-disclosure");
   const evidenceSummary = createElement("summary", "");
   const summaryCopy = createElement("span", "");
-  summaryCopy.append(createElement("strong", "", "How this answer was formed"), createElement("small", "", "Review the rules used before the model call"));
+  summaryCopy.append(createElement("strong", "", "Calculation details"), createElement("small", "", "Inspect the supplied ranges and calculation rules"));
   evidenceSummary.append(summaryCopy, createElement("b", "", "+"));
   evidence.append(evidenceSummary, createElement("div", "rule-trace"));
 
@@ -237,7 +236,7 @@ function renderMetrics(surface, meta) {
   const heading = createElement("div", "zone-heading");
   const copy = createElement("div", "");
   copy.append(
-    createElement("span", "", "Verified data layer"),
+    createElement("span", "", "Values from your information"),
     createElement("h3", "", meta.count ? `${meta.count} numeric value${meta.count === 1 ? "" : "s"} found` : "Follow-up using the same context")
   );
   heading.append(copy, createElement("strong", "rule-version", `Rules ${meta.rulebook_version}`));
@@ -333,8 +332,8 @@ function renderLocalResponse(surface, message, intent, suggestions = []) {
 function beginNarrative(surface) {
   const step = surface.querySelector('.response-progress li[data-step="3"]');
   step?.classList.add("is-active");
-  surface.querySelector(".answer-state").textContent = "Sending an answer grounded in checked data";
-  surface.querySelector(".narrative-zone .zone-heading h3").textContent = "One explanation from verified facts";
+  surface.querySelector(".answer-state").textContent = "Based on the checked information";
+  surface.querySelector(".narrative-zone .zone-heading h3").textContent = "Your results in context";
 }
 
 function finishSurface(surface) {
@@ -343,7 +342,11 @@ function finishSurface(surface) {
     surface.classList.remove("is-complete");
     surface.querySelectorAll(".response-progress li").forEach((step) => step.classList.remove("is-active"));
     const answerState = surface.querySelector(".answer-state");
-    if (answerState) answerState.textContent = "The answer ended with an error";
+    if (answerState) answerState.textContent = "Explanation unavailable";
+    const heading = surface.querySelector(".narrative-zone .zone-heading h3");
+    if (heading) heading.textContent = "The explanation could not be completed";
+    const pending = surface.querySelector(".narrative-wait");
+    if (pending) pending.textContent = "Your entered values remain visible. Read the message below for the next step.";
     return;
   }
   surface.classList.add("is-complete");
@@ -352,7 +355,19 @@ function finishSurface(surface) {
     step.classList.add("is-done");
   });
   const answerState = surface.querySelector(".answer-state");
-  if (answerState) answerState.textContent = "Answer complete from verified data";
+  if (answerState) answerState.textContent = "Explanation complete";
+}
+
+function friendlyServiceError(code, message) {
+  const messages = {
+    provider_network_disabled: "Online explanations are switched off. Ask the administrator to enable an authorized test when you are ready.",
+    provider_budget_exhausted: "The provider request limit has been reached. Ask the administrator to review the budget before trying again.",
+    budget_exhausted: "The provider request limit has been reached. Ask the administrator to review the budget before trying again.",
+    provider_not_configured: "The explanation service has not been configured. Ask the administrator to complete setup.",
+  };
+  if (messages[code]) return messages[code];
+  if (/API_KEY|\.env|Vercel|credentials|not configured/i.test(message || "")) return "The explanation service has not been configured. Ask the administrator to complete setup.";
+  return message || "The explanation is unavailable. Please try again later.";
 }
 
 function showError(message, notice = false, retryMessage = null) {
@@ -419,6 +434,7 @@ function renderCitations(surface, metadata) {
 function setImageStatus(message, state = "") {
   imageStatus.textContent = message;
   imageStatus.dataset.state = state;
+  window.dispatchEvent(new CustomEvent("resultscope:report", { detail: { file: currentImageFile, state } }));
 }
 
 function clearImagePreview() {
@@ -455,7 +471,7 @@ function renderImageReview(file, extraction) {
   const heading = createElement("div", "image-review-heading");
   heading.append(
     createElement("strong", "", extraction.status === "confirmed" ? "Confirmed extracted values" : "Review values extracted from the image"),
-    createElement("small", "", "Text from the image is unverified data. Edit unclear values before confirming.")
+    createElement("small", "", extraction.status === "confirmed" ? "These values are confirmed for this analysis. Start a new analysis to use a different report." : "Text from the image is unverified data. Edit unclear values before confirming.")
   );
   panel.appendChild(heading);
 
@@ -487,6 +503,7 @@ function renderImageReview(file, extraction) {
     range.placeholder = "For example, 10-15; leave blank if unavailable";
     range.autocomplete = "off";
     rangeLabel.appendChild(range);
+    [value, unit, range].forEach(input => { input.readOnly = extraction.status === "confirmed"; });
     row.append(legend, valueLabel, unitLabel, rangeLabel);
     panel.appendChild(row);
     fieldNodes.push({ row, field, value, unit, range });
@@ -550,10 +567,11 @@ async function confirmImageExtraction(fieldNodes) {
     renderImageReview(currentImageFile, body);
     messageInput.value = "Please explain the values extracted from this laboratory report.";
     updateCount();
+    window.dispatchEvent(new Event("resultscope:confirmed"));
     messageInput.focus();
   } catch (error) {
     if (token === imageRequestToken && error.name !== "AbortError") {
-    showError(error.message || "The extracted values could not be confirmed.");
+      setImageStatus(error.message || "The extracted values could not be confirmed.", "error");
     }
   } finally {
     if (token === imageRequestToken) imageRequestController = null;
@@ -599,6 +617,7 @@ function setBusy(isBusy) {
   followupSend.disabled = isBusy;
   loadingIndicator.classList.toggle("hidden", !isBusy);
   analysisContent?.setAttribute("aria-busy", String(isBusy));
+  window.dispatchEvent(new CustomEvent("resultscope:busy", {detail: {busy: isBusy}}));
 }
 
 async function sendMessage(message, origin = "followup") {
@@ -662,7 +681,7 @@ async function sendMessage(message, origin = "followup") {
           surface.querySelector(".narrative-output").innerHTML = renderMarkdown(accumulatedText);
         } else if (payload.error) {
           streamError = true;
-          showError(payload.message || "An error occurred while preparing the answer.", false, message);
+          showError(friendlyServiceError(payload.code, payload.message), false, /budget_exhausted|provider_network_disabled/.test(payload.code || "") ? null : message);
           surface.classList.add("has-error");
         } else if (payload.done) {
           receivedDone = true;

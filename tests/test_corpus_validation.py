@@ -16,9 +16,9 @@ def copy_corpus(tmp_path: Path) -> Path:
     for relative in ("knowledge", "evaluation"):
         shutil.copytree(ROOT / relative, target / relative)
     for relative in (
-        "AGENTS.md",
-        "BUSINESS_BRIEF.md",
-        "docs/final-project-plan/phases/PHASE_1_BUSINESS_KB.md",
+        "knowledge/snapshots/legacy/AGENTS.md",
+        "knowledge/snapshots/legacy/BUSINESS_BRIEF.md",
+        "knowledge/snapshots/legacy/PHASE_1_BUSINESS_KB.md",
     ):
         source = ROOT / relative
         if source.is_file():

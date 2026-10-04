@@ -1,0 +1,462 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T12:01:56Z",
+  "title": "Design System: ResultScope Laboratory Assistant",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Ghost white",
+        "canonical": "#F8F8FF",
+        "tonalRamp": [
+          "oklch(15.00% 0.0093 286.23)",
+          "oklch(26.43% 0.0093 286.23)",
+          "oklch(37.86% 0.0093 286.23)",
+          "oklch(49.29% 0.0093 286.23)",
+          "oklch(60.71% 0.0093 286.23)",
+          "oklch(72.14% 0.0093 286.23)",
+          "oklch(83.57% 0.0093 286.23)",
+          "oklch(95.00% 0.0093 286.23)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White reading surface",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 0.00)",
+          "oklch(26.43% 0.0000 0.00)",
+          "oklch(37.86% 0.0000 0.00)",
+          "oklch(49.29% 0.0000 0.00)",
+          "oklch(60.71% 0.0000 0.00)",
+          "oklch(72.14% 0.0000 0.00)",
+          "oklch(83.57% 0.0000 0.00)",
+          "oklch(95.00% 0.0000 0.00)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Purple ink",
+        "canonical": "#21172F",
+        "tonalRamp": [
+          "oklch(15.00% 0.0469 302.06)",
+          "oklch(26.43% 0.0469 302.06)",
+          "oklch(37.86% 0.0469 302.06)",
+          "oklch(49.29% 0.0469 302.06)",
+          "oklch(60.71% 0.0469 302.06)",
+          "oklch(72.14% 0.0469 302.06)",
+          "oklch(83.57% 0.0469 302.06)",
+          "oklch(95.00% 0.0469 302.06)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted purple ink",
+        "canonical": "#61586F",
+        "tonalRamp": [
+          "oklch(15.00% 0.0380 302.81)",
+          "oklch(26.43% 0.0380 302.81)",
+          "oklch(37.86% 0.0380 302.81)",
+          "oklch(49.29% 0.0380 302.81)",
+          "oklch(60.71% 0.0380 302.81)",
+          "oklch(72.14% 0.0380 302.81)",
+          "oklch(83.57% 0.0380 302.81)",
+          "oklch(95.00% 0.0380 302.81)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep indigo",
+        "canonical": "#4B0082",
+        "tonalRamp": [
+          "oklch(15.00% 0.1793 301.68)",
+          "oklch(26.43% 0.1793 301.68)",
+          "oklch(37.86% 0.1793 301.68)",
+          "oklch(49.29% 0.1793 301.68)",
+          "oklch(60.71% 0.1793 301.68)",
+          "oklch(72.14% 0.1793 301.68)",
+          "oklch(83.57% 0.1793 301.68)",
+          "oklch(95.00% 0.1793 301.68)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Deep indigo hover",
+        "canonical": "#390064",
+        "tonalRamp": [
+          "oklch(15.00% 0.1488 302.08)",
+          "oklch(26.43% 0.1488 302.08)",
+          "oklch(37.86% 0.1488 302.08)",
+          "oklch(49.29% 0.1488 302.08)",
+          "oklch(60.71% 0.1488 302.08)",
+          "oklch(72.14% 0.1488 302.08)",
+          "oklch(83.57% 0.1488 302.08)",
+          "oklch(95.00% 0.1488 302.08)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Vivid violet",
+        "canonical": "#8A2BE2",
+        "tonalRamp": [
+          "oklch(15.00% 0.2503 301.37)",
+          "oklch(26.43% 0.2503 301.37)",
+          "oklch(37.86% 0.2503 301.37)",
+          "oklch(49.29% 0.2503 301.37)",
+          "oklch(60.71% 0.2503 301.37)",
+          "oklch(72.14% 0.2503 301.37)",
+          "oklch(83.57% 0.2503 301.37)",
+          "oklch(95.00% 0.2503 301.37)"
+        ]
+      },
+      "lavender": {
+        "role": "secondary",
+        "displayName": "Slate lavender",
+        "canonical": "#6A5ACD",
+        "tonalRamp": [
+          "oklch(15.00% 0.1712 285.54)",
+          "oklch(26.43% 0.1712 285.54)",
+          "oklch(37.86% 0.1712 285.54)",
+          "oklch(49.29% 0.1712 285.54)",
+          "oklch(60.71% 0.1712 285.54)",
+          "oklch(72.14% 0.1712 285.54)",
+          "oklch(83.57% 0.1712 285.54)",
+          "oklch(95.00% 0.1712 285.54)"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Dark slate violet",
+        "canonical": "#483D8B",
+        "tonalRamp": [
+          "oklch(15.00% 0.1248 286.04)",
+          "oklch(26.43% 0.1248 286.04)",
+          "oklch(37.86% 0.1248 286.04)",
+          "oklch(49.29% 0.1248 286.04)",
+          "oklch(60.71% 0.1248 286.04)",
+          "oklch(72.14% 0.1248 286.04)",
+          "oklch(83.57% 0.1248 286.04)",
+          "oklch(95.00% 0.1248 286.04)"
+        ]
+      },
+      "tint": {
+        "role": "primary",
+        "displayName": "Pale violet",
+        "canonical": "#F1EBFC",
+        "tonalRamp": [
+          "oklch(15.00% 0.0235 301.95)",
+          "oklch(26.43% 0.0235 301.95)",
+          "oklch(37.86% 0.0235 301.95)",
+          "oklch(49.29% 0.0235 301.95)",
+          "oklch(60.71% 0.0235 301.95)",
+          "oklch(72.14% 0.0235 301.95)",
+          "oklch(83.57% 0.0235 301.95)",
+          "oklch(95.00% 0.0235 301.95)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Quiet lavender line",
+        "canonical": "#DED8E9",
+        "tonalRamp": [
+          "oklch(15.00% 0.0239 301.92)",
+          "oklch(26.43% 0.0239 301.92)",
+          "oklch(37.86% 0.0239 301.92)",
+          "oklch(49.29% 0.0239 301.92)",
+          "oklch(60.71% 0.0239 301.92)",
+          "oklch(72.14% 0.0239 301.92)",
+          "oklch(83.57% 0.0239 301.92)",
+          "oklch(95.00% 0.0239 301.92)"
+        ]
+      },
+      "control-line": {
+        "role": "neutral",
+        "displayName": "Editable-control border",
+        "canonical": "#8D819D",
+        "tonalRamp": [
+          "oklch(15.00% 0.0437 304.60)",
+          "oklch(26.43% 0.0437 304.60)",
+          "oklch(37.86% 0.0437 304.60)",
+          "oklch(49.29% 0.0437 304.60)",
+          "oklch(60.71% 0.0437 304.60)",
+          "oklch(72.14% 0.0437 304.60)",
+          "oklch(83.57% 0.0437 304.60)",
+          "oklch(95.00% 0.0437 304.60)"
+        ]
+      },
+      "amber": {
+        "role": "status",
+        "displayName": "Range amber",
+        "canonical": "#8A521D",
+        "tonalRamp": [
+          "oklch(15.00% 0.0997 59.90)",
+          "oklch(26.43% 0.0997 59.90)",
+          "oklch(37.86% 0.0997 59.90)",
+          "oklch(49.29% 0.0997 59.90)",
+          "oklch(60.71% 0.0997 59.90)",
+          "oklch(72.14% 0.0997 59.90)",
+          "oklch(83.57% 0.0997 59.90)",
+          "oklch(95.00% 0.0997 59.90)"
+        ]
+      },
+      "amber-tint": {
+        "role": "status",
+        "displayName": "Pale amber",
+        "canonical": "#FFF5E8",
+        "tonalRamp": [
+          "oklch(15.00% 0.0203 74.66)",
+          "oklch(26.43% 0.0203 74.66)",
+          "oklch(37.86% 0.0203 74.66)",
+          "oklch(49.29% 0.0203 74.66)",
+          "oklch(60.71% 0.0203 74.66)",
+          "oklch(72.14% 0.0203 74.66)",
+          "oklch(83.57% 0.0203 74.66)",
+          "oklch(95.00% 0.0203 74.66)"
+        ]
+      },
+      "red": {
+        "role": "status",
+        "displayName": "Error red",
+        "canonical": "#A62E4A",
+        "tonalRamp": [
+          "oklch(15.00% 0.1559 11.45)",
+          "oklch(26.43% 0.1559 11.45)",
+          "oklch(37.86% 0.1559 11.45)",
+          "oklch(49.29% 0.1559 11.45)",
+          "oklch(60.71% 0.1559 11.45)",
+          "oklch(72.14% 0.1559 11.45)",
+          "oklch(83.57% 0.1559 11.45)",
+          "oklch(95.00% 0.1559 11.45)"
+        ]
+      },
+      "red-tint": {
+        "role": "status",
+        "displayName": "Pale error red",
+        "canonical": "#FFF1F4",
+        "tonalRamp": [
+          "oklch(15.00% 0.0156 2.66)",
+          "oklch(26.43% 0.0156 2.66)",
+          "oklch(37.86% 0.0156 2.66)",
+          "oklch(49.29% 0.0156 2.66)",
+          "oklch(60.71% 0.0156 2.66)",
+          "oklch(72.14% 0.0156 2.66)",
+          "oklch(83.57% 0.0156 2.66)",
+          "oklch(95.00% 0.0156 2.66)"
+        ]
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Lavender focus",
+        "canonical": "#6A5ACD",
+        "tonalRamp": [
+          "oklch(15.00% 0.1712 285.54)",
+          "oklch(26.43% 0.1712 285.54)",
+          "oklch(37.86% 0.1712 285.54)",
+          "oklch(49.29% 0.1712 285.54)",
+          "oklch(60.71% 0.1712 285.54)",
+          "oklch(72.14% 0.1712 285.54)",
+          "oklch(83.57% 0.1712 285.54)",
+          "oklch(95.00% 0.1712 285.54)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Introductory display",
+        "purpose": "Centered functional hero title; responsive fluid sizes are documented in DESIGN.md."
+      },
+      "headline": {
+        "displayName": "Section heading",
+        "purpose": "Base medium-weight second-level heading; welcome and conversation headings have documented local sizes."
+      },
+      "title": {
+        "displayName": "Operational title",
+        "purpose": "Concise third-level heading for work and reading sections."
+      },
+      "body": {
+        "displayName": "Body text",
+        "purpose": "General interface reading and initial text entry with English/Thai glyph support."
+      },
+      "label": {
+        "displayName": "Action label",
+        "purpose": "Ordinary primary and secondary buttons."
+      },
+      "compact-label": {
+        "displayName": "Compact workspace label",
+        "purpose": "Composer and report controls."
+      },
+      "narrative": {
+        "displayName": "Explanation reading",
+        "purpose": "Rendered answer prose at 1.8 line height; mobile size is 14px."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "button-color-feedback",
+        "value": "background-color 160ms, color 160ms, border-color 160ms",
+        "purpose": "Color-only button state feedback; disabled by prefers-reduced-motion."
+      },
+      {
+        "name": "native-scroll-entry",
+        "value": "Paused GSAP timeline; duration 1, ease none; progress clamp(scrollY / max(1, workspace.offsetTop - 50), 0, 1)",
+        "purpose": "Native scroll advances a requestAnimationFrame-scheduled timeline; enabled only above 760px with GSAP and without reduced motion."
+      },
+      {
+        "name": "hero-recede",
+        "value": "scale 1 → 0.88; opacity 1 → 0; translateY 0 → -24px",
+        "purpose": "Bounded owner-approved desktop introduction transition."
+      },
+      {
+        "name": "workspace-settle",
+        "value": "scale 1.035 → 1",
+        "purpose": "The workspace settles into its final layout as the hero recedes."
+      },
+      {
+        "name": "timeline-static-fallback",
+        "value": "No timeline at max-width 760px, prefers-reduced-motion, or without GSAP",
+        "purpose": "Normal document flow preserves the interface. Media changes kill the timeline and remove inline transform/opacity styles."
+      },
+      {
+        "name": "action-scroll",
+        "value": "scrollIntoView: smooth; auto under prefers-reduced-motion",
+        "purpose": "Direct workspace navigation and conversation focus remain available independently of the timeline."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1050px",
+        "purpose": "Smaller chat/drawer padding, stacked suggestions, hidden character count, wrapping response header."
+      },
+      {
+        "name": "mobile-dialog",
+        "value": "760px",
+        "purpose": "Full-screen report dialog, compact workspace, two-column metric grid, static scroll-transform fallback, single-column admin provider form."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Send button",
+      "kind": "button",
+      "description": "Compact primary action used in the initial and follow-up composers.",
+      "html": "<button type=\"button\" class=\"ds-send\"><span>Send</span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button>",
+      "css": ".ds-send{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--primary,#4b0082);color:var(--surface,#fff);min-height:40px;padding:8px 14px;}.ds-send:hover{background:var(--primary-hover,#390064);}.ds-send:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-send:disabled{opacity:.55;cursor:wait}.ds-send svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-send{transition:none}}@media(max-width:760px){.ds-send{padding:8px 12px;font-size:13px}}",
+      "refersTo": "button-send"
+    },
+    {
+      "name": "Open workspace action",
+      "kind": "button",
+      "description": "Roomier primary action at the introduction; the application navigates to the workspace.",
+      "html": "<a class=\"ds-open-workspace\" href=\"#workspace\">Open workspace <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4v16m-6-6 6 6 6-6\"/></svg></a>",
+      "css": ".ds-open-workspace{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--primary,#4b0082);color:var(--surface,#fff);min-height:48px;padding:12px 22px;}.ds-open-workspace:hover{background:var(--primary-hover,#390064);}.ds-open-workspace:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-open-workspace:disabled{opacity:.55;cursor:wait}.ds-open-workspace svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-open-workspace{transition:none}}@media(max-width:760px){.ds-open-workspace{padding:12px 16px;font-size:13px}}",
+      "refersTo": "button-hero"
+    },
+    {
+      "name": "Report action",
+      "kind": "button",
+      "description": "Compact secondary action; the application opens the shared report drawer.",
+      "html": "<button type=\"button\" class=\"ds-report\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6\"/></svg><span>Report</span></button>",
+      "css": ".ds-report{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--surface,#fff);border-color:var(--line,#ded8e9);color:var(--ink,#21172f);min-height:40px;padding:8px 12px;font-size:13px;}.ds-report:hover{background:var(--tint,#f1ebfc);border-color:#b3a4c9;}.ds-report:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-report:disabled{opacity:.55;cursor:wait}.ds-report svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-report{transition:none}}@media(max-width:760px){.ds-report{padding:8px 10px}}",
+      "refersTo": "button-report"
+    },
+    {
+      "name": "Secondary return action",
+      "kind": "button",
+      "description": "White bordered secondary control used to return from report review to the current composer.",
+      "html": "<button type=\"button\" class=\"ds-return\">Return to conversation</button>",
+      "css": ".ds-return{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--surface,#fff);border-color:var(--line,#ded8e9);color:var(--ink,#21172f);width:100%;margin-top:20px;}.ds-return:hover{background:var(--tint,#f1ebfc);border-color:#b3a4c9;}.ds-return:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-return:disabled{opacity:.55;cursor:wait}.ds-return svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-return{transition:none}}",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Conversation composer",
+      "kind": "input",
+      "description": "Solid white input within the diffuse chat atmosphere; preview controls illustrate styling and do not submit data.",
+      "html": "<div class=\"ds-chat-atmosphere\"><div class=\"ds-composer\"><label for=\"ds-question\">Your result or question</label><textarea id=\"ds-question\" rows=\"3\" maxlength=\"12000\" aria-describedby=\"ds-input-help\" placeholder=\"Type a question, or paste values with their units and reference ranges…\"></textarea><div class=\"ds-composer-toolbar\"><button type=\"button\" class=\"ds-attach\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M6 15l9-9\"/></svg>Attach report</button><span class=\"ds-count\">0 / 12,000</span><button type=\"button\" class=\"ds-composer-send\">Send <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button></div></div><p id=\"ds-input-help\" class=\"ds-composer-help\">Use the reference range printed on your report.</p></div>",
+      "css": ".ds-chat-atmosphere{padding:32px;background:radial-gradient(ellipse 75% 48% at 20% 95%,#8a2be21c,transparent),radial-gradient(ellipse 80% 70% at 85% 60%,#6a5acd26,transparent),#fdfcff;color:var(--ink,#21172f);font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-composer{padding:16px;background:var(--surface,#fff);border:1px solid var(--control-line,#8d819d);border-radius:8px}.ds-composer label{display:block;font-size:13px;font-weight:500;line-height:1.6;margin-bottom:8px}.ds-composer textarea{display:block;width:100%;min-height:80px;padding:4px 0;border:0;border-radius:2px;background:transparent;color:var(--ink,#21172f);caret-color:var(--primary,#4b0082);font-size:16px;line-height:1.6;resize:vertical;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-composer textarea::placeholder{color:var(--muted,#61586f)}.ds-composer textarea:focus-visible{outline:2px solid var(--focus,#6a5acd);outline-offset:3px}.ds-composer-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}.ds-count{margin-left:auto;font-size:11px;color:var(--muted,#61586f)}.ds-attach{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:6px 0;border:0;background:none;color:var(--secondary,#483d8b);font-size:13px;cursor:pointer;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-attach svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}.ds-attach:hover{text-decoration:underline;text-underline-offset:4px}.ds-attach:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-composer-help{font-size:12px;line-height:1.6;color:var(--muted,#61586f);margin:8px 0 0}.ds-composer-send{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--primary,#4b0082);color:var(--surface,#fff);min-height:40px;padding:8px 14px;}.ds-composer-send:hover{background:var(--primary-hover,#390064);}.ds-composer-send:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-composer-send:disabled{opacity:.55;cursor:wait}.ds-composer-send svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-composer-send{transition:none}}@media(max-width:1050px){.ds-count{display:none}.ds-composer-toolbar{gap:10px}}@media(max-width:760px){.ds-chat-atmosphere{padding:20px 16px}.ds-composer{padding:12px}.ds-composer label{font-size:12px}.ds-composer textarea{min-height:90px}.ds-attach{font-size:12px;gap:6px}.ds-composer-toolbar{gap:8px}.ds-composer-send{font-size:13px;padding:8px 12px}}",
+      "refersTo": "composer"
+    },
+    {
+      "name": "Header text navigation",
+      "kind": "nav",
+      "description": "Dark slate-violet text links on ghost-white paper; the duplicate workspace link hides at mobile width.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Example main navigation\"><a href=\"/static/docs/user-guide.html\">User guide</a><a class=\"ds-nav-workspace\" href=\"#workspace\">Open workspace <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a></nav>",
+      "css": ".ds-nav{display:flex;gap:32px;background:var(--paper,#f8f8ff);font-size:14px;line-height:1.6;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 0;color:var(--secondary,#483d8b);text-decoration:none;text-underline-offset:4px}.ds-nav a:hover{text-decoration:underline}.ds-nav a:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-nav svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;width:16px;height:16px}@media(max-width:760px){.ds-nav{gap:16px;font-size:12px}.ds-nav .ds-nav-workspace{display:none}}"
+    },
+    {
+      "name": "Result reading surface",
+      "kind": "card",
+      "description": "Solid response container with quiet dividers; preview text illustrates the loading state rather than a generated answer.",
+      "html": "<article class=\"ds-response\"><header class=\"ds-response-header\"><h2>Result summary</h2><ol class=\"ds-progress\"><li class=\"ds-active\"><i>1</i>Read</li><li><i>2</i>Check</li><li><i>3</i>Explain</li></ol></header><section class=\"ds-narrative\"><h3>Preparing your explanation</h3><p>The explanation will appear after the extracted values are checked.</p></section></article>",
+      "css": ".ds-response{overflow:hidden;border:1px solid var(--line,#ded8e9);border-radius:8px;background:var(--surface,#fff);color:var(--ink,#21172f);font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-response-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px;border-bottom:1px solid var(--line,#ded8e9)}.ds-response h2{font-size:19px;font-weight:500;line-height:1.2;letter-spacing:-.025em;margin:5px 0 0}.ds-progress{display:flex;gap:8px;list-style:none;padding:0;margin:0}.ds-progress li{display:flex;align-items:center;gap:5px;color:var(--muted,#61586f);font-size:12px}.ds-progress i{display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--line,#ded8e9);border-radius:4px;font-style:normal}.ds-progress .ds-active{color:var(--primary,#4b0082)}.ds-active i{background:var(--tint,#f1ebfc);border-color:var(--primary,#4b0082)}.ds-narrative{padding:20px}.ds-narrative h3{margin:0 0 20px;font-size:17px;font-weight:500;line-height:1.2;letter-spacing:-.025em}.ds-narrative p{font-size:14px;line-height:1.6;color:var(--muted,#61586f);margin:0 0 16px}@media(max-width:1050px){.ds-response-header{flex-wrap:wrap}}@media(max-width:760px){.ds-response-header,.ds-narrative{padding:16px}.ds-response h2{font-size:17px}.ds-progress{flex-wrap:wrap}.ds-progress li{font-size:11px}}",
+      "refersTo": "analysis-surface"
+    },
+    {
+      "name": "Selected laboratory value",
+      "kind": "custom",
+      "description": "Synthetic example of a selected supplied value with an explicit written comparison state.",
+      "html": "<div class=\"ds-metric-example\"><p>Synthetic example</p><button type=\"button\" class=\"ds-metric\" aria-pressed=\"true\"><span>Hb</span><strong>10.8 g/dL</strong><small>Below supplied range</small></button></div>",
+      "css": ".ds-metric-example{font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-metric-example>p{font-size:12px;color:var(--muted,#61586f);margin:0 0 8px}.ds-metric{text-align:left;min-width:0;padding:13px;border:1px solid var(--primary,#4b0082);border-radius:6px;background:var(--tint,#f1ebfc);color:var(--ink,#21172f);cursor:pointer;line-height:1.6;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-metric span,.ds-metric strong,.ds-metric small{display:block}.ds-metric span{font-size:13px}.ds-metric strong{font-size:16px;font-weight:500;margin:4px 0}.ds-metric small{font-size:12px}.ds-metric:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}@media(max-width:760px){.ds-metric{padding:10px}.ds-metric strong{font-size:15px}.ds-metric small{font-size:11px}}",
+      "refersTo": "metric-selected"
+    },
+    {
+      "name": "Message disclosure",
+      "kind": "custom",
+      "description": "Native details control for reviewing the submitted context without competing with the response.",
+      "html": "<details class=\"ds-source\"><summary><span>Message sent to the system</span><b>Show your message</b></summary><pre>Synthetic preview: What information is needed to understand haemoglobin (Hb) results?</pre></details>",
+      "css": ".ds-source{padding:16px 24px;border-bottom:1px solid var(--line,#ded8e9);background:var(--surface,#fff);color:var(--ink,#21172f);font-size:13px;line-height:1.6;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-source summary{display:flex;justify-content:space-between;gap:16px;align-items:center;min-height:28px;cursor:pointer}.ds-source b{font-size:12px;font-weight:400;color:var(--muted,#61586f)}.ds-source pre{white-space:pre-wrap;color:var(--muted,#61586f);font-size:13px;line-height:1.65;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-source summary:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-source summary::after{content:\"\";width:7px;height:7px;border-right:2px solid var(--primary,#4b0082);border-bottom:2px solid var(--primary,#4b0082);transform:rotate(45deg);flex:none;margin-right:3px}.ds-source[open]>summary::after{transform:rotate(225deg)}@media(max-width:760px){.ds-source{padding:16px}.ds-source b{display:none}}"
+    },
+    {
+      "name": "Report review panel",
+      "kind": "custom",
+      "description": "Static visual excerpt of the report drawer. Runtime dialog focus, upload, confirmation, and discard behavior remain owned by the application.",
+      "html": "<aside class=\"ds-drawer\" aria-labelledby=\"ds-drawer-title\"><header class=\"ds-drawer-header\"><div><h2 id=\"ds-drawer-title\">Your report</h2><p>Check the image and extracted values.</p></div><button class=\"ds-close\" type=\"button\" aria-label=\"Close report panel\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m6 6 12 12M18 6 6 18\"/></svg></button></header><div class=\"ds-drawer-body\"><p class=\"ds-report-note\">Synthetic review example</p><fieldset class=\"ds-review-field\"><legend>Hb</legend><label>Value<input type=\"text\" value=\"10.8\"></label><label>Unit<input type=\"text\" value=\"g/dL\"></label><label>Reference range<input type=\"text\" value=\"12-16\"></label></fieldset><div class=\"ds-review-actions\"><button class=\"ds-discard\" type=\"button\">Discard image</button><button class=\"ds-confirm\" type=\"button\">Confirm values</button></div></div></aside>",
+      "css": ".ds-drawer{width:400px;max-width:100%;background:var(--surface,#fff);border-left:1px solid var(--line,#ded8e9);color:var(--ink,#21172f);line-height:1.6;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-drawer-header{display:flex;justify-content:space-between;align-items:start;gap:16px;padding:24px;border-bottom:1px solid var(--line,#ded8e9)}.ds-drawer-header h2{font-size:20px;font-weight:500;line-height:1.2;letter-spacing:-.025em;margin:0 0 8px}.ds-drawer-header p{font-size:13px;color:var(--muted,#61586f);margin:0}.ds-close{display:grid;place-items:center;width:40px;height:40px;flex:none;border:1px solid var(--line,#ded8e9);border-radius:6px;background:var(--surface,#fff);color:var(--secondary,#483d8b);cursor:pointer}.ds-close svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}.ds-close:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-drawer-body{padding:24px}.ds-report-note{font-size:12px;color:var(--muted,#61586f);margin:0 0 16px}.ds-review-field{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;padding:10px;margin:12px 0;border:1px solid var(--line,#ded8e9);border-radius:6px}.ds-review-field legend{font-size:13px;font-weight:600}.ds-review-field label{font-size:12px;min-width:0}.ds-review-field label:last-child{grid-column:1/-1}.ds-review-field input{display:block;width:100%;min-width:0;max-width:100%;padding:8px;border:1px solid var(--control-line,#8d819d);border-radius:6px;background:var(--surface,#fff);color:var(--ink,#21172f);caret-color:var(--primary,#4b0082);font-size:13px;line-height:1.6;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);}.ds-review-field input:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-review-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.ds-discard{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--surface,#fff);border-color:var(--line,#ded8e9);color:var(--ink,#21172f);flex:1;padding:10px;font-size:13px;}.ds-discard:hover{background:var(--tint,#f1ebfc);border-color:#b3a4c9;}.ds-discard:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-discard:disabled{opacity:.55;cursor:wait}.ds-discard svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-discard{transition:none}}.ds-confirm{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:10px 18px;border-radius:7px;border:1px solid transparent;font-size:14px;font-weight:500;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,border-color .16s;font-family:var(--font,\"Plex\",\"Noto Thai\",sans-serif);background:var(--primary,#4b0082);color:var(--surface,#fff);flex:1;padding:10px;font-size:13px;}.ds-confirm:hover{background:var(--primary-hover,#390064);}.ds-confirm:focus-visible{outline:3px solid var(--focus,#6a5acd);outline-offset:4px;}.ds-confirm:disabled{opacity:.55;cursor:wait}.ds-confirm svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}@media(prefers-reduced-motion:reduce){.ds-confirm{transition:none}}@media(max-width:1050px){.ds-drawer-header,.ds-drawer-body{padding:20px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Violet Laboratory Workspace",
+    "overview": "ResultScope is a calm, formal medical workspace with a diffuse violet introduction and a focused laboratory conversation. Ghost-white paper, dark purple ink, and solid white reading surfaces keep supplied information easy to inspect. Deep indigo identifies the main action and selected values; violet and lavender provide atmosphere around the work.\n\nThe approved C + 2 direction lets the centered introduction recede into the real workspace on native desktop scroll. Conversation, report review, explanation, and sources remain ordinary, readable controls. Diffuse gradients in the hero and chat, the large introductory heading, and the bounded scroll transform are explicit owner-approved exceptions; they do not extend to glass panels, decorative canvas, a workflow editor, or continuous ambient animation.",
+    "keyCharacteristics": [
+      "Ghost-white paper, dark purple ink, and solid answer and form surfaces.",
+      "Diffuse violet and lavender atmosphere confined to the hero and chat.",
+      "A native-scroll introduction with static mobile, reduced-motion, and no-GSAP timeline fallbacks.",
+      "A compact composer and a report drawer that preserves the current conversation.",
+      "Self-hosted English and Thai typography with visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Written Status Rule",
+        "body": "Every meaningful range, error, or workflow state has a text label; color alone never carries the decision.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plain Label Rule",
+        "body": "Keep operational labels in sentence case and name the action directly: Open workspace, Send, Report, Confirm values, and Start a new analysis.",
+        "section": "typography"
+      },
+      {
+        "name": "The Solid Reading Surface Rule",
+        "body": "Keep answer, form, report, and administration surfaces solid; diffuse color belongs behind the hero and chat content.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the shared purple tokens and self-hosted English/Thai font stack.",
+      "Do confine diffuse gradients to the hero and chat while keeping reading and form surfaces solid.",
+      "Do preserve native scrolling and the static mobile, reduced-motion, and no-GSAP timeline paths.",
+      "Do keep values, units, supplied ranges, and written status legible together.",
+      "Do preserve visible keyboard focus, mobile drawer focus management, and explicit report confirmation.",
+      "Do keep Send, Open workspace, Report, and source/rule actions clear and available at narrow widths."
+    ],
+    "donts": [
+      "Don't restore the superseded teal identity or interpret compatibility token names as teal colors.",
+      "Don't add glass panels, decorative canvas, science-fiction HUDs, AI mascots, giant pills, or invented metrics.",
+      "Don't extend the approved scroll transition into hover scaling, bounce, scroll hijacking, or repeating ambient animation.",
+      "Don't use color alone for low, high, within-range, unknown, or error states.",
+      "Don't confuse closing the drawer with discarding a report or imply PDF and multiple-report support.",
+      "Don't describe mocked captures, visual review, or this design system as live, production, or clinical validation."
+    ]
+  }
+}

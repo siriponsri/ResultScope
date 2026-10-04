@@ -1,151 +1,64 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#081326" />
-    <meta name="description" content="ResultScope explains laboratory results from the information you provide, with traceable reasoning." />
-    <title>{{ app_name }} — Understand your laboratory results</title>
-    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
-  </head>
-  <body>
-    <div class="ambient-field" aria-hidden="true">
-      <canvas id="spectral-field"></canvas>
-      <div class="field-grid"></div>
-      <div class="field-noise"></div>
-    </div>
-
-    <div class="app-shell">
-      <header class="app-header">
-        <a class="brand" href="/" aria-label="ResultScope home">
-          <img src="/static/img/mark.svg" alt="" width="34" height="34" />
-          <span class="brand-copy"><strong>{{ app_name }}</strong><span>Evidence-guided laboratory explanations</span></span>
-        </a>
-        <div class="header-meta">
-          <span class="boundary-status"><i aria-hidden="true"></i> Laboratory results only</span>
-          <span class="owner-name">{{ owner_name }}</span>
-          {% if demo_notice %}<span class="demo-notice" lang="th">{{ demo_notice }}</span>{% endif %}
-        </div>
-      </header>
-
-      <main class="app-main">
-        <section id="starter" class="intake-workspace" aria-labelledby="intake-title">
-          <div class="intake-introduction">
-            <p class="section-kicker"><span>01</span> Start with your results</p>
-            <h1 id="intake-title">Understand your<br /><em>laboratory results</em></h1>
-            <p class="intake-lede">Upload a report or type a question about laboratory results. ResultScope reads the values provided, checks the supplied reference ranges, and explains them carefully.</p>
-
-            <ol class="sequence-map" aria-label="Result interpretation sequence">
-              <li><span>01</span><div><strong>Read</strong><small>Extract values, units, and reference ranges</small></div></li>
-              <li><span>02</span><div><strong>Check</strong><small>Compare them with transparent rules</small></div></li>
-              <li><span>03</span><div><strong>Explain</strong><small>Summarize verified information</small></div></li>
-            </ol>
-          </div>
-
-          <section class="intake-console" aria-label="Laboratory result intake">
-            <div class="console-edge" aria-hidden="true"><span>INPUT</span><i></i><span>RULES 2026.08</span></div>
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker"><span>+</span> New analysis</p>
-                <h2>Start with values or ask a short question</h2>
-              </div>
-              <button id="sample-button" class="quiet-button" type="button">Load example</button>
-            </div>
-
-            <form id="chat-form" class="intake-form">
-              <label for="message-input">Your result or question</label>
-              <textarea id="message-input" rows="9" maxlength="12000" placeholder="For example: Hb 10.8 g/dL (12–16), MCV 72 fL (80–100). How should I read this?"></textarea>
-              <div class="image-intake" id="image-intake">
-                <div class="image-intake-heading">
-                  <div>
-                    <label for="image-input">Upload a laboratory report</label>
-                    <p>JPEG or PNG supported. Review and edit every extracted field before confirming.</p>
-                  </div>
-                  <span id="image-status" class="image-status" role="status" aria-live="polite" aria-atomic="true">No file selected</span>
-                </div>
-                <input id="image-input" type="file" accept="image/jpeg,image/png" />
-                <div id="image-review" class="image-review hidden" aria-live="polite" aria-atomic="true"></div>
-              </div>
-              <div class="intake-form-footer">
-                  <p><span id="char-count">0 / 12,000</span><span>Include the report's units and reference ranges when available.</span></p>
-                <div class="intake-actions">
-                  <button id="send-button" class="primary-button" type="submit"><span>Analyze results</span><b aria-hidden="true">↗</b></button>
-                </div>
-              </div>
-            </form>
-
-            <div class="supported-domains" aria-label="Example laboratory questions">
-              <p>Try an example</p>
-              <div class="domain-actions">
-                <button type="button" data-sample="CBC: Hb 10.8 g/dL (12-16), MCV 72 fL (80-100), Ferritin 7 ng/mL (15-150). Please summarize the key findings and relationships without diagnosing.">CBC</button>
-                <button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. How should these two values be read together?">Creatinine + eGFR</button>
-                <button type="button" data-sample="AST 68 U/L (0-40), ALT 92 U/L (0-41), ALP 88 U/L (40-129). Please explain the pattern without diagnosing.">Liver panel</button>
-                <button type="button" data-sample="HbA1c 6.1%. What other information affects interpretation?">HbA1c</button>
-                <button type="button" data-sample="LDL 162 mg/dL. What context should I provide before interpreting this value?">LDL</button>
-                <button type="button" data-sample="TSH 5.2 mIU/L. What context can change how this result is interpreted?">Thyroid</button>
-              </div>
-            </div>
-
-            <div class="console-trust">
-              <span>Use the report's reference range</span><span>No diagnosis</span><span>Rules are inspectable</span>
-            </div>
-          </section>
-        </section>
-
-        <section id="conversation" class="analysis-workspace hidden" aria-labelledby="analysis-title">
-          <header class="analysis-header">
-            <div>
-              <p class="section-kicker"><span>02</span> Analysis</p>
-              <h1 id="analysis-title">Your results in context</h1>
-            </div>
-            <div class="analysis-actions">
-              <button id="analysis-stop-button" class="secondary-button hidden" type="button">Stop</button>
-              <button id="new-chat-button" type="button" class="quiet-button">Start a new analysis <span aria-hidden="true">↗</span></button>
-            </div>
-          </header>
-
-          <div class="analysis-layout">
-            <aside class="analysis-rail" aria-label="Analysis checks">
-              <div class="rail-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-              <p class="rail-label">Checks before explanation</p>
-              <ol>
-                <li><span>S</span><div><strong>Scope</strong><small>Laboratory-result questions only</small></div></li>
-                <li><span>P</span><div><strong>Literal values</strong><small>Name · value · unit · reference range</small></div></li>
-                <li><span>R</span><div><strong>Range rules</strong><small>Low · high · within · unknown</small></div></li>
-                <li><span>G</span><div><strong>Grounding</strong><small>Lock facts before calling the model</small></div></li>
-              </ol>
-              <a class="rulebook-link" href="/api/v1/rules" target="_blank" rel="noreferrer">View all rules <span aria-hidden="true">↗</span></a>
-            </aside>
-
-            <div class="analysis-content">
-              <div id="chat-window" class="result-stream" aria-live="polite">
-                <div id="loading-indicator" class="sr-only hidden" role="status">Preparing your analysis</div>
-              </div>
-              <div id="error-banner" class="error-banner hidden" role="alert"></div>
-
-              <form id="followup-form" class="followup-form">
-                <label for="followup-input">Ask a follow-up</label>
-                <div class="followup-row">
-                  <textarea id="followup-input" rows="2" maxlength="12000" placeholder="Ask about one value, a relationship, or missing context" required></textarea>
-                  <button id="followup-send" type="submit" class="primary-button"><span>Ask</span><b aria-hidden="true">↗</b></button>
-                </div>
-                <p>Follow-ups stay within the same laboratory-result context.</p>
-              </form>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer class="app-footer"><span>{{ app_name }} / Laboratory explanation assistant</span><span>Educational information, not a diagnosis</span></footer>
-    </div>
-
-    <script src="/static/js/chat.js"></script>
-    <script src="/static/js/scene.js"></script>
-  </body>
-</html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F8F8FF"><meta name="description" content="ResultScope Laboratory Assistant helps you review laboratory reports and ask questions with supplied values and sources in view.">
+<title>ResultScope Laboratory Assistant</title>
+<link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/css/style.css">
+<script src="/static/vendor/marked.min.js" defer></script><script src="/static/vendor/purify.min.js" defer></script><script src="/static/vendor/gsap.min.js" defer></script>
+<script src="/static/js/chat.js" defer></script><script src="/static/js/experience.js" defer></script></head>
+<body>
+<a class="skip-link" href="#workspace">Skip to workspace</a>
+<header class="app-header"><div class="header-inner">
+<a class="brand" href="#top" aria-label="ResultScope Laboratory Assistant home"><img src="/static/img/mark.svg" alt="" width="32" height="32"><span class="brand-copy"><strong>ResultScope</strong><span>Laboratory Assistant</span></span></a>
+<nav aria-label="Main navigation"><a href="/static/docs/user-guide.html">User guide</a><a href="#workspace" data-enter-workspace>Open workspace <svg class="direction-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></nav>
+</div></header>
+<main id="main-content">
+<section id="top" class="landing" aria-labelledby="hero-title">
+<div class="hero-atmosphere" aria-hidden="true"></div>
+<div class="hero-content">
+<h1 id="hero-title">Understand your laboratory results.</h1>
+<p>Bring your report. Check the values.<br class="hero-break"> Ask the questions that matter to you.</p>
+<div class="hero-actions"><a class="primary-button" href="#workspace" data-enter-workspace>Open workspace <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></a><button class="secondary-button" type="button" id="hero-example">Try an example</button></div>
+<p class="hero-format">Questions in English or Thai. Report images in JPEG or PNG.</p>
+</div>
+<a class="scroll-cue" href="#workspace" data-enter-workspace><span>Scroll to your workspace</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"/></svg></a>
+</section>
+<section id="workspace" class="workspace-section" aria-label="Laboratory conversation" tabindex="-1">
+<div class="workspace-shell">
+<header class="workspace-header"><div class="workspace-identity"><img src="/static/img/mark.svg" width="25" height="25" alt=""><span>Laboratory conversation</span></div><div class="workspace-tools"><button type="button" class="secondary-button report-toggle" data-open-report aria-controls="document-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/></svg><span data-report-label>Report</span></button></div></header>
+{% if demo_notice %}<div class="demo-notice" role="note">{{ demo_notice }}</div>{% endif %}
+<div class="workspace-body">
+<div id="chat-pane" class="chat-pane">
+<section id="starter" aria-labelledby="intake-title">
+<div class="chat-welcome"><img src="/static/img/mark.svg" alt="" width="40" height="40"><h2 id="intake-title">What would you like to understand?</h2><p>Ask about a result, or attach your laboratory report.</p></div>
+<div class="starter-bottom">
+<div class="domain-actions" aria-label="Example laboratory questions"><button type="button" data-sample="What information is needed to understand haemoglobin (Hb) results?">Understanding haemoglobin <svg class="direction-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></button><button type="button" data-sample="Creatinine 1.4 mg/dL, eGFR 58 mL/min/1.73m2. What context should I provide before interpreting these results?">Creatinine and eGFR <svg class="direction-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></button></div>
+<form id="chat-form" class="intake-form">
+<label for="message-input">Your result or question</label>
+<textarea id="message-input" rows="3" maxlength="12000" aria-describedby="input-help" placeholder="Type a question, or paste values with their units and reference ranges…"></textarea>
+<div class="composer-toolbar"><button type="button" class="attach-button" data-open-report aria-controls="document-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 13 7-7a3 3 0 0 1 4 4L9 20a5 5 0 0 1-7-7L12 3M6 15l9-9"/></svg>Attach report</button><span id="char-count">0 / 12,000</span><button id="send-button" class="primary-button" type="submit"><span>Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+</form>
+<div class="composer-help"><p id="input-help">Use the reference range printed on your report.</p><button id="sample-button" class="text-button" type="button">Load example</button></div>
+<p class="example-note">Examples use synthetic values. No diagnosis or treatment advice.</p>
+</div></section>
+<section id="conversation" class="analysis-workspace hidden" aria-labelledby="analysis-title">
+<header class="analysis-header"><h2 id="analysis-title">Your conversation</h2><div class="analysis-actions"><button id="analysis-stop-button" class="secondary-button hidden" type="button">Stop</button><button id="new-chat-button" type="button" class="text-button">Start a new analysis</button></div></header>
+<div class="analysis-content"><div id="chat-window" class="result-stream" aria-live="polite"><div id="loading-indicator" class="sr-only hidden" role="status">Preparing your analysis</div></div><div id="error-banner" class="error-banner hidden" role="alert"></div>
+<form id="followup-form" class="followup-form"><label for="followup-input">Ask a follow-up</label><textarea id="followup-input" rows="2" maxlength="12000" placeholder="Ask about a value, the source, or missing context" required></textarea><div class="composer-toolbar"><button type="button" class="attach-button" data-open-report aria-controls="document-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5"/></svg>View report</button><button id="followup-send" type="submit" class="primary-button"><span>Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></form><p class="followup-note">For a different report, start a new analysis.</p></div>
+</section>
+<div class="workspace-footnote"><span>Educational information. No diagnosis, prescriptions or treatment changes.</span><a href="/api/v1/rules" target="_blank" rel="noreferrer">View calculation rules</a></div>
+</div>
+<aside id="document-drawer" class="document-drawer" aria-labelledby="drawer-title" hidden>
+<header class="drawer-header"><div><h2 id="drawer-title">Your report</h2><p>Check the image and extracted values.</p></div><button type="button" id="close-report" class="icon-button" aria-label="Close report panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+<div class="drawer-body">
+<label for="image-input" class="upload-label">Upload a laboratory report</label><p class="upload-help">JPEG or PNG, up to 3 MB. Remove personal details first. PDF is not supported.</p>
+<input id="image-input" type="file" accept="image/jpeg,image/png">
+<div class="file-summary" id="file-summary" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5"/></svg><div><strong id="file-name"></strong><span id="file-size"></span></div></div>
+<span id="image-status" class="image-status" role="status" aria-live="polite" aria-atomic="true">No file selected</span>
+<div id="drawer-empty" class="drawer-empty"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M39 8H15v48h34V18zM39 8v12h10M23 30h18m-18 8h18m-18 8h10"/></svg><p>Your report stays beside the conversation.</p><p>You can review the image and correct extracted values before using them.</p></div>
+<div id="image-review" class="image-review hidden" aria-live="polite" aria-atomic="true"></div>
+<button type="button" id="return-to-chat" class="secondary-button return-to-chat">Return to conversation</button>
+</div></aside>
+</div></div></section></main>
+<footer class="app-footer"><span>ResultScope Laboratory Assistant</span><a href="/static/docs/user-guide.html#limitations">Scope and privacy</a><a href="/admin/login">Administrator</a></footer>
+</body></html>

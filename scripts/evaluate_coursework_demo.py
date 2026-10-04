@@ -94,7 +94,7 @@ def _run_case(case: dict[str, Any], base: Any) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--provider", choices=("mocked", "live"), default="mocked")
-    parser.add_argument("--output", type=Path, default=ROOT / "docs" / "progress" / "evidence" / "coursework-demo-evaluation.json")
+    parser.add_argument("--output", type=Path, default=ROOT / "docs" / "evidence" / "runs" / "coursework-demo-evaluation.json")
     args = parser.parse_args()
     if args.provider == "live":
         print("COURSEWORK DEMO EVALUATION: NOT_RUN (live provider evaluation is not authorized/configured)")
@@ -138,7 +138,7 @@ def main() -> int:
         "independent_review": "NOT_RUN",
     }
     output = args.output.resolve()
-    output.relative_to((ROOT / "docs" / "progress" / "evidence").resolve())
+    output.relative_to((ROOT / "docs" / "evidence" / "runs").resolve())
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     passed = all(row["passed"] for row in rows)

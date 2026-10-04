@@ -1,290 +1,100 @@
-<p align="center">
-  <img src="static/img/logo.svg" alt="ResultScope" width="280" />
-</p>
+# ResultScope Laboratory Assistant
 
-<p align="center"><strong>Laboratory results, in context.</strong></p>
+**Laboratory results, in context.**
 
-<p align="center">
-A lab-only neuro-symbolic AI starter built from the KMITL Week 7 FastAPI/Vercel chatbot architecture — redesigned to look and behave like an early health-tech product rather than a generic chatbot.
-</p>
+ResultScope Laboratory Assistant is an educational laboratory workspace for reading supplied values, checking report images, and exploring explanations with their sources in view. It brings the report, reference range, explanation, and calculation details into one readable experience in English or Thai.
 
----
+The current release is a **local product prototype**. It supports evaluation of the workflow and its safeguards; it has not established clinical effectiveness, production readiness, or commercial deployment readiness. Provider network access is disabled by default.
 
-## What this starter is
+![ResultScope Laboratory Assistant landing page](docs/assets/screenshots/00-landing-desktop.png)
 
-**ResultScope** is a coursework-ready product prototype that accepts laboratory-result questions, rejects unrelated prompts before they reach the LLM, and produces structured educational explanations through Typhoon or another allowlisted compatible provider.
+![ResultScope conversation workspace](docs/assets/screenshots/01-workspace-desktop.png)
 
-The code intentionally keeps the instructor starter's core deployment pattern:
+*The landing page leads directly into a conversation workspace. A report drawer keeps image review beside the chat; a full-screen panel serves the same task on mobile. See the [user guide](docs/user/USER_GUIDE.md) for the illustrated workflow and the evidence status of each screen.*
 
-`Browser → FastAPI → OpenAI-compatible LLM → Vercel`
+## The product proposition
 
-and adds a product layer:
+A laboratory report contains measurements, units, and context that are easy to separate accidentally. ResultScope keeps those elements together. A reader can enter a result, verify what was extracted from an image, select a value, and inspect the supplied range before reading an explanation.
 
-`UI → symbolic lab scope gate → session store → LLM explanation → structured result view`
+For laboratories, clinics, and future healthcare partners, the product hypothesis is a consistent explanation layer around existing results. Potential benefits include clearer preparation for a professional conversation and fewer repetitive requests for basic explanation. These are hypotheses to test with users and partner organizations; no time-saving, cost, patient-outcome, or adoption metrics have been established.
 
-> **Working brand only.** `ResultScope` is a provisional prototype name, not a trademark clearance. Do a proper legal/brand search before commercial launch.
+## What exists today
 
-## Why it feels more like a product
+| Capability | Implemented behavior | Current limit |
+|---|---|---|
+| Laboratory questions | Python classifies intent and rejects unrelated or unsafe requests before generation | Educational scope; no diagnosis, prescribing, or treatment changes |
+| Supplied-value review | Deterministic parsing and comparison with the range supplied by the user | Missing ranges remain unknown; public references do not become personal ranges |
+| Report-image workflow | JPEG/PNG validation, OCR adapter, editable extraction, and explicit confirmation | OCR requires configured, authorized provider access; PDF upload is unsupported |
+| Source-linked explanations | Local retrieval, source metadata, and validated explanation output | Generation depends on available evidence and provider access; no-hit cases abstain |
+| Public-source comparison | Optional local metadata/alias tree for laboratory references and guideline notes | Separate from approved business data; source rights restrict release use |
+| Local provider administration | Write-only key entry, encrypted local settings, separate mock tests | Local-demo mode only; no approved cloud secret persistence |
+| Provider attempt control | Deny-by-default network guard and persistent SQLite attempt ledger | Coordinates processes sharing one ledger on one machine, not a distributed quota service |
 
-- **Lab-only by design** — unrelated prompts are blocked deterministically before an API call.
-- **Neuro-symbolic split** — symbolic rules define scope **and deterministically parse supplied marker/value/range data**; the LLM handles language and contextual explanation.
-- **Reference-range discipline** — prompt policy tells the model to use user-supplied ranges rather than inventing them.
-- **Versioned deterministic rulebook** — scope, parsing, range, grounding, safety, and output rules are inspectable at `GET /api/v1/rules`.
-- **Pre-answer contract** — applicable rules and immutable facts are placed before history and the current user message for every allowed LLM request.
-- **One integrated analysis** — selectable values, supplied-range visualization, AI narrative, and optional rule provenance live in one result object rather than competing outputs.
-- **Structured explanations** — Snapshot → What stands out → How values connect → Missing context → Questions to take forward.
-- **Serverless-aware session layer** — SQLite for local development, optional Upstash Redis for durable Vercel sessions.
-- **Business-oriented UI** — editorial/clinical visual system rather than a ChatGPT clone.
-- **Provider-portable** — preserves the Week 7 OpenAI-compatible design.
+The workspace uses the same visual language for intake, results, errors, report review, and administration. IBM Plex Sans and Noto Sans Thai are served locally. The owner-approved purple atmosphere is limited to the hero and chat. A native desktop scroll transition connects the two; mobile, reduced-motion and missing-animation-library paths keep the content static and usable.
 
-## Scope examples
+## How it works
 
-| Prompt | Behavior |
-|---|---|
-| `Hb 10.8, MCV 72, Ferritin 7 ช่วยดูให้หน่อย` | Allowed → LLM |
-| `Creatinine 1.4, eGFR 58 แปลว่าอะไร` | Allowed → LLM |
-| `แล้วต้องกังวลไหม` after a lab discussion | Allowed follow-up |
-| `ช่วยเขียน Python` | Blocked locally by scope gate |
-| `วันนี้กินอะไรดี` | Blocked locally by scope gate |
+![ResultScope architecture and proposed integration boundaries](docs/assets/diagrams/architecture.svg)
 
-The gate lives in `services/lab_scope.py` so its policy is inspectable and testable instead of being hidden inside a prompt.
+The browser calls a FastAPI application. Python owns scope decisions, supplied-range calculations, evidence selection, and output validation. Typhoon provides the default LLM and separate OCR integrations when explicitly enabled. OpenThai-SystemOne has a distinct iApp adapter and can observe decisions in shadow mode; it cannot override Python. Clef remains disabled.
 
----
+See the [architecture](docs/engineering/ARCHITECTURE.md) for code paths, APIs, and storage behavior. HIS, pharmacy, and interoperability extensions in the roadmap are proposed work.
 
-# Quick start — Windows / PowerShell
+## Run a local review
 
-### 1. Extract the ZIP and open PowerShell in this folder
+From PowerShell in the repository root, preserve any existing environment and use the provider guard in the current process:
 
 ```powershell
-cd path\to\resultscope-starter
-```
-
-### 2. One-command local setup
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
-```
-
-The script creates `.venv`, installs dependencies, copies `.env.example` to `.env`, opens the browser, and starts FastAPI.
-
-### 3. Add your Typhoon/API key
-
-Open `.env` and set:
-
-```env
-LLM_BASE_URL=https://api.opentyphoon.ai/v1
-LLM_API_KEY=your_key_here
-LLM_MODEL=typhoon-v2.5-30b-a3b-instruct
-OWNER_NAME=Your Name
-CORS_ALLOWED_ORIGINS=
-```
-
-`OWNER_NAME` is intentionally visible in the UI so the deployed coursework link clearly identifies the student/project owner.
-
-Keep `CORS_ALLOWED_ORIGINS` empty for the bundled same-origin web app. If a separate trusted frontend must call the API, set an explicit comma-separated origin allowlist; wildcard credentialed CORS is intentionally disabled.
-
-Then restart the server and open:
-
-`http://127.0.0.1:8000`
-
----
-
-# Manual local setup
-
-```powershell
-py -m venv .venv
+if (!(Test-Path .venv)) { py -m venv .venv }
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-uvicorn main:app --reload
+python -m pip install -r requirements.txt
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+$env:PROVIDER_NETWORK_ENABLED = "false"
+$env:STORAGE_BACKEND = "sqlite"
+python -m uvicorn main:app --host 127.0.0.1 --port 8765
 ```
 
-Health endpoint:
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765). This starts the real application without permitting LLM, OCR, or SystemOne transport. A request that needs a provider or approved evidence may show an unavailable or abstention state; an offline run does not simulate a successful generated answer.
 
-```text
-GET /health
-```
+Follow [local setup](docs/operations/LOCAL_SETUP.md) for environment preservation, non-Windows setup, and optional local administration. The application guide is also available at `/static/docs/user-guide.html` while the server runs.
 
-Product metadata:
+## Verification and readiness
 
-```text
-GET /api/v1/product
-```
-
-Scope test endpoint:
-
-```text
-POST /api/v1/scope/check
-{"message":"HbA1c 6.1% หมายความว่าอย่างไร"}
-```
-
----
-
-# Storage modes
-
-ResultScope separates conversation persistence from the router.
-
-### Local default — SQLite
-
-`STORAGE_BACKEND=auto` uses `data/resultscope.db` when running locally. This is intentionally simple and requires no extra database service.
-
-### Local Admin Settings
-
-The main product does not require login or expose provider settings before use. For a local demo only, set `LOCAL_DEMO_MODE=true` and open `/admin/login`; the default `admin` / `1234` fallback is guarded by the local-demo check and must never be enabled online. Settings use an HttpOnly session plus CSRF token, keep keys write-only in the browser, and store encrypted values only in ignored local files. Vercel/cloud secret persistence is intentionally blocked until a durable secret store is approved. The web app UI is English, while the LLM may converse in any user-selected language.
-
-The provider catalog keeps provider URLs server-side and includes Typhoon LLM, Typhoon OCR, OpenThai-SystemOne, OpenRouter, OpenAI, Groq, DeepSeek, Hugging Face, LM Studio, OpenCode-compatible, Gemini compatibility, Claude native, and MaxPlus slots. SystemOne uses its own iApp adapter and remains shadow-only; it never replaces Python routing or safety validation.
-
-### Vercel without external storage — memory fallback
-
-The app will still deploy and chat, but conversation memory may disappear between serverless instances. This is acceptable for a classroom demo, not for a real product.
-
-### Vercel with durable sessions — Upstash Redis
-
-Set:
-
-```env
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
-STORAGE_BACKEND=auto
-```
-
-The app detects the credentials and stores session history with a TTL. No additional Python Redis package is required because the adapter uses the REST API through `httpx`.
-
-> For a real healthcare product, do not treat this prototype storage design as compliance-ready. Add authentication, encryption strategy, data-retention controls, audit logging, consent, legal review, PDPA/HIPAA assessment, and vendor agreements as applicable.
-
----
-
-# Deploy to Vercel
-
-1. Create your own GitHub repository and push this project.
-2. In Vercel: **New Project → Import repository**.
-3. Add Environment Variables:
-
-```text
-APP_NAME
-APP_TAGLINE
-OWNER_NAME
-APP_ENV=production
-LLM_BASE_URL
-LLM_API_KEY
-LLM_MODEL
-```
-
-Optional persistent session variables:
-
-```text
-UPSTASH_REDIS_REST_URL
-UPSTASH_REDIS_REST_TOKEN
-```
-
-4. Deploy. Vercel's current FastAPI zero-config path discovers the root `main.py` ASGI `app`; this repo intentionally does not carry the removed legacy `api/index.py` adapter or `vercel.json`.
-5. Open the generated URL and verify `/health`, an in-scope lab question, and an out-of-scope question.
-
-## Recommended pre-submission smoke test
-
-```text
-1. Open deployed URL on phone + desktop.
-2. Confirm your name is visible.
-3. Ask: HbA1c 6.1% หมายความว่าอย่างไร
-4. Ask: ช่วยเขียน Python ให้หน่อย
-5. Confirm #4 is blocked without an LLM answer.
-6. Start a new analysis and confirm reset works.
-```
-
----
-
-# Design workflow with Codex + Hallmark
-
-This package is prepared for local Codex iteration. Install/update Hallmark with:
+The repository includes deterministic, API, retrieval, image, provider-boundary, storage, and UI tests. The required Windows check is:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-hallmark.ps1
-```
-
-Hallmark describes itself as an anti-AI-slop design skill compatible with Codex. Use it as a **design critic**, not as permission to rewrite the backend architecture.
-
-Recommended Codex entry prompt is already included in `CODEX_PROMPT.md`, and project constraints live in `AGENTS.md`.
-
-### Useful design loop
-
-```text
-1. hallmark audit templates/index.html + static/css/style.css
-2. Review the punch list.
-3. Redesign only where it improves hierarchy, trust, accessibility, or product clarity.
-4. Run tests.
-5. Verify mobile layout.
-6. Do not add decorative AI gradients, glassmorphism, random blobs, or feature-card spam.
-```
-
----
-
-# Tests
-
-```powershell
+$env:PROVIDER_NETWORK_ENABLED = "false"
 powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
 ```
 
-Current tests cover:
+The supplied refresh passed **237 repository tests** and **50 addon tests** in its isolated Linux environment. Sixteen captured UI views include desktop and 390px mobile states; successful OCR and generated-answer stages are explicitly mocked. See [the verification record](docs/evidence/REDESIGN_VERIFICATION.md) for candidate identity, one existing warning, baseline integrity repairs, scoped visual review and unrun checks. Windows `check.ps1`, live provider re-validation and an independent review of the final local commit remain separate gates.
 
-- common lab prompts are allowed;
-- unrelated programming prompts are blocked;
-- contextual lab follow-ups work;
-- ambiguous follow-ups without lab context are blocked;
-- generic marker/value syntax can enter the lab workflow;
-- supplied ranges generate deterministic low/high/within flags;
-- missing ranges remain explicitly unknown;
-- conversation-store basic behavior.
+Read [readiness and evidence](docs/operations/READINESS.md) before presenting the application beyond a controlled demonstration. It preserves the historical provider-budget overruns and identifies open release gates.
 
----
+## Product direction
 
-# Project structure
+| Stage | Intended outcome | Gate before progression |
+|---|---|---|
+| Current local prototype | Review the laboratory explanation experience and safeguards | Reproducible offline checks and labelled demonstration evidence |
+| Controlled evaluation | Establish source quality, user comprehension, and operating boundaries | Exact-candidate review, approved corpus and rights, authorized provider evidence |
+| Partner pilot | Fit the workflow into a named laboratory or clinic process | Governance, identity/access, consent, retention, support, and deployment controls |
+| Proposed HIS and pharmacy extensions | Connect reviewed laboratory context with partner workflows | Partner agreements, interoperability design, clinical oversight, and separately validated boundaries |
 
-```text
-main.py                    FastAPI ASGI entrypoint + static/template serving
-config.py                  Product/LLM/storage configuration
-routers/chat.py            Session, scope gate, streaming API
-services/llm_client.py     OpenAI-compatible LLM transport
-services/lab_scope.py      Symbolic lab-domain classifier
-services/lab_parser.py     Deterministic marker/value/range parser
-services/deterministic_rules.py Versioned inspectable rule definitions
-services/deterministic_engine.py Runtime analysis + pre-answer LLM contract
-services/store.py          Memory / SQLite / Upstash adapters
-templates/index.html       Product UI
-static/css/style.css       Visual system
-static/js/chat.js          Streaming chat + guardrail UX
-static/img/                ResultScope SVG identity
-tests/                     Scope/store/engine/API-contract tests
-docs/DETERMINISTIC_RULEBOOK.md Human-readable engine contract
-scripts/                   Windows local workflow
-BUSINESS_BRIEF.md          Commercialization hypothesis
-ARCHITECTURE.md            Technical/product boundaries
-AGENTS.md                  Local Codex rules
-CODEX_PROMPT.md            Ready-to-paste continuation prompt
-NOTICE.md                  Upstream / licensing note
-```
+See the [product overview](docs/product/OVERVIEW.md), [roadmap](docs/product/ROADMAP.md), and [brand guide](docs/product/BRAND.md). There is no implemented HIS connector, pharmacy integration, medication recommendation feature, or FHIR interface in this release.
 
----
+## Documentation and source
 
-# Product boundary
+- [Documentation index](docs/README.md): role-based reading paths.
+- [User guide](docs/user/USER_GUIDE.md): 14 illustrated steps for results, report review, sources and errors.
+- [Printable PDF walkthrough](docs/user/ResultScope_User_Guide.pdf): 16 pages; [standalone HTML](static/docs/user-guide.html) opens locally.
+- [Administrator guide](docs/operations/ADMIN_GUIDE.md): local-only settings and mock verification.
+- [Development guide](docs/engineering/DEVELOPMENT.md): source map and verification workflow.
+- [Data governance](docs/engineering/DATA_GOVERNANCE.md): data classes, storage, source rights, and release gaps.
+- [Product contract](PRODUCT.md) and [design system](DESIGN.md): durable product and visual decisions.
+- [Application entry point](main.py), [configuration defaults](config.py), and [test suite](tests/).
 
-ResultScope is an **educational laboratory-result explanation prototype**. It must not represent itself as a diagnostic device, prescribe treatment, or replace a licensed healthcare professional.
+## Responsible use and attribution
 
-For coursework, this boundary also improves the demo: the product has a clear identity, a clear refusal policy, and a clear reason to exist beyond “a chatbot with a new color theme.”
+Use synthetic or de-identified material for controlled demonstrations. ResultScope does not diagnose, recommend medication changes, or replace professional assessment. Signed session cookies and local secret protection do not establish a healthcare compliance certification or a complete patient-security architecture.
 
-## Business direction
-
-The strongest commercial path is not “sell another AI chatbot.” It is a **white-label explanation layer for labs/clinics**:
-
-`Result issued → branded explanation → questions to ask → longitudinal follow-up → re-engagement`
-
-See `BUSINESS_BRIEF.md` for ICP, value proposition, defensibility, revenue hypotheses, and the V0.1→V1 roadmap.
-
----
-
-## Upstream attribution and licensing
-
-This starter is derived for coursework from the public repository `chacharin/chatbot-it-kmitl`. The upstream repository did not show an explicit software license in the inspected root at the time this starter was prepared. **Do not assume public GitHub visibility grants commercial redistribution rights.**
-
-For class use: keep attribution. For a real commercial product: obtain permission or reimplement the small generic architecture cleanly under an appropriate license before shipping.
-
-See `NOTICE.md`.
+The repository derives from the KMITL Week 7 starter `chacharin/chatbot-it-kmitl`. Its [NOTICE](NOTICE.md) records unresolved upstream redistribution rights. Public-reference and guideline material also has separate rights and release restrictions. Resolve these before commercial distribution. ResultScope is a working product name; no trademark clearance is claimed.
