@@ -3,12 +3,13 @@
 Preparation date: 2026-10-04. This v2 replaces the earlier teal visual direction with the owner-approved purple hero/chat and document drawer. Baseline commit:
 `c9236f59b73460ce3c41ba9c87d7cda43d87cee8`.
 
-This is an offline preparation-session candidate. The delivered payload manifest
-identifies every replacement file; exact final-candidate evidence is recorded in
-[repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md).
+This is the retained offline preparation record for the v2 interface. The
+delivered payload manifest identifies every replacement file; exact current
+candidate evidence is recorded in [repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md).
 The runtime aggregate SHA-256 is `a70ef6e5ef13477d3f9738f299365e28f0c20b00c27f64f46fe267a8ae0bf28f`; see
 [RUNTIME_FILE_HASHES.json](RUNTIME_FILE_HASHES.json) for its construction and inputs.
-No commit, push, deployment, owner Brain update or local FO review is claimed here.
+The preparation record itself does not claim a commit, push, deployment, owner
+Brain update or local FO review; those later events are recorded separately.
 
 ## Results
 
@@ -70,18 +71,13 @@ must not be presented as approval of the business corpus.
 
 ## Packaging and local closeout
 
-The historical product-refresh manifest listed every payload file and SHA-256
-(excluding itself). Its verifier is preserved under
-`docs/archive/product-refresh-v2/` as a historical source record, not a current
-repository-health gate. The current migration uses direct pre/post bundle hash
-comparison and the vendor package's own verifier.
---integrated additionally checks that listed obsolete files have been removed.
-The ZIP includes an outer package inventory and a short goal prompt. Its packaging
-check verifies member paths, sizes, checksums and absence of private/runtime files.
-
-The owner applies this overlay to the existing repository, then follows the
-[repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md). No package pass substitutes for
-the final local Windows gate or authorization to call providers or deploy.
+The historical product-refresh manifest and verifier are preserved under
+`docs/archive/product-refresh-v2/` as source records, not current repository
+health gates. The current migration uses direct pre/post bundle hash comparison
+and the vendor package's own verifier. See [repository hygiene closeout](REPO_HYGIENE_CLOSEOUT.md)
+for the exact candidate, commands, final review and MAIN integration status.
+No package pass substitutes for the final local Windows gate or authorization to
+call providers or deploy.
 
 Online readiness, approved business data/rights, cloud secret/quota operation,
 post-remediation live validation, final independent review, PDF OCR and proposed
