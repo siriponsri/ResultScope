@@ -107,8 +107,11 @@ Latest offline evidence for the completed offline candidate:
   checks and a valid-ID contradictory-claim regression. The medium URL issue is
   addressed by binding provider-written URLs to the attributed source ID. The
   check-receipt issue is addressed below for the final commit.
-- The final exact-candidate check receipt will be recorded after commit; this
-  pre-commit run is not evidence for the final SHA.
+- Final exact-candidate check receipt: commit
+  `eec0d081f59ba5f5b3540a4bdc4dcafb659f109f`, local `main`,
+  `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`, exit `0`,
+  `224 passed`, one existing Starlette/httpx warning, completed on
+  `2026-10-04` local time. No live provider transport was enabled or called.
 - `compileall` and `git diff --check` passed. Tests use fake transports, temporary
   ledgers, or synthetic fixtures; no live provider request was made in this
   remediation.
