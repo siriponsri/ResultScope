@@ -113,6 +113,12 @@ Latest offline evidence for the completed offline candidate:
   the stale exact-check receipt above. The interval regression and occurrence
   binding fix are now in the follow-up candidate; the exact final check will
   be rerun after its commit.
+- Follow-up focused provider/citation/safety suite: `78 passed`, 1 existing
+  Starlette/httpx warning. Full exact-candidate check on
+  `acbcffc6c79985b91ec611c25e6eba4a4837e42e`: `powershell -ExecutionPolicy
+  Bypass -File .\scripts\check.ps1`, exit `0`, `225 passed`, one existing
+  Starlette/httpx warning, completed on `2026-10-04` local time. No live
+  provider transport was enabled or called.
 - `compileall` and `git diff --check` passed. Tests use fake transports, temporary
   ledgers, or synthetic fixtures; no live provider request was made in this
   remediation.
