@@ -1,13 +1,14 @@
 # Repository Hygiene Closeout
 
-Status: O1 reviewed; local integration, commit, and normal push are complete.
+Status: Documentation-only closeout candidate assembled; independent review and
+the normal push state are recorded below.
 
 ## Candidate and scope
 
 - Audited starting HEAD: `44ff6b95d6493df062e786791cbdfd66bf352549`.
 - Application candidate: `b7d7f68dcb0787ada9d0196f517b061b4d29d62d`.
 - Reviewed evidence/manual candidate: `dd323acc00237b4ab2472c5052aa068e15620dd3`.
-- Current documentation-alignment candidate: `1d90492c15244241ad22586365b8cea085219e88`.
+- Documentation-alignment base: `1d90492c15244241ad22586365b8cea085219e88`; the exact closeout candidate is the reviewed commit containing this record.
 - Integration branch: `codex/resultscope-restructure-20261004` (fast-forwarded into local `main` and deleted).
 - Scope: relocate the pinned evidence and synthetic coursework bundles, update active consumers and guidance, untrack regenerable synthetic indexes, refresh documentation captures/manual, and preserve offline/provider safety.
 
@@ -40,10 +41,10 @@ roots still fail closed. No bundle checksum or source content was rewritten.
 | Isolated browser capture | PASS | Temporary loopback `127.0.0.1:8787`; 16 captures; zero overflow, JS errors, and external browser requests; desktop and 390px mobile interactions passed |
 | User manual rebuild | PASS | `scripts/build_product_manual.py`; 14 steps |
 | PDF export | PASS | `scripts/export_product_manual.cjs` with the installed Playwright module and local Chrome |
-| Full `scripts/check.ps1` | PASS | Reproduced from a disposable clean checkout at `1d90492`; `227 passed, 1 warning`, exit `0` |
-| Vendor package verifier | PASS | `50` tests passed from `vendor/resultscope_evidence_v1/` |
-| Corpus/index/import checks | PASS | Structural corpus validation passed; synthetic index built `21` records; imports found `21` synthetic and `29` public-reference records |
-| Clean-checkout startup smoke | PASS | Isolated `127.0.0.1:8787`: `/health`, `/`, and `/static/docs/user-guide.html` returned `200`; owner port `8765` remained untouched |
+| Full `scripts/check.ps1` | PASS | Reproduced from a disposable clean checkout at `1d90492`; `227 passed, 1 warning`, exit `0`; see `docs/evidence/checks/clean-checkout-1d90492.txt` |
+| Vendor package verifier | PASS | `50` tests passed from `vendor/resultscope_evidence_v1/`; see the revision-bound receipt |
+| Corpus/index/import checks | PASS | Structural corpus validation passed; synthetic index built `21` records; imports found `21` synthetic and `29` public-reference records; see the revision-bound receipt |
+| Clean-checkout startup smoke | PASS | Isolated `127.0.0.1:8787`: `/health`, `/`, and `/static/docs/user-guide.html` returned `200`; owner port `8765` remained untouched; see the revision-bound receipt |
 | Coursework evaluator | BLOCKED | `6/10` mandatory and `5/5` holdout; retrieval-only plus mocked provider; exit `1`; release readiness remains `BLOCKED` |
 | Live providers | NOT_RUN | `PROVIDER_NETWORK_ENABLED=false`; no LLM, OCR, SystemOne, models, key-save, or new-cycle call |
 
@@ -73,9 +74,10 @@ remain recorded above.
   inspecting `origin/main`.
 - Local branch deletion and clean auxiliary worktree deletion: performed for
   `codex/resultscope-restructure-20261004` and its clean auxiliary worktree.
-- Final closeout commit and normal `git push origin main`: performed by MAIN
-  immediately after this report is staged; final SHA and remote parity are
-  recorded in the user handoff and Project Brain.
+- Prior closeout commit and normal push: `c184f6d8e102289402393dabaf212ffec459dd7f`.
+- Current documentation-only candidate: MAIN performs the normal push of this
+  exact reviewed candidate after independent O1 PASS; final parity is recorded
+  in the user handoff and Project Brain.
 - Force push, deployment, migration, remote branch deletion, and unrelated
   worktree changes: not performed and not authorized.
 

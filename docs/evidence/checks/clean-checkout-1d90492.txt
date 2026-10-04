@@ -1,0 +1,28 @@
+ResultScope clean-checkout verification receipt
+
+Source candidate: 1d90492c15244241ad22586365b8cea085219e88
+Checkout: C:\Users\User\AppData\Local\Temp\resultscope-clean-400414b5008643a3954ed8c626c13bc5
+Mode: disposable clean checkout; offline synthetic data; no provider calls
+
+The following checks were executed against the source candidate. This tracked
+receipt records the observed outcomes; the disposable checkout is not a source
+of maintained files.
+
+- `scripts/check.ps1`: PASS, exit 0; `227 passed, 1 warning`. The warning is
+  the existing Starlette/httpx deprecation.
+- `vendor/resultscope_evidence_v1/verify.py`: PASS, exit 0; `50` tests.
+- Structural corpus validation: PASS; release readiness remains BLOCKED.
+- `scripts/build_index.py --mode synthetic`: PASS; `21` records,
+  `promptlab-synthetic-v1`.
+- Import/corpus fixture check: PASS; `21` synthetic records and `29` public-
+  reference records discovered.
+- Isolated startup smoke on `127.0.0.1:8787`: PASS; `/health`, `/`, and
+  `/static/docs/user-guide.html` returned HTTP `200`. The owner service on
+  port `8765` remained listening and was not reused.
+- Coursework evaluator: expected BLOCKED/FAIL; `6/10` mandatory and `5/5`
+  holdout, mocked/offline, exit 1. This is not a release-readiness pass.
+
+The evaluator writes `docs/evidence/runs/coursework-demo-evaluation.json` in
+the disposable checkout. That generated change was intentionally not copied
+to the repository. Temporary server, settings, ledger, and clone state were
+not used as maintained application state.

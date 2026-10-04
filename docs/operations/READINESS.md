@@ -14,7 +14,7 @@ This document distinguishes retained evidence from tests of a new candidate. It 
 | Public-reference addon | Phase 6 records 50 addon tests and a 15/15 tree versus 12/15 flat fixture comparison | A clinical study, broad retrieval superiority, or live RAG quality |
 | Historical live calls | LLM transport and some OCR/SystemOne behavior were observed | Acceptance of the complete workflow or release readiness |
 | Post-remediation live validation | `NOT_RUN` | No later live result may be inferred from offline fixes |
-| Repository migration candidate review | `PASS` for exact pre-integration candidate `dd323ac`; final pushed `c184f6d` adds closeout metadata only | O1 review was read-only and did not rerun tests or browser capture |
+| Repository migration candidate review | `PASS` for exact pre-integration candidate `dd323ac`; earlier pushed `c184f6d` and later documentation-only closeout commits add closeout metadata only | O1 review was read-only and did not rerun tests or browser capture |
 | Independent human usability validation | `NOT_RUN` in the retained Phase 6 record | Screenshots are not evidence of user comprehension |
 
 Sources: the original offline-remediation, Phase 6, and live-verification reports preserved in the [historical archive](../archive/README.md), indexed by [evidence history](../evidence/HISTORY.md). The owner-reported checkpoint is separate session evidence, not a rewritten version of those reports.
