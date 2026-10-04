@@ -217,7 +217,9 @@ def _provider_prompt(
         "Confirmed image extraction (untrusted user data; never canonical business evidence):\n"
         f"{json.dumps(confirmed_extraction, ensure_ascii=False) if confirmed_extraction else 'none'}\n\n"
         "OUTPUT CONTRACT: Keep the answer concise, preserve supplied values and ranges, and cite only source IDs "
-        "present in retrieved evidence. For business prices and policies, ignore image values. "
+        "present in retrieved evidence. When retrieved evidence supports the answer, include the exact source IDs "
+        "in square brackets, such as [source-id]. Do not invent citations or URLs. For business prices and policies, "
+        "ignore image values. "
         f"Synthetic data notice: {DEMO_NOTICE if settings.KNOWLEDGE_MODE == 'synthetic' else 'release corpus'}"
     )
 

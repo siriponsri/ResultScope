@@ -81,6 +81,23 @@ def test_public_reference_answer_has_server_resolved_metadata(monkeypatch):
     assert all(citation.data_class == "public_reference" for citation in result.citations)
 
 
+def test_public_reference_prompt_requires_exact_bracketed_source_ids():
+    adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
+    bundle = adapter.search("ALT reference range")
+    assert bundle is not None
+    query = "What is the ALT reference range?"
+    intent = route_intent(query)
+    prompt = answer_service._provider_prompt(
+        query,
+        intent.kind,
+        bundle.items,
+        None,
+        context_packet=bundle.packet,
+    )
+    assert "in square brackets, such as [source-id]" in prompt
+    assert "Do not invent citations or URLs" in prompt
+
+
 def test_public_guideline_citation_preserves_license_and_section(monkeypatch):
     monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
     query = "What context matters for ferritin?"
