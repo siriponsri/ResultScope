@@ -7,6 +7,7 @@ Status: O1 reviewed; local integration, commit, and normal push are complete.
 - Audited starting HEAD: `44ff6b95d6493df062e786791cbdfd66bf352549`.
 - Application candidate: `b7d7f68dcb0787ada9d0196f517b061b4d29d62d`.
 - Reviewed evidence/manual candidate: `dd323acc00237b4ab2472c5052aa068e15620dd3`.
+- Current documentation-alignment candidate: `1d90492c15244241ad22586365b8cea085219e88`.
 - Integration branch: `codex/resultscope-restructure-20261004` (fast-forwarded into local `main` and deleted).
 - Scope: relocate the pinned evidence and synthetic coursework bundles, update active consumers and guidance, untrack regenerable synthetic indexes, refresh documentation captures/manual, and preserve offline/provider safety.
 
@@ -39,16 +40,21 @@ roots still fail closed. No bundle checksum or source content was rewritten.
 | Isolated browser capture | PASS | Temporary loopback `127.0.0.1:8787`; 16 captures; zero overflow, JS errors, and external browser requests; desktop and 390px mobile interactions passed |
 | User manual rebuild | PASS | `scripts/build_product_manual.py`; 14 steps |
 | PDF export | PASS | `scripts/export_product_manual.cjs` with the installed Playwright module and local Chrome |
+| Full `scripts/check.ps1` | PASS | Reproduced from a disposable clean checkout at `1d90492`; `227 passed, 1 warning`, exit `0` |
+| Vendor package verifier | PASS | `50` tests passed from `vendor/resultscope_evidence_v1/` |
+| Corpus/index/import checks | PASS | Structural corpus validation passed; synthetic index built `21` records; imports found `21` synthetic and `29` public-reference records |
+| Clean-checkout startup smoke | PASS | Isolated `127.0.0.1:8787`: `/health`, `/`, and `/static/docs/user-guide.html` returned `200`; owner port `8765` remained untouched |
 | Coursework evaluator | BLOCKED | `6/10` mandatory and `5/5` holdout; retrieval-only plus mocked provider; exit `1`; release readiness remains `BLOCKED` |
-| Full `scripts/check.ps1` | NOT_RUN | The script attempted dependency installation despite an existing venv; it was stopped and the existing-venv equivalent compile/test check was run instead |
 | Live providers | NOT_RUN | `PROVIDER_NETWORK_ENABLED=false`; no LLM, OCR, SystemOne, models, key-save, or new-cycle call |
 
 The capture manifest records its source fingerprint, offline conditions, and
 candidate metadata. Mocked OCR/SSE stages remain visibly labelled and are not
 live validation. The isolated server and temporary settings/ledger paths were
-stopped and removed. Owner port `8765`, `.env`, keys, sessions, databases,
-ledgers, and the locked `C:\Users\User\orca\workspaces\ResultScope\cod`
-directory were not touched.
+stopped and removed. The clean-checkout evaluator writes its evidence artifact
+as part of evaluation; that generated change was not copied into this
+repository. Owner port `8765`, `.env`, keys, sessions, databases, ledgers, and
+the locked `C:\Users\User\orca\workspaces\ResultScope\cod` directory were not
+touched.
 
 ## Independent review
 
