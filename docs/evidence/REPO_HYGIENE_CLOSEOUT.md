@@ -1,13 +1,13 @@
 # Repository Hygiene Closeout
 
-Status: candidate reviewed; local integration and push remain the final MAIN actions.
+Status: O1 reviewed; local integration is complete and the final MAIN closeout commit is ready to push.
 
 ## Candidate and scope
 
 - Audited starting HEAD: `44ff6b95d6493df062e786791cbdfd66bf352549`.
-- Application candidate: `aac1200c07790890a55dcfd066a8b32d806df549`.
-- Evidence/manual candidate before this closeout fix: `b289518d073c5b2da109c9e583c56161c3c69b1b`.
-- Branch: `codex/resultscope-restructure-20261004`.
+- Application candidate: `b7d7f68dcb0787ada9d0196f517b061b4d29d62d`.
+- Reviewed evidence/manual candidate: `dd323acc00237b4ab2472c5052aa068e15620dd3`.
+- Integration branch: `codex/resultscope-restructure-20261004` (fast-forwarded into local `main` and deleted).
 - Scope: relocate the pinned evidence and synthetic coursework bundles, update active consumers and guidance, untrack regenerable synthetic indexes, refresh documentation captures/manual, and preserve offline/provider safety.
 
 The two bundle moves are unit-preserving. A Git-archive comparison against the
@@ -35,7 +35,7 @@ roots still fail closed. No bundle checksum or source content was rewritten.
 | --- | --- | --- |
 | Focused Python compile/test | PASS | `227 passed, 1 warning` using the existing `.venv`; warning is the existing Starlette/httpx deprecation |
 | Bundle preservation | PASS | `87/87` vendor and `19/19` example paths and bytes; `0` mismatches |
-| `git diff --cached --check` | PASS | Run before both commits |
+| `git diff --cached --check` | PASS | Run before each commit |
 | Isolated browser capture | PASS | Temporary loopback `127.0.0.1:8787`; 16 captures; zero overflow, JS errors, and external browser requests; desktop and 390px mobile interactions passed |
 | User manual rebuild | PASS | `scripts/build_product_manual.py`; 14 steps |
 | PDF export | PASS | `scripts/export_product_manual.cjs` with the installed Playwright module and local Chrome |
@@ -52,20 +52,24 @@ directory were not touched.
 
 ## Independent review
 
-Fresh configured O1 REVIEW inspected exact candidate `b289518` through the
-headless read-only route `c7ef6167f0744bb9868bc84660d8e796`. Account
-independence was present: MAIN/IMPLEMENT MaxPlus and REVIEW O1. The review
-reported two findings: this closeout file was missing/broken-linked, and the
-capture manifest did not identify the final evidence candidate precisely. Both
-are addressed by this closeout change and the manifest update; a fresh O1
-review of the resulting candidate is required before integration.
+Fresh configured O1 REVIEW inspected exact candidate `dd323ac` through the
+headless read-only route `0172f99a227e481fad72a3b1b745ea5e` and returned PASS
+with no new specification or standards findings. Account independence was
+present: MAIN/IMPLEMENT MaxPlus and REVIEW O1. The review verified exact
+capture timing, application fingerprint, both bundle moves, active path
+references, protected-state exclusions, provider guard, clean status, and
+`git diff --check`. It did not rerun tests or browser capture; those receipts
+remain recorded above.
 
 ## Git closeout
 
-- Branch merge into local `main`: pending MAIN integration after fresh review.
-- Local branch deletion and clean auxiliary worktree deletion: pending; only
-  the completed in-scope branch/worktree may be removed.
-- Commit and normal `git push origin main`: pending MAIN integration.
+- Branch merge into local `main`: performed as a fast-forward after fetching and
+  inspecting `origin/main`.
+- Local branch deletion and clean auxiliary worktree deletion: performed for
+  `codex/resultscope-restructure-20261004` and its clean auxiliary worktree.
+- Final closeout commit and normal `git push origin main`: performed by MAIN
+  immediately after this report is staged; final SHA and remote parity are
+  recorded in the user handoff and Project Brain.
 - Force push, deployment, migration, remote branch deletion, and unrelated
   worktree changes: not performed and not authorized.
 
