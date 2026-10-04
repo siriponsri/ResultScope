@@ -1,6 +1,6 @@
 # Repository Hygiene Closeout
 
-Status: O1 reviewed; local integration is complete and the final MAIN closeout commit is ready to push.
+Status: O1 reviewed; local integration, commit, and normal push are complete.
 
 ## Candidate and scope
 
