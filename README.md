@@ -67,7 +67,7 @@ $env:PROVIDER_NETWORK_ENABLED = "false"
 powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
 ```
 
-The retained UI preparation record reports **237 repository tests** and **50 addon tests** in its isolated Linux environment. The current repository hygiene closeout reports **227 focused tests passed** with one existing warning, **16** exact-candidate UI captures, byte-preserving bundle checks, and an independent O1 review of the pre-integration candidate. Windows `check.ps1` remains NOT_RUN because its dependency-install step was not completed; live provider re-validation and release gates remain blocked. See the [verification record](docs/evidence/REDESIGN_VERIFICATION.md) and [repository hygiene closeout](docs/evidence/REPO_HYGIENE_CLOSEOUT.md) for the separate evidence scopes.
+The retained UI preparation record reports **237 repository tests** and **50 addon tests** in its isolated Linux environment. The current repository hygiene closeout records a clean-checkout Windows `check.ps1` PASS on `1d90492` with **227 tests passed** and one existing warning, **16** exact-candidate UI captures, byte-preserving bundle checks, and an independent O1 review of the pre-integration candidate. Live provider re-validation and release gates remain blocked. See the [verification record](docs/evidence/REDESIGN_VERIFICATION.md) and [repository hygiene closeout](docs/evidence/REPO_HYGIENE_CLOSEOUT.md) for the separate evidence scopes.
 
 Read [readiness and evidence](docs/operations/READINESS.md) before presenting the application beyond a controlled demonstration. It preserves the historical provider-budget overruns and identifies open release gates.
 
