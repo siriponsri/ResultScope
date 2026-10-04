@@ -13,15 +13,15 @@ evidence or translate byte-addressed source material into a different corpus.
 | Old phase plans, task packets, progress evidence | Archive original bytes, then remove listed loose files | Retain evidence without competing setup instructions |
 | Old root patch prompts and release checklists | Archive and remove listed files | Superseded by current setup, readiness and closeout guides |
 | Legacy scene.js, Hallmark installer and run metadata | Archive and remove listed files | No imports in the new workspace; not required tooling |
-| docs/coursework-demo/ResultScope_Coursework_Demo_v1 | Keep unchanged | Runtime synthetic knowledge and evaluator dependencies |
-| addons/resultscope_evidence_v1 | Keep unchanged | Runtime public references, rights records and checksummed verifier bundle |
+| `examples/coursework_demo_v1` | Keep intact at its canonical home | Synthetic knowledge, images, evaluation inputs, and evaluator dependencies |
+| `vendor/resultscope_evidence_v1` | Keep intact at its canonical home | Pinned public references, rights records, and checksummed verifier bundle |
 | knowledge/snapshots/legacy | Keep original source bytes | Stable provenance for explicitly non-release legacy sources |
 | knowledge, evaluation, indexes, tests/fixtures | Keep | Source, benchmark and regression data; Thai is intentional data |
 | NOTICE and third-party notices | Keep | Attribution and unresolved rights cannot be deleted by a rebrand |
 | Owner .env, .venv, data stores, secrets, ledger, PROMPT.md, .git | Preserve in place | Local state is outside the replacement payload |
 | Future evaluation reports | Write under docs/evidence/runs | Avoid rebuilding the obsolete phase-progress directory |
 
-There are 144 explicit removals in scripts/repo_cleanup_manifest.json. Each is
+There were 144 explicit removals in the earlier product-refresh cleanup. Each is
 preserved inside docs/archive/pre-redesign-c9236f5.zip. The archive also preserves
 10 earlier documents/configuration records that have current replacements.
 No wildcard removal or recursive repository deletion is authorized.
@@ -39,26 +39,33 @@ business approval or an exemption from checksum validation.
 .gitattributes preserves byte-addressed source and fixture trees on checkout. It
 does not change global Git configuration or authorize blanket renormalization.
 
-## Dry run and apply
+## Canonical ownership map
 
-Run only after the replacement payload has been verified and editing has stopped:
+| Area | Canonical home | Boundary |
+|---|---|---|
+| Maintained application | `main.py`, `config.py`, `routers/`, `services/`, `templates/`, `static/` | Runtime code and browser assets |
+| Pinned evidence | `vendor/resultscope_evidence_v1/` | One immutable imported bundle; verifier and package tests stay inside |
+| Synthetic examples | `examples/coursework_demo_v1/` | One immutable synthetic coursework bundle; never release data |
+| Current corpus | `knowledge/` | Application source manifests and release/synthetic contracts |
+| Generated local output | `data/` | Regenerable indexes and owner runtime state; private files remain ignored |
+| Current checks | `evaluation/`, `tests/`, `scripts/` | Supported application tests and maintenance commands |
+| Current guidance | `docs/product/`, `docs/operations/`, `docs/engineering/`, `docs/user/` | Maintained English instructions |
+| Historical material | `docs/archive/` | Labelled records, not active commands |
 
-```powershell
-python scripts/apply_repo_cleanup.py
-# Inspect every eligible path and any error. A mismatch must be investigated.
-python scripts/apply_repo_cleanup.py --apply
-```
+The old `addons/` and `docs/coursework-demo/` prefixes are retired. The exact
+legacy public-reference default remains a compatibility alias in
+`services/public_reference.py`; arbitrary custom roots still fail closed.
+Generated knowledge indexes under `data/indexes/` are ignored and can be rebuilt
+from the canonical corpus with `python scripts/build_index.py --mode synthetic`.
 
-The first command is read-only. The second verifies the historical archive, all
-listed paths and each file's original checksum before deleting anything. UTF-8
-files may differ only in CRLF/LF line endings. Symlinks, junctions, traversal paths,
-changed content, missing archive or corrupted archive block the operation.
+## Historical cleanup procedure
 
-Before deletion, actual current bytes are copied into a unique sibling directory
-named ResultScope-pre-refresh-backup-*/removed-files.zip. That backup is verified.
-The script rechecks every candidate, removes only named files, leaves directories
-and unlisted items intact, and prints the backup path. Run without concurrent edits.
-An already absent listed file is skipped, making a second run harmless.
+The one-time cleanup script and manifests are preserved under
+`docs/archive/product-refresh-v2/`. They are historical source records, not
+supported commands at their relocated paths. Do not run them from the current
+tree. The verified archive and the earlier closeout describe the old removal
+cycle; this migration used explicit canonical package moves and direct hash
+comparison instead.
 
 ## Recovery
 
@@ -76,7 +83,7 @@ necessary; Git does not track empty directories.
 ## Pinned CSV line-ending restoration
 
 The untouched Git baseline also fails the addon verifier at
-addons/resultscope_evidence_v1/data/records-review.csv. Its checked-in LF bytes have
+`vendor/resultscope_evidence_v1/data/records-review.csv`. Its checked-in LF bytes have
 SHA-256 ce566648ade1b2674fdc3f617d66ec9d075fd3ca4fd60f89249d55e30c5f847f.
 Restoring only CRLF produces the exact already-pinned package hash
 d8cb1f902fc5cf0ce7fea81c0ab4adcbd625cebd99b4964d072d502a14495b19.

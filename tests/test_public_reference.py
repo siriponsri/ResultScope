@@ -10,7 +10,13 @@ from main import app
 from routers import chat as chat_router
 from services import answer_service
 from services.intent_router import route_intent
-from services.public_reference import PublicReferenceAdapter, PublicReferenceLoadError
+from services.public_reference import (
+    CANONICAL_PUBLIC_REFERENCE_ROOT,
+    LEGACY_PUBLIC_REFERENCE_ROOT,
+    PublicReferenceAdapter,
+    PublicReferenceLoadError,
+    resolve_public_reference_root,
+)
 from services.store import MemoryConversationStore
 
 
@@ -18,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_public_adapter_keeps_numeric_and_guideline_namespaces_separate():
-    adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
+    adapter = PublicReferenceAdapter(ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT)
 
     numeric = adapter.search("ALT")
     guidance = adapter.search("ferritin")
@@ -34,7 +40,7 @@ def test_public_adapter_keeps_numeric_and_guideline_namespaces_separate():
 
 def test_public_adapter_fails_closed_when_a_snapshot_is_missing(tmp_path):
     addon_root = tmp_path / "resultscope_evidence_v1"
-    source_root = ROOT / "addons" / "resultscope_evidence_v1"
+    source_root = ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT
     import shutil
 
     shutil.copytree(source_root, addon_root)
@@ -96,7 +102,7 @@ def test_public_reference_displays_only_sources_attributed_by_answer(monkeypatch
 
 
 def test_public_reference_prompt_requires_exact_bracketed_source_ids():
-    adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
+    adapter = PublicReferenceAdapter(ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT)
     bundle = adapter.search("ALT reference range")
     assert bundle is not None
     query = "What is the ALT reference range?"
@@ -178,6 +184,24 @@ def test_public_reference_no_hit_and_corrupt_root_abstain(monkeypatch):
     assert not result.citations
 
 
+def test_public_reference_canonical_default_and_exact_legacy_alias():
+    assert CANONICAL_PUBLIC_REFERENCE_ROOT.as_posix() == "vendor/resultscope_evidence_v1"
+    assert resolve_public_reference_root(ROOT, CANONICAL_PUBLIC_REFERENCE_ROOT.as_posix()) == (
+        ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT
+    ).resolve()
+    assert resolve_public_reference_root(ROOT, LEGACY_PUBLIC_REFERENCE_ROOT.as_posix()) == (
+        ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT
+    ).resolve()
+
+
+def test_public_reference_custom_root_is_not_rewritten():
+    missing = "custom/reference-root"
+    assert resolve_public_reference_root(ROOT, missing) == (ROOT / missing).resolve()
+    assert resolve_public_reference_root(ROOT, "addons/resultscope_evidence_v1-copy") == (
+        ROOT / "addons/resultscope_evidence_v1-copy"
+    ).resolve()
+
+
 def test_public_reference_rejects_forged_citation_and_arbitrary_url(monkeypatch):
     monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
     query = "What is the ALT reference range?"
@@ -228,7 +252,7 @@ def test_public_reference_rejects_valid_source_id_with_unsupported_negation(monk
 def test_public_reference_rejects_url_attributed_to_the_wrong_source(monkeypatch):
     monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
     query = "What is the ALT reference range?"
-    adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
+    adapter = PublicReferenceAdapter(ROOT / CANONICAL_PUBLIC_REFERENCE_ROOT)
     bundle = adapter.search("ALT")
     assert bundle is not None
     source_urls = {

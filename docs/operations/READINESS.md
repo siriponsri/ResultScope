@@ -21,6 +21,12 @@ Sources: the original offline-remediation, Phase 6, and live-verification report
 
 The redesign's actual checks, screenshots and scoped visual review are recorded in [redesign verification](../evidence/REDESIGN_VERIFICATION.md). Those checks do not close the live or online gates. No provider call is authorized or implied by this documentation.
 
+The later local UI-refresh closeout is recorded in
+[LOCAL_PRODUCT_REFRESH_CLOSEOUT.md](../evidence/LOCAL_PRODUCT_REFRESH_CLOSEOUT.md).
+It records the earlier application candidate `b67cca1` and Windows verification;
+it is not an exact-head review of this repository migration and does not upgrade
+online or release readiness.
+
 ## Preserve the historical budget record
 
 | Slot | Historical attempts / limit | Status |

@@ -1,13 +1,23 @@
 /* Documentation capture only. Requires an isolated loopback app started with
    PROVIDER_NETWORK_ENABLED=false and synthetic data. Mock stages are visibly labeled.
    Node Playwright is tooling, not an application dependency. */
-const fs=require('fs'),path=require('path');
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),childProcess=require('child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=path.resolve(__dirname,'..');
 const output=path.join(root,'docs/assets/screenshots');fs.mkdirSync(output,{recursive:true});
-const base=process.env.DOCS_BASE_URL||'http://127.0.0.1:8765';
+const base=process.env.DOCS_BASE_URL;
+if(!base)throw Error('DOCS_BASE_URL is required; never capture against the owner server on port 8765.');
 if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw Error('Loopback capture only');
 if(process.env.DOCS_OFFLINE_CONFIRMED!=='true')throw Error('Start an isolated server with provider network disabled, then set DOCS_OFFLINE_CONFIRMED=true.');
+const candidateSha=childProcess.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+const applicationRoots=['main.py','config.py','routers','services','templates','static'];
+const applicationFiles=[];
+const isGeneratedDocumentation=file=>{const relative=path.relative(root,file).replaceAll(path.sep,'/');return relative==='static/docs/user-guide.html';};
+for(const entry of applicationRoots){const full=path.join(root,entry);if(fs.statSync(full).isDirectory()){const pending=[full];while(pending.length){const current=pending.pop();for(const child of fs.readdirSync(current,{withFileTypes:true})){const childPath=path.join(current,child.name);if(child.isDirectory())pending.push(childPath);else if(!isGeneratedDocumentation(childPath))applicationFiles.push(childPath);}}}else if(!isGeneratedDocumentation(full))applicationFiles.push(full);}
+applicationFiles.sort();
+const sourceFingerprint=crypto.createHash('sha256');
+for(const file of applicationFiles){sourceFingerprint.update(path.relative(root,file).replaceAll(path.sep,'/'));sourceFingerprint.update('\0');sourceFingerprint.update(fs.readFileSync(file));sourceFingerprint.update('\0');}
+const applicationFilesDirty=childProcess.execFileSync('git',['status','--porcelain','--',...applicationRoots],{cwd:root,encoding:'utf8'}).split(/\r?\n/).some(line=>line && !line.includes('static/docs/user-guide.html'));
 const receipts=[];let networkBlocks=[],errors=[];const interactions={};
 (async()=>{
  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
@@ -67,7 +77,7 @@ const receipts=[];let networkBlocks=[],errors=[];const interactions={};
  await page.route('**/static/vendor/gsap.min.js',r=>r.abort());await page.goto(base);await page.getByRole('button',{name:'Try an example',exact:true}).click();interactions.missing_gsap_fallback=await page.locator('#message-input').inputValue().then(v=>v.includes('Hb'));
  for(const [name,passed] of Object.entries(interactions))if(!passed)throw Error('Interaction failed: '+name);
  for(const name of ['mark','logo']){await page.setViewportSize({width:name==='mark'?256:740,height:name==='mark'?256:136});await page.goto(base+'/static/img/'+name+'.svg');await page.screenshot({path:path.join(root,'static/img/'+name+'.png'),omitBackground:true});}
- fs.writeFileSync(path.join(output,'CAPTURE_MANIFEST.json'),JSON.stringify({description:'Real redesigned pages; all mocked stages labeled explicitly. Not live provider or clinical validation.',base_commit:'c9236f59b73460ce3c41ba9c87d7cda43d87cee8',interactions,screenshots:receipts,browser_external_requests_blocked:networkBlocks,js_errors:errors},null,2));
+ fs.writeFileSync(path.join(output,'CAPTURE_MANIFEST.json'),JSON.stringify({description:'Real redesigned pages; all mocked stages labeled explicitly. Not live provider or clinical validation.',capture_time_utc:new Date().toISOString(),candidate_sha:candidateSha,application_files_dirty:applicationFilesDirty,application_source_fingerprint:sourceFingerprint.digest('hex'),interactions,screenshots:receipts,browser_external_requests_blocked:networkBlocks,js_errors:errors},null,2));
  console.log(JSON.stringify({captures:receipts.length,interactions,overflow:receipts.filter(r=>r.horizontal_overflow),js_errors:errors,blocked_external_requests:networkBlocks.length}));
  await browser.close();
  if(errors.length||networkBlocks.length||receipts.some(r=>r.horizontal_overflow))throw Error('Capture acceptance failed; inspect CAPTURE_MANIFEST.json');

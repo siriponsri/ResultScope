@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     CHAT_RATE_LIMIT_WINDOW_SECONDS: int = 60
     KNOWLEDGE_MODE: str = "release"
     PUBLIC_REFERENCE_ENABLED: bool = False
-    PUBLIC_REFERENCE_ROOT: str = "addons/resultscope_evidence_v1"
+    PUBLIC_REFERENCE_ROOT: str = "vendor/resultscope_evidence_v1"
     SESSION_SIGNING_KEY: str = ""
 
     # Admin Settings is deliberately opt-in and local-demo-only. A cloud

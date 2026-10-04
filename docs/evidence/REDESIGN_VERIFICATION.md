@@ -69,14 +69,17 @@ must not be presented as approval of the business corpus.
 
 ## Packaging and local closeout
 
-scripts/product_refresh_manifest.json lists every payload file and SHA-256 (excluding
-itself). scripts/verify_product_refresh.py checks the copied bytes and baseline ancestry.
+The historical product-refresh manifest listed every payload file and SHA-256
+(excluding itself). Its verifier is preserved under
+`docs/archive/product-refresh-v2/` as a historical source record, not a current
+repository-health gate. The current migration uses direct pre/post bundle hash
+comparison and the vendor package's own verifier.
 --integrated additionally checks that listed obsolete files have been removed.
 The ZIP includes an outer package inventory and a short goal prompt. Its packaging
 check verifies member paths, sizes, checksums and absence of private/runtime files.
 
 The owner applies this overlay to the existing repository, then follows
-[LOCAL_CLOSEOUT.md](../engineering/LOCAL_CLOSEOUT.md). No package pass substitutes for
+[REPO_HYGIENE_CLOSEOUT.md](REPO_HYGIENE_CLOSEOUT.md). No package pass substitutes for
 the final local Windows gate or authorization to call providers or deploy.
 
 Online readiness, approved business data/rights, cloud secret/quota operation,

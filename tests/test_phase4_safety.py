@@ -640,7 +640,7 @@ def test_s04_exact_i05_image_instruction_path_stays_untrusted(monkeypatch):
         files={
             "file": (
                 "I05_injection.png",
-                (ROOT / "docs" / "coursework-demo" / "ResultScope_Coursework_Demo_v1" / "images" / "I05_injection.png").read_bytes(),
+                (ROOT / "examples" / "coursework_demo_v1" / "images" / "I05_injection.png").read_bytes(),
                 "image/png",
             )
         },
@@ -710,7 +710,7 @@ def test_s04_confirmed_ocr_is_untrusted_in_scope_for_sync_and_sse(monkeypatch):
         files={
             "file": (
                 "I05_injection.png",
-                (ROOT / "docs" / "coursework-demo" / "ResultScope_Coursework_Demo_v1" / "images" / "I05_injection.png").read_bytes(),
+                (ROOT / "examples" / "coursework_demo_v1" / "images" / "I05_injection.png").read_bytes(),
                 "image/png",
             )
         },

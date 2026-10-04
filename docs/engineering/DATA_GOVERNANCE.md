@@ -53,7 +53,7 @@ HIS and pharmacy proposals require separate data-flow mapping, minimum-necessary
 ## Pinned CSV line-ending restoration
 
 The untouched Git baseline also fails the addon verifier at
-addons/resultscope_evidence_v1/data/records-review.csv. Its checked-in LF bytes have
+vendor/resultscope_evidence_v1/data/records-review.csv. Its checked-in LF bytes have
 SHA-256 ce566648ade1b2674fdc3f617d66ec9d075fd3ca4fd60f89249d55e30c5f847f.
 Restoring only CRLF produces the exact already-pinned package hash
 d8cb1f902fc5cf0ce7fea81c0ab4adcbd625cebd99b4964d072d502a14495b19.

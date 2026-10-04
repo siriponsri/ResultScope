@@ -27,14 +27,15 @@ See [redesign verification](evidence/REDESIGN_VERIFICATION.md), [visual review](
 - `security/`: current threat model and guard decision.
 - `evidence/`: current checks, visual review, and an English history index.
 - `archive/`: original phase instructions and evidence in a checksum-indexed ZIP.
-- Evidence addon and synthetic fixture package: retained runtime/provenance dependencies.
+- `vendor/resultscope_evidence_v1/`: pinned public-reference evidence package and offline verifier.
+- `examples/coursework_demo_v1/`: synthetic coursework corpus, images, and evaluator inputs.
 
 When a historical instruction conflicts with current setup, use [local setup](operations/LOCAL_SETUP.md). Preserve existing `.env` and virtual environments, keep provider transport disabled for offline work, and never infer authorization for a live call from a screenshot or a catalog label.
 
 ## Migration and evaluation
 
-- [Local closeout contract](engineering/LOCAL_CLOSEOUT.md): detailed FO MAIN integration steps.
-- [Repository cleanup](engineering/REPOSITORY_CLEANUP.md): explicit archive/removal rules.
+- [Repository hygiene](engineering/REPOSITORY_CLEANUP.md): canonical ownership, archive boundaries, and migration rules.
+- [Latest local product refresh closeout](evidence/LOCAL_PRODUCT_REFRESH_CLOSEOUT.md): earlier UI evidence, not a new exact-head review.
 - [Documentation tooling](engineering/DOCUMENTATION_TOOLING.md): maintain screenshots and manuals.
 - [Owner decisions](product/OWNER_DECISIONS.md): information needed before a pilot.
 - [Evaluation plan](product/EVALUATION_PLAN.md): product and academic evidence boundaries.

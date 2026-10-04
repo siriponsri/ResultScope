@@ -14,3 +14,7 @@ Thumbs.db
 data/admin_settings.json
 data/admin_settings.key
 data/admin_settings.json.tmp
+
+# Regenerable knowledge indexes; canonical source remains under knowledge/.
+/data/indexes/synthetic-promptlab-synthetic-v1.json
+/data/indexes/synthetic-resultscope-lab-demo-pending-v1.json

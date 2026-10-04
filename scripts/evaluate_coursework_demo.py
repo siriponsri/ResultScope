@@ -23,7 +23,7 @@ from services.knowledge import load_knowledge_base
 from services.retrieval import retrieve
 
 
-DEMO_QUESTIONS = ROOT / "docs" / "coursework-demo" / "ResultScope_Coursework_Demo_v1" / "evaluation" / "questions.jsonl"
+DEMO_QUESTIONS = ROOT / "examples" / "coursework_demo_v1" / "evaluation" / "questions.jsonl"
 
 
 async def _mock_chat(history: list[dict[str, str]], prompt: str, rule_grounding: str) -> str:

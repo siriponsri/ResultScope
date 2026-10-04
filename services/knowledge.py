@@ -12,7 +12,7 @@ from validation.validate_corpus import validate_corpus, validate_release_readine
 
 KnowledgeMode = Literal["release", "synthetic", "public_reference"]
 DEMO_NOTICE = "Synthetic business data for demonstration only; no real service is provided."
-DEMO_ROOT_RELATIVE = Path("docs/coursework-demo/ResultScope_Coursework_Demo_v1")
+DEMO_ROOT_RELATIVE = Path("examples/coursework_demo_v1")
 
 
 class KnowledgeLoadError(Exception):

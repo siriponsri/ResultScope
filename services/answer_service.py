@@ -407,10 +407,14 @@ async def answer_query(
         try:
             from pathlib import Path
 
-            from services.public_reference import PublicReferenceLoadError, load_public_reference_adapter
+            from services.public_reference import (
+                PublicReferenceLoadError,
+                load_public_reference_adapter,
+                resolve_public_reference_root,
+            )
 
             public_bundle = load_public_reference_adapter(
-                Path(__file__).resolve().parents[1] / settings.PUBLIC_REFERENCE_ROOT
+                resolve_public_reference_root(Path(__file__).resolve().parents[1], settings.PUBLIC_REFERENCE_ROOT)
             ).search(retrieval_query)
         except (PublicReferenceLoadError, OSError, ValueError, KeyError):
             return _local_result(

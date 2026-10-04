@@ -45,7 +45,7 @@ node --check static/js/admin.js
 git diff --check
 ```
 
-Mock provider verification is available through `python scripts/provider_verification_runner.py` with provider transport disabled. Its default is mock-only; do not add `--live`. Optional addon checks are `python addons/resultscope_evidence_v1/verify.py` and its documented evaluation script. A fixture comparison measures only those fixtures.
+Mock provider verification is available through `python scripts/provider_verification_runner.py` with provider transport disabled. Its default is mock-only; do not add `--live`. The pinned vendor check is `python vendor/resultscope_evidence_v1/verify.py`; the synthetic coursework evaluator is `python scripts/evaluate_coursework_demo.py --provider mocked`. Fixture comparisons measure only those fixtures.
 
 Then inspect the actual UI on desktop and a narrow mobile viewport: text intake, laboratory follow-up, unrelated refusal, image validation/review, unavailable-provider state, sources, reset/retry, keyboard focus, and reduced motion. Keep synthetic examples labelled. If a stage requires a mock, state that in the evidence caption. Never report a screenshot as a live-provider check.
 

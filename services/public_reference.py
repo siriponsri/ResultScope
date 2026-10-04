@@ -8,6 +8,20 @@ from services.knowledge import KnowledgeBase, KnowledgeRecord, SourceProvenance
 from services.retrieval import RetrievedRecord, RetrievalResult
 
 
+CANONICAL_PUBLIC_REFERENCE_ROOT = Path("vendor/resultscope_evidence_v1")
+LEGACY_PUBLIC_REFERENCE_ROOT = Path("addons/resultscope_evidence_v1")
+
+
+def resolve_public_reference_root(repository_root: Path, configured_root: str) -> Path:
+    """Resolve the canonical root while preserving custom roots and fail-closed errors."""
+    if configured_root == LEGACY_PUBLIC_REFERENCE_ROOT.as_posix():
+        configured_root = CANONICAL_PUBLIC_REFERENCE_ROOT.as_posix()
+    configured = Path(configured_root)
+    if configured.is_absolute():
+        return configured.resolve()
+    return (repository_root / configured).resolve()
+
+
 class PublicReferenceLoadError(Exception):
     """Raised when the optional pinned public-reference package is unavailable."""
 
@@ -24,8 +38,8 @@ class PublicReferenceAdapter:
 
     def __init__(self, root: Path) -> None:
         try:
-            from addons.resultscope_evidence_v1.core import EvidenceCorpus
-            from addons.resultscope_evidence_v1.guidance import GuidelineCorpus
+            from vendor.resultscope_evidence_v1.core import EvidenceCorpus
+            from vendor.resultscope_evidence_v1.guidance import GuidelineCorpus
 
             self.corpus = EvidenceCorpus(root)
             self.guidelines = GuidelineCorpus(root)

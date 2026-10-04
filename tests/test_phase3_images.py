@@ -20,7 +20,7 @@ from services.store import MemoryConversationStore
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEMO_IMAGES = ROOT / "docs" / "coursework-demo" / "ResultScope_Coursework_Demo_v1" / "images"
+DEMO_IMAGES = ROOT / "examples" / "coursework_demo_v1" / "images"
 
 
 def _png_bytes(width: int = 120, height: int = 80) -> bytes:

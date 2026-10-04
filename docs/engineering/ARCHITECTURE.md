@@ -14,7 +14,7 @@ ResultScope Laboratory Assistant uses **FastAPI, Jinja templates, and vanilla Ja
 | Scope and intent | `services/lab_scope.py`, `services/intent_router.py` | Laboratory scope, local/unsafe/business/mixed routing |
 | Deterministic facts | `services/lab_parser.py`, `services/deterministic_engine.py`, `services/deterministic_rules.py` | Supplied-value parsing, range flags, grounding contract, inspectable rules |
 | Knowledge and retrieval | `services/knowledge.py`, `services/retrieval.py` | Corpus validation/provenance and lexical matching |
-| Public reference bridge | `services/public_reference.py` | Translate pinned addon records into the application's evidence contract |
+| Public reference bridge | `services/public_reference.py` | Translate the pinned vendor evidence records into the application's evidence contract |
 | Answer and validation | `services/answer_service.py`, `services/output_validation.py` | Source-bound prompting, fail-closed results, factual/citation/URL/safety checks |
 | Providers | `services/llm_client.py`, `services/vision_client.py`, `services/systemone_client.py`, `services/provider_adapters.py` | Distinct LLM, image, shadow, and test transport boundaries |
 | Attempts | `services/provider_budget.py` | Persistent cycle and atomic pre-transport attempt reservations |
@@ -40,7 +40,7 @@ The SSE route (`/api/v1/chat/stream`) runs the pipeline and validation before em
 
 The ordinary knowledge path uses a local manifest, source snapshots, structured records, and lexical scoring in `services/retrieval.py`. Release mode requires owner-approved eligible sources and fails closed if they are unavailable; synthetic fixtures are not an automatic production fallback.
 
-When `PUBLIC_REFERENCE_ENABLED` is enabled, the public-reference adapter uses `addons/resultscope_evidence_v1/core.py` and `guidance.py`. The numeric tree follows organization → document → analyte → evidence, guided by local metadata and aliases. It is not RAPTOR, vector search, an LLM agent, or a claim of universal retrieval superiority. Retrieved records preserve source identifiers, pages, checksums, and available rights metadata.
+When `PUBLIC_REFERENCE_ENABLED` is enabled, the public-reference adapter uses `vendor/resultscope_evidence_v1/core.py` and `guidance.py`. The numeric tree follows organization → document → analyte → evidence, guided by local metadata and aliases. It is not RAPTOR, vector search, an LLM agent, or a claim of universal retrieval superiority. Retrieved records preserve source identifiers, pages, checksums, and available rights metadata. The exact legacy default `addons/resultscope_evidence_v1` maps to this canonical root for existing owner configuration; arbitrary custom roots are not rewritten.
 
 Public numeric ranges are source-comparison evidence. They do not replace the range on a user's report. Guideline notes are educational context, not numeric diagnostic rules. Clef remains off.
 
