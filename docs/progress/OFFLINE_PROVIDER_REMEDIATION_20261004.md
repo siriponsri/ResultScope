@@ -92,16 +92,19 @@ fixtures only:
 - `scripts/check.ps1` is the required final repository check; it is run only
   after the candidate is complete. It must not be treated as live validation.
 
-Latest offline evidence for this dirty candidate:
+Latest offline evidence for the completed offline candidate:
 
-- Focused provider/citation/safety suite: `87 passed`, 1 existing
+- Focused provider/citation/safety suite after the timeout and citation-fragment
+  fixes: `75 passed`, 1 existing
   Starlette/httpx warning.
-- `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`: `219 passed`,
+- `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`: `222 passed`,
   exit 0, 1 existing Starlette/httpx warning.
-- First independent O1 review found three issues; all three have targeted fixes
-  and regressions in the current candidate. A second exact-candidate O1 route
-  timed out before producing review findings; final independent approval is
-  therefore `NOT_RUN`.
+- `compileall` and `git diff --check` passed. Tests use fake transports, temporary
+  ledgers, or synthetic fixtures; no live provider request was made in this
+  remediation.
+- The first independent O1 review findings now have targeted fixes and passing
+  regressions in the current candidate. A fresh exact-candidate independent
+  review has not been run; final approval is therefore `NOT_RUN`.
 
 ## Status And Blockers
 

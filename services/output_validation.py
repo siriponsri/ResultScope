@@ -221,6 +221,14 @@ BUSINESS_THAI_CONNECTOR_WORDS = {
     "ราคา", "บาท", "และ", "ต่างกัน", "เท่าไร",
 }
 
+PUBLIC_CLAIM_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "based", "be", "because", "by", "can",
+    "claim", "claims", "data", "different", "does", "for", "from", "in", "is", "it",
+    "may", "no", "of", "on", "or", "our", "reference", "report", "reported", "reports",
+    "retrieved", "shows", "source", "sources", "such", "that", "the", "their", "this",
+    "to", "was", "were", "with",
+}
+
 
 def _normalized(text: str) -> str:
     return " ".join(text.casefold().split())
@@ -547,6 +555,56 @@ def _validate_source_urls(candidate: str, items: tuple[Any, ...]) -> None:
             raise OutputValidationError("provider_output_forged_source_url")
 
 
+def _public_claim_terms(text: str) -> set[str]:
+    without_citations = BRACKETED_SOURCE_GROUP_PATTERN.sub(" ", text)
+    terms = {
+        token.casefold()
+        for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{2,}", without_citations)
+    }
+    terms.update(run.casefold() for run in _thai_runs(without_citations))
+    return terms - PUBLIC_CLAIM_STOPWORDS
+
+
+def _source_evidence(items: tuple[Any, ...], source_ids: set[str]) -> str:
+    values: list[str] = []
+    for item in items:
+        item_sources = {source.casefold() for source in item.record.source_ids}
+        if item_sources & source_ids:
+            values.append(item.record.content)
+            values.append(json.dumps(item.record.data, ensure_ascii=False))
+    return " ".join(values)
+
+
+def _public_claim_fragments(candidate: str) -> tuple[str, ...]:
+    """Associate citation-only fragments after punctuation with the prior claim."""
+    fragments = [part.strip() for part in re.split(r"[.!?\n]+", candidate) if part.strip()]
+    claims: list[str] = []
+    for fragment in fragments:
+        if claims and _bracketed_source_ids(fragment) and not _public_claim_terms(fragment):
+            claims[-1] = f"{claims[-1]} {fragment}"
+        else:
+            claims.append(fragment)
+    return tuple(claims)
+
+
+def _validate_public_claim_support(candidate: str, items: tuple[Any, ...]) -> None:
+    """Require each attributed factual sentence to expose source-grounded anchors."""
+    for sentence in _public_claim_fragments(candidate):
+        cited_source_ids = _bracketed_source_ids(sentence)
+        if not cited_source_ids:
+            raise OutputValidationError("provider_output_missing_citation")
+        evidence = _source_evidence(items, cited_source_ids)
+        evidence_terms = _public_claim_terms(evidence)
+        claim_terms = _public_claim_terms(sentence)
+        claim_numbers = set(NUMBER_PATTERN.findall(BRACKETED_SOURCE_GROUP_PATTERN.sub(" ", sentence)))
+        evidence_numbers = set(NUMBER_PATTERN.findall(evidence))
+        if not claim_numbers.issubset(evidence_numbers):
+            raise OutputValidationError("provider_output_unsupported_claim")
+        anchors = len(claim_terms & evidence_terms) + len(claim_numbers)
+        if claim_terms and anchors < 2:
+            raise OutputValidationError("provider_output_unsupported_claim")
+
+
 def _bracketed_source_ids(candidate: str) -> set[str]:
     return {
         source.casefold()
@@ -766,8 +824,8 @@ def validate_provider_text(
         raise OutputValidationError("provider_output_forged_citation")
     _validate_source_attributions(candidate, allowed_sources)
     _validate_source_urls(candidate, items)
-    if require_source_attribution and not (bracketed_sources & allowed_sources) and not _is_nonfactual_response(candidate):
-        raise OutputValidationError("provider_output_missing_citation")
+    if require_source_attribution and not _is_nonfactual_response(candidate):
+        _validate_public_claim_support(candidate, items)
     return candidate
 
 

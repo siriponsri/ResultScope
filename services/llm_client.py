@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from collections.abc import AsyncGenerator
@@ -194,6 +195,10 @@ async def list_models() -> list[dict[str, Any]]:
     except ProviderBudgetError as exc:
         attempt = _finish(reservation, "blocked", exc.code)
         raise _budget_error(exc, attempt) from exc
+    except asyncio.CancelledError as exc:
+        error = LLMConnectionError("The AI provider took too long to respond.", status_code=504, code="provider_timeout")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
     except httpx.ConnectError as exc:
         error = LLMConnectionError("The AI provider could not be reached.")
         error.provider_attempt = _finish(reservation, "failed", error.code)
@@ -261,6 +266,14 @@ async def chat(
     except ProviderBudgetError as exc:
         attempt = _finish(reservation, "blocked", exc.code)
         raise _budget_error(exc, attempt) from exc
+    except asyncio.CancelledError as exc:
+        error = LLMConnectionError(
+            "The AI provider took too long to respond.",
+            status_code=504,
+            code="provider_timeout",
+        )
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
     except httpx.ConnectError as exc:
         error = LLMConnectionError("The AI provider could not be reached.")
         error.provider_attempt = _finish(reservation, "failed", error.code)

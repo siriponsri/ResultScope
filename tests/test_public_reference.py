@@ -194,12 +194,28 @@ def test_public_reference_rejects_forged_citation_and_arbitrary_url(monkeypatch)
     assert not result.citations
 
 
+def test_public_reference_rejects_valid_source_id_with_unsupported_claim(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What is the ALT reference range?"
+
+    async def fake_provider(*args, **kwargs):
+        return "ALT is associated with seasonal sleep quality. [siriraj-alt]"
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_unsupported_claim"
+    assert not result.citations
+
+
 def test_public_reference_sync_and_sse_citations_match(monkeypatch):
     monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
     monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
 
     async def fake_provider(*args, **kwargs):
-        return "The sources disagree, so the report's own range remains primary. [siriraj-alt]"
+        return "The ALT reference interval is documented in the report. [siriraj-alt]"
 
     monkeypatch.setattr(chat_router.llm_client, "chat", fake_provider)
     client = TestClient(app)
@@ -217,6 +233,32 @@ def test_public_reference_sync_and_sse_citations_match(monkeypatch):
     assert sync.json()["data_class"] == "public_reference"
     assert stream_meta["data_class"] == "public_reference"
     assert sync.json()["citations"] == stream_meta["citations"]
+    assert events[-1]["done"] is True
+
+
+def test_public_reference_rejected_output_is_not_emitted_in_sync_or_sse(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    query = "What is the ALT reference range?"
+
+    async def fake_provider(*args, **kwargs):
+        return "ALT is associated with seasonal sleep quality. [siriraj-alt]"
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", fake_provider)
+    client = TestClient(app)
+    sync = client.post("/api/v1/chat", json={"message": query})
+    stream = client.post("/api/v1/chat/stream", json={"message": query})
+    events = [
+        json.loads(line.removeprefix("data: "))
+        for line in stream.text.splitlines()
+        if line.startswith("data: ")
+    ]
+
+    assert sync.status_code == 200
+    assert sync.json()["status"] == "abstained"
+    assert "seasonal sleep quality" not in sync.json()["reply"]
+    assert not any("seasonal sleep quality" in event.get("delta", "") for event in events)
+    assert any(event.get("response_meta", {}).get("status") == "abstained" for event in events)
     assert events[-1]["done"] is True
 
 

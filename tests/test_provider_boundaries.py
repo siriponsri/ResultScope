@@ -9,8 +9,10 @@ from fastapi.testclient import TestClient
 
 from main import app
 from routers import chat as chat_router
-from services import llm_client, provider_adapters, systemone_client
+from services import answer_service, llm_client, provider_adapters, systemone_client
 from services.extraction_store import MemoryExtractionStore
+from services.intent_router import route_intent
+from services.knowledge import load_knowledge_base
 from services.provider_budget import ProviderBudgetError, SQLiteAttemptBudget
 from services.provider_config import RuntimeProvider
 from services.store import MemoryConversationStore
@@ -128,6 +130,41 @@ def test_chat_stream_route_uses_shared_llm_budget_once(monkeypatch, tmp_path):
     assert any("delta" in event for event in events)
     assert events[-1]["done"] is True
     assert calls == ["/v1/chat/completions"]
+    assert SQLiteAttemptBudget(tmp_path / "provider-boundaries.sqlite3", "boundary-cycle", True).snapshot()["llm_used"] == 1
+
+
+def test_chat_timeout_preserves_attempt_receipt(monkeypatch, tmp_path):
+    _budget(monkeypatch, tmp_path, llm=1)
+    provider = RuntimeProvider("synthetic", "https://provider.invalid/v1", "model", "synthetic-key", 5, True, "openai_chat")
+    monkeypatch.setattr(llm_client, "_provider", lambda: provider)
+    monkeypatch.setattr(answer_service.settings, "LLM_TIMEOUT_SECONDS", 0.01)
+
+    async def handler(request):
+        await asyncio.sleep(0.1)
+        return httpx.Response(200, json={"choices": [{"message": {"content": "late"}}]})
+
+    original_client = httpx.AsyncClient
+
+    def factory(*args, **kwargs):
+        return original_client(transport=httpx.MockTransport(handler), timeout=kwargs.get("timeout"))
+
+    monkeypatch.setattr(llm_client.httpx, "AsyncClient", factory)
+    query = "Tell me about synthetic basic panel"
+    result = asyncio.run(
+        answer_service.answer_query(
+            query,
+            route_intent(query),
+            [],
+            None,
+            base=load_knowledge_base(mode="synthetic", environment="test"),
+        )
+    )
+
+    assert result.status == "error"
+    assert result.error_code == "provider_timeout"
+    assert result.provider_attempt is not None
+    assert result.provider_attempt.outcome == "failed"
+    assert result.provider_attempt.reason_code == "provider_timeout"
     assert SQLiteAttemptBudget(tmp_path / "provider-boundaries.sqlite3", "boundary-cycle", True).snapshot()["llm_used"] == 1
 
 

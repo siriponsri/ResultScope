@@ -4,7 +4,6 @@ import json
 import logging
 import uuid
 import asyncio
-import re
 import time
 from dataclasses import asdict
 from typing import Any
@@ -74,9 +73,6 @@ def _session_id(request: Request) -> tuple[str, bool]:
 
 
 def _request_id(request: Request) -> str:
-    supplied = request.headers.get("x-request-id", "").strip()
-    if supplied and len(supplied) <= 64 and re.fullmatch(r"[A-Za-z0-9._:-]+", supplied):
-        return supplied
     return uuid.uuid4().hex
 
 
@@ -91,24 +87,26 @@ def _audit_event(
     corpus_version = result.corpus_version if result else None
     retrieval_latency_ms = result.retrieval_latency_ms if result else None
     attempt = result.provider_attempt if result else None
+    audit_fields = {
+        "event": event,
+        "request_id": request_id,
+        "outcome": outcome,
+        "intent": result.intent if result else "unknown",
+        "corpus_version": corpus_version or "unknown",
+        "retrieval_latency_ms": retrieval_latency_ms,
+        "validation_reason": result.validation_reason if result else None,
+        "provider_slot": attempt.provider_slot if attempt else None,
+        "cycle_id": attempt.cycle_id if attempt else None,
+        "reservation_id": attempt.attempt_id if attempt else None,
+        "provider_source_path": attempt.source_path if attempt else None,
+        "provider_outcome": attempt.outcome if attempt else None,
+        "provider_reason_code": attempt.reason_code if attempt else None,
+        "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),
+    }
     logger.info(
-        "Request audit event",
-        extra={
-            "event": event,
-            "request_id": request_id,
-            "outcome": outcome,
-            "intent": result.intent if result else "unknown",
-            "corpus_version": corpus_version or "unknown",
-            "retrieval_latency_ms": retrieval_latency_ms,
-            "validation_reason": result.validation_reason if result else None,
-            "provider_slot": attempt.provider_slot if attempt else None,
-            "cycle_id": attempt.cycle_id if attempt else None,
-            "reservation_id": attempt.attempt_id if attempt else None,
-            "provider_source_path": attempt.source_path if attempt else None,
-            "provider_outcome": attempt.outcome if attempt else None,
-            "provider_reason_code": attempt.reason_code if attempt else None,
-            "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),
-        },
+        "ResultScope audit %s",
+        json.dumps(audit_fields, ensure_ascii=True, sort_keys=True, separators=(",", ":")),
+        extra=audit_fields,
     )
 
 

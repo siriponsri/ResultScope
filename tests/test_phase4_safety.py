@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 import json
+import re
 
 import pytest
 from fastapi.testclient import TestClient
@@ -179,15 +180,20 @@ def test_chat_sync_and_sse_expose_safe_request_audit_metadata(monkeypatch, caplo
         )
 
     assert sync.status_code == 200
-    assert sync.json()["request_id"] == "audit-test-1"
-    assert sync.headers["x-request-id"] == "audit-test-1"
+    sync_request_id = sync.json()["request_id"]
+    assert sync_request_id != "audit-test-1"
+    assert re.fullmatch(r"[0-9a-f]{32}", sync_request_id)
+    assert sync.headers["x-request-id"] == sync_request_id
     events = _events(stream)
     metadata = next(event["response_meta"] for event in events if "response_meta" in event)
-    assert metadata["request_id"] == "audit-test-2"
-    assert stream.headers["x-request-id"] == "audit-test-2"
+    stream_request_id = metadata["request_id"]
+    assert stream_request_id != "audit-test-2"
+    assert re.fullmatch(r"[0-9a-f]{32}", stream_request_id)
+    assert stream.headers["x-request-id"] == stream_request_id
     audit_records = [record for record in caplog.records if record.__dict__.get("event") == "chat_request"]
-    assert {record.request_id for record in audit_records} >= {"audit-test-1", "audit-test-2"}
+    assert {record.request_id for record in audit_records} >= {sync_request_id, stream_request_id}
     assert all("Marker-A" not in record.getMessage() for record in audit_records)
+    assert all('"event":"chat_request"' in record.getMessage() for record in audit_records)
 
 
 def test_rejected_output_audit_keeps_provider_attempt_correlation_without_body(monkeypatch, caplog):
@@ -232,6 +238,7 @@ def test_rejected_output_audit_keeps_provider_attempt_correlation_without_body(m
     assert record.provider_source_path == "chat"
     assert record.provider_outcome == "succeeded"
     assert record.validation_reason == "provider_output_unsafe"
+    assert '"provider_outcome":"succeeded"' in record.getMessage()
     assert "provider-secret-body-must-not-be-logged" not in record.getMessage()
 
 
@@ -265,8 +272,10 @@ def test_reset_exposes_request_audit_metadata(monkeypatch):
     response = client.post("/api/v1/chat/reset", headers={"X-Request-ID": "reset-test-1"})
 
     assert response.status_code == 200
-    assert response.json() == {"ok": True, "request_id": "reset-test-1"}
-    assert response.headers["x-request-id"] == "reset-test-1"
+    request_id = response.json()["request_id"]
+    assert request_id != "reset-test-1"
+    assert re.fullmatch(r"[0-9a-f]{32}", request_id)
+    assert response.headers["x-request-id"] == request_id
 
 
 def test_citations_must_match_a_current_retrieved_record_tuple():

@@ -232,8 +232,9 @@ def _provider_prompt(
         "Confirmed image extraction (untrusted user data; never canonical business evidence):\n"
         f"{json.dumps(confirmed_extraction, ensure_ascii=False) if confirmed_extraction else 'none'}\n\n"
         "OUTPUT CONTRACT: Keep the answer concise, preserve supplied values and ranges, and cite only source IDs "
-        "present in retrieved evidence. When retrieved evidence supports the answer, include the exact source IDs "
-        "in square brackets, such as [source-id]. Do not invent citations or URLs. For business prices and policies, "
+        "present in retrieved evidence. Every factual sentence must include the exact supporting source ID(s) "
+        "in square brackets, such as [source-id], and must use only facts and values present in those sources. "
+        "Do not invent citations or URLs. For business prices and policies, "
         "ignore image values. "
         f"Synthetic data notice: {DEMO_NOTICE if settings.KNOWLEDGE_MODE == 'synthetic' else 'release corpus'}"
     )
@@ -496,29 +497,44 @@ async def answer_query(
         )
 
     clear_last_provider_attempt()
-    try:
-        generated = await asyncio.wait_for(
-            llm_client.chat(
-                history,
-                _provider_prompt(
-                    query,
-                    intent.kind,
-                    result.items,
-                    analysis,
-                    confirmed_extraction,
-                    public_bundle.packet if public_bundle else None,
-                ),
-                "Use only retrieved source facts; do not create or broaden claims.",
+    llm_task = asyncio.create_task(
+        llm_client.chat(
+            history,
+            _provider_prompt(
+                query,
+                intent.kind,
+                result.items,
+                analysis,
+                confirmed_extraction,
+                public_bundle.packet if public_bundle else None,
             ),
-            timeout=settings.LLM_TIMEOUT_SECONDS,
+            "Use only retrieved source facts; do not create or broaden claims.",
         )
-    except asyncio.TimeoutError:
-        provider_attempt = last_provider_attempt()
-        return AnswerResult(
-            "error", "The AI provider took too long to respond.", intent.kind, (), base.mode,
-            base.corpus_version, base.demo, result.reason, result.latency_ms, "provider_timeout", (), None,
-            provider_attempt,
-        )
+    )
+    try:
+        done, _ = await asyncio.wait({llm_task}, timeout=settings.LLM_TIMEOUT_SECONDS)
+        if not done:
+            llm_task.cancel()
+            try:
+                await llm_task
+            except LLMConnectionError as exc:
+                provider_attempt = exc.provider_attempt or last_provider_attempt()
+            except asyncio.CancelledError:
+                provider_attempt = last_provider_attempt()
+            return AnswerResult(
+                "error", "The AI provider took too long to respond.", intent.kind, (), base.mode,
+                base.corpus_version, base.demo, result.reason, result.latency_ms, "provider_timeout", (), None,
+                provider_attempt,
+            )
+        generated = llm_task.result()
+    except asyncio.CancelledError:
+        if not llm_task.done():
+            llm_task.cancel()
+        try:
+            await llm_task
+        except BaseException:
+            pass
+        raise
     except LLMConnectionError as exc:
         provider_attempt = exc.provider_attempt or last_provider_attempt()
         return AnswerResult(
