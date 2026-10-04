@@ -30,8 +30,7 @@
   }));
   document.getElementById('hero-example').addEventListener('click', () => {
     enterWorkspace();
-    if (document.body.dataset.view === 'analysis') document.getElementById('followup-input').focus({preventScroll:true});
-    else document.getElementById('sample-button').click();
+    window.dispatchEvent(new Event('resultscope:hero-example'));
   });
   function syncMotion() {
     if (!timeline || scheduled) return;

@@ -729,7 +729,7 @@ async function resetConversation() {
   } catch (error) {
     showError(error.message || "A new analysis could not be started.");
     newChatButton.disabled = false;
-    return;
+    return false;
   }
   chatWindow.querySelectorAll(".analysis-response").forEach((node) => node.remove());
   clearError();
@@ -742,6 +742,7 @@ async function resetConversation() {
   analysisContent?.setAttribute("aria-busy", "false");
   messageInput.focus();
   newChatButton.disabled = false;
+  return true;
 }
 
 function updateCount() {
@@ -774,6 +775,14 @@ followupForm.addEventListener("submit", (event) => {
 
 analysisStopButton.addEventListener("click", () => activeAbortController?.abort());
 newChatButton.addEventListener("click", resetConversation);
+window.addEventListener("resultscope:hero-example", async () => {
+  if (requestInFlight) {
+    followupInput.focus({ preventScroll: true });
+    return;
+  }
+  const reset = document.body.dataset.view === "analysis" ? await resetConversation() : true;
+  if (reset) sampleButton.click();
+});
 messageInput.addEventListener("input", updateCount);
 imageInput.addEventListener("change", () => {
   const file = imageInput.files?.[0];
