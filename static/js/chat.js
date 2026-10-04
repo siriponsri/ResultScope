@@ -338,6 +338,7 @@ function beginNarrative(surface) {
 
 function finishSurface(surface) {
   surface.classList.remove("is-loading");
+  surface.querySelector(".metric-loading")?.remove();
   if (surface.classList.contains("has-error")) {
     surface.classList.remove("is-complete");
     surface.querySelectorAll(".response-progress li").forEach((step) => step.classList.remove("is-active"));
