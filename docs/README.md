@@ -14,7 +14,7 @@ This is the English documentation entry point for **ResultScope Laboratory Assis
 
 Current documentation guides the implementation; it is not an approval receipt. [Readiness](operations/READINESS.md) identifies known gates and historical evidence. The [evidence history](evidence/HISTORY.md) indexes original reports retained in a verified archive. Some original evidence and source fixtures contain Thai; these are preserved data, not current instructions.
 
-See [redesign verification](evidence/REDESIGN_VERIFICATION.md), [visual review](evidence/DESIGN_REVIEW.md), and the [historical archive](archive/README.md). Mocked behavior is labelled; previous test totals stay attached to their candidate or report.
+See [redesign verification](evidence/REDESIGN_VERIFICATION.md), [repository hygiene closeout](evidence/REPO_HYGIENE_CLOSEOUT.md), [visual review](evidence/DESIGN_REVIEW.md), and the [historical archive](archive/README.md). Mocked behavior is labelled; previous test totals stay attached to their candidate or report.
 
 ## Documentation map
 

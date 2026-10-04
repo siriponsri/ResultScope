@@ -14,12 +14,17 @@ This document distinguishes retained evidence from tests of a new candidate. It 
 | Public-reference addon | Phase 6 records 50 addon tests and a 15/15 tree versus 12/15 flat fixture comparison | A clinical study, broad retrieval superiority, or live RAG quality |
 | Historical live calls | LLM transport and some OCR/SystemOne behavior were observed | Acceptance of the complete workflow or release readiness |
 | Post-remediation live validation | `NOT_RUN` | No later live result may be inferred from offline fixes |
-| Fresh exact-final-candidate independent review | `NOT_RUN` unless a new exact-candidate receipt is recorded | Main-agent inspection or old review receipts cannot substitute |
+| Repository migration candidate review | `PASS` for exact pre-integration candidate `dd323ac`; final pushed `c184f6d` adds closeout metadata only | O1 review was read-only and did not rerun tests or browser capture |
 | Independent human usability validation | `NOT_RUN` in the retained Phase 6 record | Screenshots are not evidence of user comprehension |
 
 Sources: the original offline-remediation, Phase 6, and live-verification reports preserved in the [historical archive](../archive/README.md), indexed by [evidence history](../evidence/HISTORY.md). The owner-reported checkpoint is separate session evidence, not a rewritten version of those reports.
 
 The redesign's actual checks, screenshots and scoped visual review are recorded in [redesign verification](../evidence/REDESIGN_VERIFICATION.md). Those checks do not close the live or online gates. No provider call is authorized or implied by this documentation.
+
+The current repository migration, clean Git closeout, focused checks, and O1
+receipt are recorded in [repository hygiene closeout](../evidence/REPO_HYGIENE_CLOSEOUT.md).
+That closeout does not upgrade the controlled-local, online, clinical, or
+production decision.
 
 The later local UI-refresh closeout is recorded in
 [LOCAL_PRODUCT_REFRESH_CLOSEOUT.md](../evidence/LOCAL_PRODUCT_REFRESH_CLOSEOUT.md).
