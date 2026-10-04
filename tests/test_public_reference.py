@@ -249,6 +249,21 @@ def test_public_reference_rejects_url_attributed_to_the_wrong_source(monkeypatch
     assert not result.citations
 
 
+def test_public_reference_rejects_reversed_interval_for_valid_source(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What is the ALT reference range?"
+
+    async def fake_provider(*args, **kwargs):
+        return "The ALT reference interval is 41 to 5 U/L. [siriraj-alt]"
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_unsupported_claim"
+
+
 def test_public_reference_sync_and_sse_citations_match(monkeypatch):
     monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
     monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())

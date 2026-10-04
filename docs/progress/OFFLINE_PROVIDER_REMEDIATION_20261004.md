@@ -100,18 +100,19 @@ Latest offline evidence for the completed offline candidate:
 - Provider boundary, budget, runner, OCR, Admin, public-reference, safety, and
   LLM subset: `103 passed`, 1 existing warning.
 - `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1` on the
-  pre-commit candidate: `224 passed`, exit 0, 1 existing Starlette/httpx warning.
+  previous candidate: `224 passed`, exit 0, 1 existing Starlette/httpx warning.
 - O1 review receipt `aabba2fabea44061bcc37a057d3cca4d` inspected exact commit
   `944572ce6b2ed22af75f90938f0f20f991749e24` and found three issues. The high
   unsupported-claim issue is addressed with source-specific structured evidence
   checks and a valid-ID contradictory-claim regression. The medium URL issue is
   addressed by binding provider-written URLs to the attributed source ID. The
   check-receipt issue is addressed below for the final commit.
-- Final exact-candidate check receipt: commit
-  `eec0d081f59ba5f5b3540a4bdc4dcafb659f109f`, local `main`,
-  `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`, exit `0`,
-  `224 passed`, one existing Starlette/httpx warning, completed on
-  `2026-10-04` local time. No live provider transport was enabled or called.
+- The final review receipt `8b11863175f5452db98c5f40c54baa10` inspected exact
+  `cb98bd007ee4e698de336fc5d69d85033c04cad7` and found a remaining reversed
+  numeric-interval relationship gap, a duplicate-URL occurrence concern, and
+  the stale exact-check receipt above. The interval regression and occurrence
+  binding fix are now in the follow-up candidate; the exact final check will
+  be rerun after its commit.
 - `compileall` and `git diff --check` passed. Tests use fake transports, temporary
   ledgers, or synthetic fixtures; no live provider request was made in this
   remediation.

@@ -581,19 +581,13 @@ def _validate_source_urls(
 ) -> None:
     by_source = _source_urls_by_id(items)
     allowed = {url for urls in by_source.values() for url in urls}
-    for url in URL_PATTERN.findall(candidate):
-        normalized_url = url.rstrip(".,;")
+    for url_match in URL_PATTERN.finditer(candidate):
+        normalized_url = url_match.group(0).rstrip(".,;")
         if normalized_url not in allowed:
             raise OutputValidationError("provider_output_forged_source_url")
         if require_source_attribution:
-            match = next(
-                (match for match in URL_PATTERN.finditer(candidate) if match.group(0).rstrip(".,;") == normalized_url),
-                None,
-            )
             cited_source_ids = (
-                _source_ids_for_url(candidate, match.start(), match.end())
-                if match is not None
-                else set()
+                _source_ids_for_url(candidate, url_match.start(), url_match.end())
             )
             if not cited_source_ids or not any(
                 normalized_url in by_source.get(source_id, set())
@@ -676,6 +670,37 @@ def _public_evidence_terms(items: tuple[Any, ...], source_ids: set[str]) -> set[
     return terms
 
 
+def _numeric_claims(text: str) -> tuple[float, ...]:
+    without_citations = BRACKETED_SOURCE_GROUP_PATTERN.sub(" ", text)
+    without_urls = URL_PATTERN.sub(" ", without_citations)
+    return tuple(float(value.replace(",", ".")) for value in NUMBER_PATTERN.findall(without_urls))
+
+
+def _validate_structured_numeric_claims(
+    sentence: str,
+    items: tuple[Any, ...],
+    source_ids: set[str],
+) -> None:
+    """Require ordered numeric intervals to match a cited structured source."""
+    numbers = _numeric_claims(sentence)
+    if len(numbers) < 2:
+        return
+    for item in items:
+        if not ({source.casefold() for source in item.record.source_ids} & source_ids):
+            continue
+        data = item.record.data if isinstance(item.record.data, dict) else {}
+        if data.get("interval_type") != "reference_interval":
+            continue
+        lower, upper = data.get("lower"), data.get("upper")
+        if not isinstance(lower, (int, float)) or not isinstance(upper, (int, float)):
+            continue
+        if numbers[0] == float(lower) and numbers[1] == float(upper):
+            return
+        if numbers[0] == float(upper) and numbers[1] == float(lower):
+            raise OutputValidationError("provider_output_unsupported_claim")
+    
+
+
 def _reject_obvious_public_fact_contradictions(
     sentence: str,
     items: tuple[Any, ...],
@@ -724,6 +749,7 @@ def _validate_public_claim_support(candidate: str, items: tuple[Any, ...]) -> No
         evidence_numbers = set(NUMBER_PATTERN.findall(evidence))
         if not claim_numbers.issubset(evidence_numbers):
             raise OutputValidationError("provider_output_unsupported_claim")
+        _validate_structured_numeric_claims(sentence, items, cited_source_ids)
         anchors = len(claim_terms & evidence_terms) + len(claim_numbers)
         if claim_terms and anchors < 2:
             raise OutputValidationError("provider_output_unsupported_claim")
