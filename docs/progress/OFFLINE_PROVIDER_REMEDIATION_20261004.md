@@ -95,10 +95,20 @@ fixtures only:
 Latest offline evidence for the completed offline candidate:
 
 - Focused provider/citation/safety suite after the timeout and citation-fragment
-  fixes: `75 passed`, 1 existing
+  fixes: `77 passed`, 1 existing
   Starlette/httpx warning.
-- `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`: `222 passed`,
-  exit 0, 1 existing Starlette/httpx warning.
+- Provider boundary, budget, runner, OCR, Admin, public-reference, safety, and
+  LLM subset: `103 passed`, 1 existing warning.
+- `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1` on the
+  pre-commit candidate: `224 passed`, exit 0, 1 existing Starlette/httpx warning.
+- O1 review receipt `aabba2fabea44061bcc37a057d3cca4d` inspected exact commit
+  `944572ce6b2ed22af75f90938f0f20f991749e24` and found three issues. The high
+  unsupported-claim issue is addressed with source-specific structured evidence
+  checks and a valid-ID contradictory-claim regression. The medium URL issue is
+  addressed by binding provider-written URLs to the attributed source ID. The
+  check-receipt issue is addressed below for the final commit.
+- The final exact-candidate check receipt will be recorded after commit; this
+  pre-commit run is not evidence for the final SHA.
 - `compileall` and `git diff --check` passed. Tests use fake transports, temporary
   ledgers, or synthetic fixtures; no live provider request was made in this
   remediation.

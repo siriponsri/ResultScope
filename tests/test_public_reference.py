@@ -86,7 +86,7 @@ def test_public_reference_displays_only_sources_attributed_by_answer(monkeypatch
     query = "What is the ALT reference range?"
 
     async def fake_provider(*args, **kwargs):
-        return "The retrieved source [siriraj-alt] reports one ALT interval for comparison."
+        return "The retrieved source [siriraj-alt] reports an ALT reference interval for comparison."
 
     monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
     result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
@@ -207,6 +207,45 @@ def test_public_reference_rejects_valid_source_id_with_unsupported_claim(monkeyp
     assert result.status == "abstained"
     assert result.error_code == "output_rejected"
     assert result.validation_reason == "provider_output_unsupported_claim"
+    assert not result.citations
+
+
+def test_public_reference_rejects_valid_source_id_with_unsupported_negation(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What is the ALT reference range?"
+
+    async def fake_provider(*args, **kwargs):
+        return "ALT is not a test. [siriraj-alt]"
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_unsupported_claim"
+
+
+def test_public_reference_rejects_url_attributed_to_the_wrong_source(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What is the ALT reference range?"
+    adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
+    bundle = adapter.search("ALT")
+    assert bundle is not None
+    source_urls = {
+        item.record.source_ids[0]: item.record.data["source_url"]
+        for item in bundle.items
+        if item.record.source_ids[0] in {"siriraj-alt", "kku-alt"}
+    }
+
+    async def fake_provider(*args, **kwargs):
+        return f"The ALT reference interval is documented in the report. [siriraj-alt] {source_urls['kku-alt']}"
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_forged_source_url"
     assert not result.citations
 
 

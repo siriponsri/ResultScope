@@ -226,7 +226,9 @@ PUBLIC_CLAIM_STOPWORDS = {
     "claim", "claims", "data", "different", "does", "for", "from", "in", "is", "it",
     "may", "no", "of", "on", "or", "our", "reference", "report", "reported", "reports",
     "retrieved", "shows", "source", "sources", "such", "that", "the", "their", "this",
-    "to", "was", "were", "with",
+    "to", "was", "were", "with", "according", "associated", "described", "describes",
+    "documented", "educational", "gives", "guidance", "indicates", "needs", "provides",
+    "need", "needs", "say", "says", "requires", "should", "states", "supports", "uses",
 }
 
 
@@ -531,9 +533,18 @@ def _validate_lab_claims(candidate: str, analysis: Any) -> None:
             raise OutputValidationError("provider_output_contradicts_lab_status")
 
 
-def _validate_source_attributions(candidate: str, allowed_sources: set[str]) -> None:
+def _validate_source_attributions(
+    candidate: str,
+    allowed_sources: set[str],
+    require_source_attribution: bool = False,
+) -> None:
     allowed = {source.casefold() for source in allowed_sources}
-    for sentence in re.split(r"[.!?\n]+", candidate):
+    sentences = (
+        _public_claim_fragments(candidate)
+        if require_source_attribution
+        else re.split(r"[.!?\n]+", candidate)
+    )
+    for sentence in sentences:
         if not (SOURCE_CUE_PATTERN.search(sentence) or UNBRACKETED_SOURCE_CUE_PATTERN.search(sentence)):
             continue
         if SOURCE_NON_ATTRIBUTION_PATTERN.search(sentence):
@@ -542,26 +553,67 @@ def _validate_source_attributions(candidate: str, allowed_sources: set[str]) -> 
             raise OutputValidationError("provider_output_forged_citation")
 
 
-def _validate_source_urls(candidate: str, items: tuple[Any, ...]) -> None:
-    allowed = set()
+def _source_urls_by_id(items: tuple[Any, ...]) -> dict[str, set[str]]:
+    by_source: dict[str, set[str]] = {}
     for item in items:
         data = item.record.data if isinstance(item.record.data, dict) else {}
+        urls = set()
         for key in ("source_url", "origin", "publication_url"):
             value = data.get(key)
             if isinstance(value, str):
-                allowed.add(value.rstrip(".,;"))
+                urls.add(value.rstrip(".,;"))
+        for source_id in item.record.source_ids:
+            by_source.setdefault(source_id.casefold(), set()).update(urls)
+    return by_source
+
+
+def _source_ids_for_url(candidate: str, start: int, end: int) -> set[str]:
+    """Find bracketed attributions in the sentence containing a provider URL."""
+    prefix = candidate[:start]
+    boundary = max(prefix.rfind("."), prefix.rfind("!"), prefix.rfind("?"), prefix.rfind("\n"))
+    return _bracketed_source_ids(prefix[boundary + 1 :] + candidate[start:end])
+
+
+def _validate_source_urls(
+    candidate: str,
+    items: tuple[Any, ...],
+    require_source_attribution: bool = False,
+) -> None:
+    by_source = _source_urls_by_id(items)
+    allowed = {url for urls in by_source.values() for url in urls}
     for url in URL_PATTERN.findall(candidate):
-        if url.rstrip(".,;") not in allowed:
+        normalized_url = url.rstrip(".,;")
+        if normalized_url not in allowed:
             raise OutputValidationError("provider_output_forged_source_url")
+        if require_source_attribution:
+            match = next(
+                (match for match in URL_PATTERN.finditer(candidate) if match.group(0).rstrip(".,;") == normalized_url),
+                None,
+            )
+            cited_source_ids = (
+                _source_ids_for_url(candidate, match.start(), match.end())
+                if match is not None
+                else set()
+            )
+            if not cited_source_ids or not any(
+                normalized_url in by_source.get(source_id, set())
+                for source_id in cited_source_ids
+            ):
+                raise OutputValidationError("provider_output_forged_source_url")
 
 
 def _public_claim_terms(text: str) -> set[str]:
     without_citations = BRACKETED_SOURCE_GROUP_PATTERN.sub(" ", text)
-    terms = {
-        token.casefold()
-        for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{2,}", without_citations)
-    }
-    terms.update(run.casefold() for run in _thai_runs(without_citations))
+    without_urls = URL_PATTERN.sub(" ", without_citations)
+    terms: set[str] = set()
+    for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{2,}", without_urls):
+        normalized = token.casefold()
+        terms.add(normalized)
+        terms.update(part for part in re.split(r"[-_]", normalized) if len(part) >= 3)
+        if normalized.endswith("s") and len(normalized) > 3:
+            terms.add(normalized[:-1])
+    terms -= PUBLIC_CLAIM_STOPWORDS
+    terms.update(run.casefold() for run in _thai_runs(without_urls))
     return terms - PUBLIC_CLAIM_STOPWORDS
 
 
@@ -573,6 +625,74 @@ def _source_evidence(items: tuple[Any, ...], source_ids: set[str]) -> str:
             values.append(item.record.content)
             values.append(json.dumps(item.record.data, ensure_ascii=False))
     return " ".join(values)
+
+
+def _public_evidence_terms(items: tuple[Any, ...], source_ids: set[str]) -> set[str]:
+    """Expose only source facts and deterministic comparison relationships as anchors."""
+    selected = [
+        item
+        for item in items
+        if {source.casefold() for source in item.record.source_ids} & source_ids
+    ]
+    terms = _public_claim_terms(_source_evidence(items, source_ids))
+    numeric_records = [
+        item.record.data
+        for item in selected
+        if isinstance(item.record.data, dict) and item.record.data.get("interval_type") == "reference_interval"
+    ]
+    for data in numeric_records:
+        test = data.get("test")
+        if isinstance(test, str):
+            terms.update(_public_claim_terms(test))
+        for alias in data.get("aliases", ()) if isinstance(data.get("aliases"), list) else ():
+            if isinstance(alias, str):
+                terms.update(_public_claim_terms(alias))
+        terms.update({"interval", "range", "reference"})
+        if data.get("use") == "source_comparison_only":
+            terms.add("comparison")
+    bounds = {
+        (data.get("test"), data.get("lower"), data.get("upper"), data.get("unit"))
+        for data in numeric_records
+    }
+    source_ids_present = {
+        str(data.get("source_id")).casefold()
+        for data in numeric_records
+        if data.get("source_id")
+    }
+    if len(source_ids_present) > 1 and len(bounds) > 1:
+        terms.update({"different", "interval", "intervals", "single", "patient", "selected"})
+    for item in selected:
+        data = item.record.data if isinstance(item.record.data, dict) else {}
+        if data.get("numeric_rule") is False:
+            terms.update({"numeric", "rule"})
+        summary = data.get("summary_th")
+        if isinstance(summary, str):
+            if "บริบท" in summary:
+                terms.add("context")
+            if "อักเสบ" in summary:
+                terms.add("inflammation")
+            if "ตัวเลข" in summary:
+                terms.add("numeric")
+    return terms
+
+
+def _reject_obvious_public_fact_contradictions(
+    sentence: str,
+    items: tuple[Any, ...],
+    source_ids: set[str],
+) -> None:
+    """Reject a direct negation of a structured source fact."""
+    normalized = " ".join(sentence.casefold().split())
+    for item in items:
+        if not ({source.casefold() for source in item.record.source_ids} & source_ids):
+            continue
+        data = item.record.data if isinstance(item.record.data, dict) else {}
+        test = data.get("test")
+        if not isinstance(test, str) or not test.strip():
+            continue
+        test_pattern = re.escape(test.casefold())
+        if re.search(rf"\b{test_pattern}\s+(?:is|was)\s+not\s+(?:(?:a|an|the)\s+)?test\b", normalized):
+            raise OutputValidationError("provider_output_unsupported_claim")
 
 
 def _public_claim_fragments(candidate: str) -> tuple[str, ...]:
@@ -594,8 +714,12 @@ def _validate_public_claim_support(candidate: str, items: tuple[Any, ...]) -> No
         if not cited_source_ids:
             raise OutputValidationError("provider_output_missing_citation")
         evidence = _source_evidence(items, cited_source_ids)
-        evidence_terms = _public_claim_terms(evidence)
+        evidence_terms = _public_evidence_terms(items, cited_source_ids)
         claim_terms = _public_claim_terms(sentence)
+        unsupported_terms = claim_terms - evidence_terms
+        if unsupported_terms:
+            raise OutputValidationError("provider_output_unsupported_claim")
+        _reject_obvious_public_fact_contradictions(sentence, items, cited_source_ids)
         claim_numbers = set(NUMBER_PATTERN.findall(BRACKETED_SOURCE_GROUP_PATTERN.sub(" ", sentence)))
         evidence_numbers = set(NUMBER_PATTERN.findall(evidence))
         if not claim_numbers.issubset(evidence_numbers):
@@ -768,10 +892,10 @@ def validate_provider_text(
         raise OutputValidationError("provider_output_unauthorized_transaction")
     allowed_numbers = _allowed_numbers(query, items, analysis, intent, confirmed_extraction)
     # Numeric suffixes in bracketed source IDs are identifiers, not factual claims.
-    numeric_claim_text = BRACKETED_SOURCE_GROUP_PATTERN.sub(
+    numeric_claim_text = URL_PATTERN.sub(" ", BRACKETED_SOURCE_GROUP_PATTERN.sub(
         lambda match: SOURCE_TOKEN_PATTERN.sub(" ", match.group(0)),
         candidate,
-    )
+    ))
     if not set(NUMBER_PATTERN.findall(numeric_claim_text)).issubset(allowed_numbers):
         raise OutputValidationError("provider_output_ungrounded_number")
     if intent == "business":
@@ -812,18 +936,19 @@ def validate_provider_text(
         _validate_lab_claims(candidate, analysis)
     allowed_sources = {source.casefold() for item in items for source in item.record.source_ids}
     known_lab_units = _known_lab_units(analysis, confirmed_extraction)
-    bracketed_sources = _bracketed_source_ids(candidate)
+    citation_candidate = URL_PATTERN.sub(" ", candidate)
+    bracketed_sources = _bracketed_source_ids(citation_candidate)
     mentioned = {
         source.casefold()
         for pattern in (SOURCE_MARKER_PATTERN, SOURCE_ID_PATTERN, BRACKETED_SOURCE_PATTERN, SOURCE_ATTRIBUTION_PATTERN)
-        for source in pattern.findall(candidate)
+        for source in pattern.findall(citation_candidate)
         if source.casefold() not in known_lab_units
     }
     mentioned.update(bracketed_sources)
     if not mentioned.issubset(allowed_sources):
         raise OutputValidationError("provider_output_forged_citation")
-    _validate_source_attributions(candidate, allowed_sources)
-    _validate_source_urls(candidate, items)
+    _validate_source_attributions(candidate, allowed_sources, require_source_attribution)
+    _validate_source_urls(candidate, items, require_source_attribution)
     if require_source_attribution and not _is_nonfactual_response(candidate):
         _validate_public_claim_support(candidate, items)
     return candidate
