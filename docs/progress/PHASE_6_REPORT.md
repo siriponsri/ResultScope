@@ -93,3 +93,8 @@ evidence-packet response ครั้งสุดท้ายผ่าน valida
 
 ข้อค้นพบนี้ไม่ใช่ clinical validation และยังไม่เปลี่ยน online readiness จาก
 `BLOCKED`. ไม่มีการเติมเครดิต เปิด auto top-up push หรือ deploy.
+
+หลังปิด live cycle มี offline remediation ใน commit `24b1783` ซึ่งเพิ่มคำสั่งให้
+provider ระบุ source IDs แบบ bracketed และห้ามสร้าง citation/URL เอง พร้อมผล
+`scripts/check.ps1` `196 passed`. Live re-validation หลัง remediation เป็น
+`NOT_RUN` เพราะ LLM budget ถูกใช้ครบแล้ว.

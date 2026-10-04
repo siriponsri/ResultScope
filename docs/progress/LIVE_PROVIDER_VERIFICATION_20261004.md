@@ -2,7 +2,7 @@
 
 วันที่: 4 ตุลาคม 2569  
 สาขา: `main` ภายในเครื่อง  
-HEAD ที่ตรวจสอบ: `16c39a065b92dfabe8f7b12ec21e1d2b73b537c1`  
+HEAD ที่ใช้ live verification: `647f243cc047b0bb78824eabf6244e724a99545b`  
 สถานะการเผยแพร่: ไม่มีการ push และไม่มีการ deploy
 
 ## ขอบเขตและการคุ้มครองข้อมูล
@@ -119,7 +119,17 @@ tests/test_phase4_safety.py
 ```
 
 ผล: `77 passed`, warning เดิมจาก Starlette/httpx `1` รายการ. ไม่มี runtime source
-change ในรอบนี้ จึงไม่ได้รัน `scripts/check.ps1` ซ้ำ.
+change ใน live cycle จึงไม่ได้รัน `scripts/check.ps1` ซ้ำในจุดนั้น.
+
+## Offline remediation หลัง live cycle
+
+หลังปิด live budget ได้เพิ่ม prompt contract ให้ provider ระบุ exact retrieved source
+IDs ใน square brackets และห้ามสร้าง citation/URL เอง พร้อม focused regression test
+ใน commit `24b1783`. ผล focused public-reference/safety test หลังแก้คือ `51 passed`
+และ `scripts/check.ps1` คือ `196 passed`, warning เดิม `1` รายการ.
+
+การเรียก live เพื่อยืนยัน remediation นี้เป็น `NOT_RUN` เนื่องจาก LLM budget `5/5`
+ถูกใช้ครบแล้ว จึงยังไม่เปลี่ยนผล live app-route failures เดิมเป็น PASS.
 
 ## Readiness และ residual blockers
 
@@ -127,7 +137,7 @@ change ในรอบนี้ จึงไม่ได้รัน `scripts/ch
 Admin Settings, OCR review/confirm และ SystemOne shadow. Live provider transport
 ทำงานได้ตาม contract และ direct LLM evidence response ผ่าน validator แต่ app-route
 ยังมี output-validation failures และ OCR/SystemOne budget ถูกใช้เกิน provider ละหนึ่ง
-attempt ในรอบนี้.
+attempt ในรอบนี้. Offline remediation ถูก commit แล้วแต่ยังรอ live re-validation.
 
 **Online readiness: BLOCKED.** ยังขาด durable cloud secret store, independent review
 ของ exact HEAD, release/approved corpus, operational controls, account-specific
