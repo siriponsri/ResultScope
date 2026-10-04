@@ -10,11 +10,31 @@ from services.provider_adapters import (
     build_systemone_payload,
     parse_systemone_response,
 )
+from services.provider_budget import (
+    AttemptReservation,
+    ProviderBudgetError,
+    SQLiteAttemptBudget,
+    finish_provider_attempt,
+    reserve_provider_attempt,
+)
 from services.provider_config import ProviderConfigError, ProviderSettingsStore, RuntimeProvider
 
 
 class SystemOneError(Exception):
-    pass
+    def __init__(self, code: str, message: str) -> None:
+        self.code = code
+        self.message = message
+        super().__init__(message)
+
+
+def _finish(reservation: AttemptReservation | None, outcome: str, reason_code: str | None = None) -> None:
+    if reservation is None:
+        return
+    try:
+        finish_provider_attempt(reservation, outcome, reason_code)
+    except ProviderBudgetError:
+        # A consumed reservation is never restored when outcome persistence fails.
+        pass
 
 
 def _configured_provider() -> RuntimeProvider | None:
@@ -52,15 +72,28 @@ async def shadow_decide(message: str, python_intent: str, python_allowed: bool) 
                 }
             },
         )
-        async with httpx.AsyncClient(timeout=provider.timeout_seconds) as client:
+        reservation = reserve_provider_attempt("systemone", "systemone_shadow")
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=provider.timeout_seconds, follow_redirects=False) as client:
             response = await client.post(
                 provider.base_url,
                 headers={"apikey": provider.api_key, "Content-Type": "application/json"},
                 json=payload,
             )
         if response.status_code >= 400:
-            raise SystemOneError("SystemOne shadow request was rejected.")
+            raise SystemOneError("provider_request_failed", "SystemOne shadow request was rejected.")
         result = parse_systemone_response(response.json())
+        _finish(reservation, "succeeded")
         return {"python_intent": python_intent, "shadow": result}
-    except (httpx.HTTPError, ValueError, ProviderAdapterError) as exc:
-        raise SystemOneError("SystemOne shadow response was invalid or unavailable.") from exc
+    except ProviderBudgetError as exc:
+        _finish(locals().get("reservation"), "blocked", exc.code)
+        raise SystemOneError(exc.code, exc.message) from exc
+    except (httpx.TimeoutException, httpx.HTTPError) as exc:
+        _finish(locals().get("reservation"), "failed", "provider_unavailable")
+        raise SystemOneError("provider_unavailable", "SystemOne shadow response was unavailable.") from exc
+    except (ValueError, ProviderAdapterError) as exc:
+        _finish(locals().get("reservation"), "failed", "provider_invalid_response")
+        raise SystemOneError("provider_invalid_response", "SystemOne shadow response was invalid.") from exc
+    except SystemOneError as exc:
+        _finish(locals().get("reservation"), "failed", exc.code)
+        raise

@@ -11,7 +11,14 @@ from services.intent_router import IntentDecision
 from services.knowledge import DEMO_NOTICE, KnowledgeBase, KnowledgeLoadError, SourceProvenance
 from services.retrieval import RetrievalResult, RetrievedRecord, retrieve
 from services.llm_client import LLMConnectionError
-from services.output_validation import OutputValidationError, validate_provider_text
+from services.output_validation import GENERIC_VALIDATION_REASON, OutputValidationError, validate_provider_text
+from services.provider_budget import (
+    AttemptReceipt,
+    ProviderBudgetError,
+    amend_provider_output_rejection,
+    clear_last_provider_attempt,
+    last_provider_attempt,
+)
 
 
 @dataclass(frozen=True)
@@ -67,6 +74,8 @@ class AnswerResult:
     retrieval_latency_ms: float = 0.0
     error_code: str | None = None
     validation_items: tuple[RetrievedRecord, ...] = ()
+    validation_reason: str | None = None
+    provider_attempt: AttemptReceipt | None = None
 
     def metadata(self) -> dict[str, Any]:
         return {
@@ -84,12 +93,18 @@ class AnswerResult:
         }
 
 
-def _citation_rows(items: tuple[RetrievedRecord, ...], base: KnowledgeBase) -> tuple[Citation, ...]:
+def _citation_rows(
+    items: tuple[RetrievedRecord, ...],
+    base: KnowledgeBase,
+    attributed_source_ids: set[str] | None = None,
+) -> tuple[Citation, ...]:
     rows: list[Citation] = []
     seen: set[tuple[str, str]] = set()
     for item in items:
         for source_id in item.record.source_ids:
             source = base.sources.get(source_id)
+            if attributed_source_ids is not None and source_id.casefold() not in attributed_source_ids:
+                continue
             if not source or (source_id, item.record.record_id) in seen:
                 continue
             seen.add((source_id, item.record.record_id))
@@ -224,6 +239,33 @@ def _provider_prompt(
     )
 
 
+def _validation_reason(
+    text: str,
+    query: str,
+    items: tuple[RetrievedRecord, ...],
+    analysis: Any,
+    intent: str,
+    confirmed_extraction: dict[str, Any] | None = None,
+    require_source_attribution: bool = False,
+) -> str | None:
+    try:
+        validate_provider_text(
+            text,
+            query,
+            items,
+            analysis,
+            intent,
+            confirmed_extraction,
+            require_source_attribution,
+        )
+    except OutputValidationError as exc:
+        return exc.code or GENERIC_VALIDATION_REASON
+    except Exception:
+        # Unknown validator failures remain fail-closed without exposing details.
+        return GENERIC_VALIDATION_REASON
+    return None
+
+
 def _valid_answer(
     text: str,
     query: str,
@@ -231,12 +273,17 @@ def _valid_answer(
     analysis: Any,
     intent: str,
     confirmed_extraction: dict[str, Any] | None = None,
+    require_source_attribution: bool = False,
 ) -> bool:
-    try:
-        validate_provider_text(text, query, items, analysis, intent, confirmed_extraction)
-    except OutputValidationError:
-        return False
-    return True
+    return _validation_reason(
+        text,
+        query,
+        items,
+        analysis,
+        intent,
+        confirmed_extraction,
+        require_source_attribution,
+    ) is None
 
 
 def _local_result(
@@ -250,16 +297,23 @@ def _local_result(
     retrieval_reason: str = "not_run",
     retrieval_latency_ms: float = 0.0,
     error_code: str | None = None,
+    validation_reason: str | None = None,
+    provider_attempt: AttemptReceipt | None = None,
 ) -> AnswerResult:
     return AnswerResult(
         status, text, intent.kind, (), mode or settings.KNOWLEDGE_MODE,
         corpus_version,
         settings.KNOWLEDGE_MODE == "synthetic" if demo is None else demo,
-        retrieval_reason, retrieval_latency_ms, error_code,
+         retrieval_reason, retrieval_latency_ms, error_code, (), validation_reason, provider_attempt,
     )
 
 
-def fail_closed_result(result: AnswerResult, *, code: str = "output_rejected") -> AnswerResult:
+def fail_closed_result(
+    result: AnswerResult,
+    *,
+    code: str = "output_rejected",
+    validation_reason: str | None = None,
+) -> AnswerResult:
     return AnswerResult(
         "abstained",
         "I could not verify the generated response against the retrieved sources.",
@@ -271,6 +325,34 @@ def fail_closed_result(result: AnswerResult, *, code: str = "output_rejected") -
         result.retrieval_reason,
         result.retrieval_latency_ms,
         code,
+        (),
+        validation_reason or result.validation_reason,
+        result.provider_attempt,
+    )
+
+
+def mark_provider_output_rejected(result: AnswerResult, reason_code: str) -> AnswerResult:
+    attempt = result.provider_attempt
+    if attempt is not None and attempt.outcome == "succeeded":
+        try:
+            attempt = amend_provider_output_rejection(attempt, reason_code)
+        except ProviderBudgetError:
+            # The response remains fail-closed; never expose ledger details.
+            pass
+    return AnswerResult(
+        result.status,
+        result.text,
+        result.intent,
+        result.citations,
+        result.corpus_mode,
+        result.corpus_version,
+        result.demo,
+        result.retrieval_reason,
+        result.retrieval_latency_ms,
+        result.error_code,
+        result.validation_items,
+        result.validation_reason,
+        attempt,
     )
 
 
@@ -413,7 +495,7 @@ async def answer_query(
             **mode_meta,
         )
 
-    citations = _citation_rows(result.items, base)
+    clear_last_provider_attempt()
     try:
         generated = await asyncio.wait_for(
             llm_client.chat(
@@ -431,27 +513,58 @@ async def answer_query(
             timeout=settings.LLM_TIMEOUT_SECONDS,
         )
     except asyncio.TimeoutError:
+        provider_attempt = last_provider_attempt()
         return AnswerResult(
             "error", "The AI provider took too long to respond.", intent.kind, (), base.mode,
-            base.corpus_version, base.demo, result.reason, result.latency_ms, "provider_timeout",
+            base.corpus_version, base.demo, result.reason, result.latency_ms, "provider_timeout", (), None,
+            provider_attempt,
         )
     except LLMConnectionError as exc:
+        provider_attempt = exc.provider_attempt or last_provider_attempt()
         return AnswerResult(
             "error", exc.message, intent.kind, (), base.mode, base.corpus_version,
-            base.demo, result.reason, result.latency_ms, "provider_unavailable",
+            base.demo, result.reason, result.latency_ms, exc.code, (), None, provider_attempt,
         )
+    provider_attempt = getattr(generated, "provider_attempt", None) or last_provider_attempt()
     answer_text = generated.strip()
-    if not _valid_answer(answer_text, query, result.items, analysis, intent.kind, confirmed_extraction):
+    validation_reason = _validation_reason(
+        answer_text,
+        query,
+        result.items,
+        analysis,
+        intent.kind,
+        confirmed_extraction,
+        require_source_attribution=public_bundle is not None,
+    )
+    if validation_reason is not None:
+        provider_attempt = mark_provider_output_rejected(
+            AnswerResult(
+                "abstained",
+                "I could not verify the generated response against the retrieved sources.",
+                intent.kind,
+                provider_attempt=provider_attempt,
+            ),
+            validation_reason,
+        ).provider_attempt
         return _local_result(
             "abstained",
             "I could not verify the generated response against the retrieved sources.",
             intent,
+            error_code="output_rejected",
+            validation_reason=validation_reason,
+            provider_attempt=provider_attempt,
             **mode_meta,
         )
+    from services.output_validation import attributed_source_ids
+
+    # Public-reference claims must expose only the sources the answer actually attributes.
+    cited_source_ids = attributed_source_ids(answer_text) if public_bundle is not None else None
+    citations = _citation_rows(result.items, base, cited_source_ids)
     if citations:
         citation_label = ", ".join(f"{item.source_id} ({item.version})" for item in citations)
         answer_text = f"{answer_text}\n\nSources: {citation_label}"
     return AnswerResult(
         "answered", answer_text, intent.kind, citations, base.mode,
-        base.corpus_version, base.demo, result.reason, result.latency_ms, None, result.items,
+        base.corpus_version, base.demo, result.reason, result.latency_ms, None, result.items, None,
+        provider_attempt,
     )

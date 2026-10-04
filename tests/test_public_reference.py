@@ -81,6 +81,20 @@ def test_public_reference_answer_has_server_resolved_metadata(monkeypatch):
     assert all(citation.data_class == "public_reference" for citation in result.citations)
 
 
+def test_public_reference_displays_only_sources_attributed_by_answer(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What is the ALT reference range?"
+
+    async def fake_provider(*args, **kwargs):
+        return "The retrieved source [siriraj-alt] reports one ALT interval for comparison."
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "answered"
+    assert {citation.source_id for citation in result.citations} == {"siriraj-alt"}
+
+
 def test_public_reference_prompt_requires_exact_bracketed_source_ids():
     adapter = PublicReferenceAdapter(ROOT / "addons" / "resultscope_evidence_v1")
     bundle = adapter.search("ALT reference range")
@@ -103,7 +117,7 @@ def test_public_guideline_citation_preserves_license_and_section(monkeypatch):
     query = "What context matters for ferritin?"
 
     async def fake_provider(*args, **kwargs):
-        return "The educational guidance says ferritin needs context such as inflammation; it is not a numeric rule."
+        return "The educational guidance says ferritin needs context such as inflammation; it is not a numeric rule. [who-ferritin-2020]"
 
     monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
     result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
@@ -116,6 +130,36 @@ def test_public_guideline_citation_preserves_license_and_section(monkeypatch):
     assert all(citation.section for citation in result.citations)
     assert {citation.page for citation in result.citations} == {37}
     assert all("iris.who.int" in citation.source_url and "download" in citation.source_url for citation in result.citations)
+
+
+def test_public_reference_rejects_factual_answer_without_attribution(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+
+    async def fake_provider(*args, **kwargs):
+        return "Ferritin should be interpreted with inflammation context."
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query("What context matters for ferritin?", route_intent("What context matters for ferritin?"), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_missing_citation"
+    assert not result.citations
+
+
+def test_public_reference_rejects_thai_factual_suffix_on_abstention_prefix(monkeypatch):
+    monkeypatch.setattr("config.settings.PUBLIC_REFERENCE_ENABLED", True)
+    query = "What context matters for ferritin?"
+
+    async def fake_provider(*args, **kwargs):
+        return "ยังไม่มีข้อมูลที่ยืนยันได้สำหรับคำถามนี้ แต่ผลตรวจอยู่ในช่วงปกติ"
+
+    monkeypatch.setattr(answer_service.llm_client, "chat", fake_provider)
+    result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
+
+    assert result.status == "abstained"
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_missing_citation"
 
 
 def test_public_reference_no_hit_and_corrupt_root_abstain(monkeypatch):
@@ -145,7 +189,8 @@ def test_public_reference_rejects_forged_citation_and_arbitrary_url(monkeypatch)
     result = asyncio.run(answer_service.answer_query(query, route_intent(query), [], None))
 
     assert result.status == "abstained"
-    assert result.error_code is None
+    assert result.error_code == "output_rejected"
+    assert result.validation_reason == "provider_output_forged_citation"
     assert not result.citations
 
 
@@ -154,7 +199,7 @@ def test_public_reference_sync_and_sse_citations_match(monkeypatch):
     monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
 
     async def fake_provider(*args, **kwargs):
-        return "The sources disagree, so the report's own range remains primary."
+        return "The sources disagree, so the report's own range remains primary. [siriraj-alt]"
 
     monkeypatch.setattr(chat_router.llm_client, "chat", fake_provider)
     client = TestClient(app)

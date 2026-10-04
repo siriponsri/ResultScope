@@ -17,6 +17,7 @@ from services.extraction_store import ExtractionStoreError, MemoryExtractionStor
 from services.intent_router import route_intent
 from services.knowledge import load_knowledge_base
 from services.output_validation import OutputValidationError, validate_answer_result, validate_provider_text
+from services.provider_budget import AttemptReceipt
 from services.request_limits import request_rate_limiter
 from services.store import ConversationStoreError, MemoryConversationStore
 from services.vision_client import VisionExtractionPayload
@@ -187,6 +188,75 @@ def test_chat_sync_and_sse_expose_safe_request_audit_metadata(monkeypatch, caplo
     audit_records = [record for record in caplog.records if record.__dict__.get("event") == "chat_request"]
     assert {record.request_id for record in audit_records} >= {"audit-test-1", "audit-test-2"}
     assert all("Marker-A" not in record.getMessage() for record in audit_records)
+
+
+def test_rejected_output_audit_keeps_provider_attempt_correlation_without_body(monkeypatch, caplog):
+    result = AnswerResult(
+        status="answered",
+        text="provider-secret-body-must-not-be-logged",
+        intent="lab",
+        provider_attempt=AttemptReceipt(
+            attempt_id="attempt-123",
+            cycle_id="cycle-123",
+            provider_slot="llm",
+            source_path="chat",
+            outcome="succeeded",
+        ),
+    )
+
+    def reject_result(*args, **kwargs):
+        raise OutputValidationError("provider_output_unsafe")
+
+    monkeypatch.setattr(chat_router, "validate_answer_result", reject_result)
+    with caplog.at_level("INFO", logger="routers.chat"):
+        rejected = chat_router._validated_result(
+            result,
+            "Marker-A",
+            analyze_message("Marker-A"),
+            None,
+            "audit-rejected-1",
+            0.0,
+        )
+
+    assert rejected.status == "abstained"
+    assert rejected.validation_reason == "provider_output_unsafe"
+    record = next(
+        record
+        for record in caplog.records
+        if record.__dict__.get("event") == "chat_request"
+        and record.__dict__.get("request_id") == "audit-rejected-1"
+    )
+    assert record.provider_slot == "llm"
+    assert record.cycle_id == "cycle-123"
+    assert record.reservation_id == "attempt-123"
+    assert record.provider_source_path == "chat"
+    assert record.provider_outcome == "succeeded"
+    assert record.validation_reason == "provider_output_unsafe"
+    assert "provider-secret-body-must-not-be-logged" not in record.getMessage()
+
+
+def test_unknown_validator_failure_is_generic_and_fail_closed(monkeypatch):
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+
+    async def safe_answer(*args, **kwargs):
+        return "A grounded laboratory explanation."
+
+    def broken_validator(*args, **kwargs):
+        raise RuntimeError("private validator implementation detail")
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", safe_answer)
+    monkeypatch.setattr(chat_router, "validate_answer_result", broken_validator)
+    response = TestClient(app).post(
+        "/api/v1/chat",
+        json={"message": "Tell me about synthetic basic panel"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "abstained"
+    assert body["citations"] == []
+    assert "private validator implementation detail" not in response.text
 
 
 def test_reset_exposes_request_audit_metadata(monkeypatch):

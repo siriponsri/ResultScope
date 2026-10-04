@@ -22,7 +22,7 @@ from services.extraction_store import ExtractionRecord, ExtractionStoreError, ex
 from services.intent_router import IntentDecision, route_intent
 from services.lab_scope import SCOPE_SUGGESTIONS, local_scope_reply
 from services.llm_client import LLMConnectionError
-from services.output_validation import OutputValidationError, validate_answer_result
+from services.output_validation import GENERIC_VALIDATION_REASON, OutputValidationError, validate_answer_result
 from services.request_limits import request_rate_limiter
 from services.sessions import new_session_id, session_locks, sign_session_id, verify_session_cookie
 from services.store import ConversationStoreError, conversation_store
@@ -90,6 +90,7 @@ def _audit_event(
 ) -> None:
     corpus_version = result.corpus_version if result else None
     retrieval_latency_ms = result.retrieval_latency_ms if result else None
+    attempt = result.provider_attempt if result else None
     logger.info(
         "Request audit event",
         extra={
@@ -99,6 +100,13 @@ def _audit_event(
             "intent": result.intent if result else "unknown",
             "corpus_version": corpus_version or "unknown",
             "retrieval_latency_ms": retrieval_latency_ms,
+            "validation_reason": result.validation_reason if result else None,
+            "provider_slot": attempt.provider_slot if attempt else None,
+            "cycle_id": attempt.cycle_id if attempt else None,
+            "reservation_id": attempt.attempt_id if attempt else None,
+            "provider_source_path": attempt.source_path if attempt else None,
+            "provider_outcome": attempt.outcome if attempt else None,
+            "provider_reason_code": attempt.reason_code if attempt else None,
             "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),
         },
     )
@@ -188,9 +196,20 @@ def _validated_result(
             analysis,
             confirmed_extraction,
         )
-    except OutputValidationError:
-        _audit_event(request_id, "output_rejected", started_at, result=result)
-        return answer_service.fail_closed_result(result)
+    except OutputValidationError as exc:
+        rejected = answer_service.fail_closed_result(
+            answer_service.mark_provider_output_rejected(result, exc.code),
+            validation_reason=exc.code,
+        )
+        _audit_event(request_id, "output_rejected", started_at, result=rejected)
+        return rejected
+    except Exception:
+        rejected = answer_service.fail_closed_result(
+            answer_service.mark_provider_output_rejected(result, GENERIC_VALIDATION_REASON),
+            validation_reason=GENERIC_VALIDATION_REASON,
+        )
+        _audit_event(request_id, "output_rejected", started_at, result=rejected)
+        return rejected
     return result
 
 
@@ -215,8 +234,8 @@ async def _run_pipeline(
         try:
             # SystemOne is an optional observer; Python rules remain authoritative.
             await systemone_client.shadow_decide(message, intent.kind, intent.allowed)
-        except systemone_client.SystemOneError:
-            logger.info("SystemOne shadow observation unavailable")
+        except systemone_client.SystemOneError as exc:
+            logger.info("SystemOne shadow observation unavailable", extra={"reason_code": exc.code})
     answer = await answer_query(message, intent, history, analysis, confirmed_extraction=confirmed_extraction)
     return intent, analysis, answer
 
@@ -370,7 +389,10 @@ async def get_models():
         models = await llm_client.list_models()
         return {"models": models}
     except LLMConnectionError as exc:
-        return JSONResponse(status_code=exc.status_code, content={"error": True, "message": exc.message})
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": True, "code": exc.code, "message": exc.message},
+        )
 
 
 @router.post("/chat/reset")

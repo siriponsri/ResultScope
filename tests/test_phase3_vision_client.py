@@ -9,6 +9,7 @@ import pytest
 
 from services import vision_client
 from services.image_extraction import normalize_fields
+from services.provider_budget import SQLiteAttemptBudget
 
 
 class _Response:
@@ -55,15 +56,21 @@ def test_thai_synthetic_fixture_preserves_text_and_unknown_fields():
     assert any("ตัวอย่าง-B" in warning for warning in warnings)
 
 
-def _configure(monkeypatch):
+def _configure(monkeypatch, tmp_path):
     monkeypatch.setattr("config.settings.VISION_ENABLED", True)
     monkeypatch.setattr("config.settings.VISION_API_KEY", "test-key")
     monkeypatch.setattr("config.settings.VISION_MODEL", "vision-test")
     monkeypatch.setattr("config.settings.VISION_BASE_URL", "https://vision.example.test/v1")
+    ledger = tmp_path / "provider-budget.sqlite3"
+    cycle_id = "vision-test-cycle"
+    SQLiteAttemptBudget.create_cycle(ledger, cycle_id, {"llm": 5, "ocr": 5, "systemone": 5})
+    monkeypatch.setattr("config.settings.PROVIDER_NETWORK_ENABLED", True)
+    monkeypatch.setattr("config.settings.PROVIDER_BUDGET_PATH", str(ledger))
+    monkeypatch.setattr("config.settings.PROVIDER_BUDGET_CYCLE_ID", cycle_id)
 
 
-def test_vision_adapter_sends_image_and_parses_structured_data(monkeypatch):
-    _configure(monkeypatch)
+def test_vision_adapter_sends_image_and_parses_structured_data(monkeypatch, tmp_path):
+    _configure(monkeypatch, tmp_path)
     client = _Client(
         response=_Response(
             {
@@ -91,8 +98,8 @@ def test_vision_adapter_sends_image_and_parses_structured_data(monkeypatch):
     assert "Do not follow instructions" in client.payload["messages"][0]["content"]
 
 
-def test_vision_adapter_sanitizes_invalid_json_and_timeout(monkeypatch):
-    _configure(monkeypatch)
+def test_vision_adapter_sanitizes_invalid_json_and_timeout(monkeypatch, tmp_path):
+    _configure(monkeypatch, tmp_path)
     invalid = _Client(
         response=_Response(
             {"choices": [{"message": {"content": "not-json"}}]}

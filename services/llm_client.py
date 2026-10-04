@@ -15,13 +15,41 @@ from services.provider_adapters import (
     parse_anthropic_messages_response,
     parse_openai_chat_response,
 )
+from services.provider_budget import (
+    AttemptReservation,
+    AttemptReceipt,
+    ProviderBudgetError,
+    SQLiteAttemptBudget,
+    finish_provider_attempt,
+    last_provider_attempt,
+    reserve_provider_attempt,
+)
 from services.provider_config import RuntimeProvider, runtime_provider
 
 logger = logging.getLogger(__name__)
+
+
+class ProviderText(str):
+    """Keep safe attempt metadata attached when asyncio creates a child task."""
+
+    def __new__(cls, value: str, provider_attempt: AttemptReceipt | None = None):
+        result = str.__new__(cls, value)
+        result.provider_attempt = provider_attempt
+        return result
+
+
 class LLMConnectionError(Exception):
-    def __init__(self, message: str, status_code: int = 502):
+    def __init__(
+        self,
+        message: str,
+        status_code: int = 502,
+        code: str = "provider_unavailable",
+        provider_attempt: AttemptReceipt | None = None,
+    ):
         self.message = message
         self.status_code = status_code
+        self.code = code
+        self.provider_attempt = provider_attempt
         super().__init__(message)
 
 
@@ -86,45 +114,111 @@ def _build_messages(
 def _friendly_error_for_status(status: int) -> LLMConnectionError:
     if status == 401:
         message = "The AI provider rejected the configured credentials."
+        code = "provider_authorization"
     elif status == 429:
         message = "The provider is rate limited. Please try again later."
+        code = "provider_rate_limited"
     elif status >= 500:
         message = "The AI provider is temporarily unavailable."
+        code = "provider_unavailable"
     else:
         message = "The AI provider could not process this request."
-    return LLMConnectionError(message, status_code=502)
+        code = "provider_request_failed"
+    return LLMConnectionError(message, status_code=502, code=code)
 
 
 def _friendly_error_from_response(exc: httpx.HTTPStatusError) -> LLMConnectionError:
     return _friendly_error_for_status(exc.response.status_code)
 
 
+def _budget_error(
+    error: ProviderBudgetError,
+    provider_attempt: AttemptReceipt | None = None,
+) -> LLMConnectionError:
+    status_code = 429 if error.code == "provider_budget_exhausted" else 503
+    return LLMConnectionError(
+        error.message,
+        status_code=status_code,
+        code=error.code,
+        provider_attempt=provider_attempt,
+    )
+
+
+def _reserve(source_path: str) -> AttemptReservation:
+    try:
+        return reserve_provider_attempt("llm", source_path)
+    except ProviderBudgetError as exc:
+        raise _budget_error(exc) from exc
+
+
+def _finish(
+    reservation: AttemptReservation | None,
+    outcome: str,
+    reason_code: str | None = None,
+) -> AttemptReceipt | None:
+    if reservation is None:
+        return None
+    try:
+        finish_provider_attempt(reservation, outcome, reason_code)
+    except ProviderBudgetError:
+        # A lost outcome record never restores the consumed reservation.
+        return None
+    return last_provider_attempt()
+
+
 async def list_models() -> list[dict[str, Any]]:
     provider = _ensure_configured()
     endpoint = f"{provider.base_url.rstrip('/')}/models"
-    async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
-        try:
+    reservation = _reserve("models")
+    try:
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=_timeout(provider), follow_redirects=False) as client:
             response = await client.get(
                 endpoint,
                 headers=_auth_headers(provider),
             )
             response.raise_for_status()
-        except httpx.ConnectError as exc:
-            raise LLMConnectionError("The AI provider could not be reached.") from exc
-        except httpx.TimeoutException as exc:
-            raise LLMConnectionError("The AI provider took too long to respond.") from exc
-        except httpx.HTTPStatusError as exc:
-            raise _friendly_error_from_response(exc) from exc
-        except httpx.HTTPError as exc:
-            raise LLMConnectionError("The AI provider could not be reached.") from exc
-        try:
             data = response.json()
-        except ValueError as exc:
-            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
-        models = data.get("data") if isinstance(data, dict) else None
-        if not isinstance(models, list):
-            raise LLMConnectionError("The AI provider returned an invalid response.")
-        return models
+            raw_models = data.get("data") if isinstance(data, dict) else None
+            if not isinstance(raw_models, list):
+                raise LLMConnectionError("The AI provider returned an invalid response.", code="provider_invalid_response")
+            models = [
+                {"id": row["id"]}
+                for row in raw_models
+                if isinstance(row, dict)
+                and isinstance(row.get("id"), str)
+                and 1 <= len(row["id"]) <= 200
+            ]
+            if not models:
+                raise LLMConnectionError("The AI provider returned an invalid response.", code="provider_invalid_response")
+    except ProviderBudgetError as exc:
+        attempt = _finish(reservation, "blocked", exc.code)
+        raise _budget_error(exc, attempt) from exc
+    except httpx.ConnectError as exc:
+        error = LLMConnectionError("The AI provider could not be reached.")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.TimeoutException as exc:
+        error = LLMConnectionError("The AI provider took too long to respond.", code="provider_timeout")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.HTTPStatusError as exc:
+        error = _friendly_error_from_response(exc)
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.HTTPError as exc:
+        error = LLMConnectionError("The AI provider could not be reached.")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except ValueError as exc:
+        error = LLMConnectionError("The AI provider returned an invalid response.", code="provider_invalid_response")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except LLMConnectionError as exc:
+        exc.provider_attempt = _finish(reservation, "failed", exc.code)
+        raise
+    _finish(reservation, "succeeded")
+    return models
 
 
 async def chat(
@@ -146,37 +240,55 @@ async def chat(
         )
         payload["messages"] = _build_messages(history, message, rule_grounding)
         endpoint = f"{provider.base_url.rstrip('/')}/chat/completions"
-    async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
-        try:
+    reservation = _reserve("chat")
+    try:
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=_timeout(provider), follow_redirects=False) as client:
             response = await client.post(
                 endpoint,
                 headers=_auth_headers(provider),
                 json=payload,
             )
             response.raise_for_status()
-        except httpx.ConnectError as exc:
-            raise LLMConnectionError("The AI provider could not be reached.") from exc
-        except httpx.TimeoutException as exc:
-            raise LLMConnectionError("The AI provider took too long to respond.") from exc
-        except httpx.HTTPStatusError as exc:
-            raise _friendly_error_from_response(exc) from exc
-        except httpx.HTTPError as exc:
-            raise LLMConnectionError("The AI provider could not be reached.") from exc
-        try:
             data = response.json()
-        except ValueError as exc:
-            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
-        try:
             content = (
                 parse_anthropic_messages_response(data)
                 if provider.protocol == "anthropic_messages"
                 else parse_openai_chat_response(data)
             )
-        except ProviderAdapterError as exc:
-            raise LLMConnectionError("The AI provider returned an invalid response.") from exc
-        if len(content) > settings.MAX_PROVIDER_OUTPUT_CHARS:
-            raise LLMConnectionError("The AI provider returned an invalid response.")
-        return content
+            if len(content) > settings.MAX_PROVIDER_OUTPUT_CHARS:
+                raise LLMConnectionError("The AI provider returned an invalid response.", code="provider_invalid_response")
+    except ProviderBudgetError as exc:
+        attempt = _finish(reservation, "blocked", exc.code)
+        raise _budget_error(exc, attempt) from exc
+    except httpx.ConnectError as exc:
+        error = LLMConnectionError("The AI provider could not be reached.")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.TimeoutException as exc:
+        error = LLMConnectionError("The AI provider took too long to respond.", code="provider_timeout")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.HTTPStatusError as exc:
+        error = _friendly_error_from_response(exc)
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except httpx.HTTPError as exc:
+        error = LLMConnectionError("The AI provider could not be reached.")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except ValueError as exc:
+        error = LLMConnectionError("The AI provider returned an invalid response.", code="provider_invalid_response")
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except ProviderAdapterError as exc:
+        error = LLMConnectionError("The AI provider returned an invalid response.", code=exc.code)
+        error.provider_attempt = _finish(reservation, "failed", error.code)
+        raise error from exc
+    except LLMConnectionError as exc:
+        exc.provider_attempt = _finish(reservation, "failed", exc.code)
+        raise
+    return ProviderText(content, _finish(reservation, "succeeded"))
 
 
 async def chat_stream(
@@ -190,7 +302,7 @@ async def chat_stream(
             yield {"type": "delta", "content": await chat(history, message, rule_grounding)}
             yield {"type": "done"}
         except LLMConnectionError as exc:
-            yield {"type": "error", "message": exc.message}
+            yield {"type": "error", "message": exc.message, "code": exc.code}
         return
     try:
         _ensure_configured(provider)
@@ -205,7 +317,15 @@ async def chat_stream(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=_timeout(provider)) as client:
+        reservation = _reserve("chat_stream")
+    except LLMConnectionError as exc:
+        yield {"type": "error", "message": exc.message, "code": exc.code}
+        return
+
+    try:
+        completed = False
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=_timeout(provider), follow_redirects=False) as client:
             async with client.stream(
                 "POST",
                 f"{provider.base_url.rstrip('/')}/chat/completions",
@@ -213,9 +333,12 @@ async def chat_stream(
                 json=payload,
             ) as response_llm:
                 if response_llm.status_code >= 400:
+                    error = _friendly_error_for_status(response_llm.status_code)
+                    _finish(reservation, "failed", error.code)
                     yield {
                         "type": "error",
-                        "message": _friendly_error_for_status(response_llm.status_code).message,
+                        "message": error.message,
+                        "code": error.code,
                     }
                     return
 
@@ -226,6 +349,8 @@ async def chat_stream(
                     if not raw:
                         continue
                     if raw == "[DONE]":
+                        completed = True
+                        _finish(reservation, "succeeded")
                         yield {"type": "done"}
                         return
                     try:
@@ -238,13 +363,21 @@ async def chat_stream(
                     content = choices[0].get("delta", {}).get("content")
                     if content:
                         yield {"type": "delta", "content": content}
+        _finish(reservation, "succeeded" if completed else "failed", None if completed else "provider_stream_incomplete")
+    except ProviderBudgetError as exc:
+        _finish(reservation, "blocked", exc.code)
+        yield {"type": "error", "message": exc.message, "code": exc.code}
     except httpx.ConnectError:
-        yield {"type": "error", "message": "The AI provider could not be reached."}
+        _finish(reservation, "failed", "provider_unavailable")
+        yield {"type": "error", "message": "The AI provider could not be reached.", "code": "provider_unavailable"}
     except httpx.TimeoutException:
-        yield {"type": "error", "message": "The AI provider took too long to respond."}
+        _finish(reservation, "failed", "provider_timeout")
+        yield {"type": "error", "message": "The AI provider took too long to respond.", "code": "provider_timeout"}
     except httpx.HTTPError:
         logger.warning("AI provider stream connection failed")
-        yield {"type": "error", "message": "The AI provider could not be reached."}
+        _finish(reservation, "failed", "provider_unavailable")
+        yield {"type": "error", "message": "The AI provider could not be reached.", "code": "provider_unavailable"}
     except Exception:
-        logger.exception("Unexpected stream failure")
-        yield {"type": "error", "message": "An unexpected error occurred while processing the request."}
+        logger.warning("AI provider stream failed", extra={"reason_code": "provider_stream_error"})
+        _finish(reservation, "failed", "provider_stream_error")
+        yield {"type": "error", "message": "An unexpected error occurred while processing the request.", "code": "provider_stream_error"}

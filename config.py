@@ -92,6 +92,15 @@ class Settings(BaseSettings):
     ADMIN_SECRET_STORAGE_KEY: str = ""
     SYSTEMONE_SHADOW_ENABLED: bool = True
 
+    # Provider calls are deny-by-default until an owner explicitly enables a
+    # persisted attempt cycle. The ledger is local-only in this remediation.
+    PROVIDER_NETWORK_ENABLED: bool = False
+    PROVIDER_BUDGET_PATH: str = "data/provider_budget.sqlite3"
+    PROVIDER_BUDGET_CYCLE_ID: str = ""
+    PROVIDER_BUDGET_LLM_LIMIT: int = 5
+    PROVIDER_BUDGET_OCR_LIMIT: int = 5
+    PROVIDER_BUDGET_SYSTEMONE_LIMIT: int = 5
+
     # Vision/OCR is opt-in. A text-capable model is never assumed to support images.
     VISION_ENABLED: bool = False
     VISION_BASE_URL: str = "https://api.opentyphoon.ai/v1"

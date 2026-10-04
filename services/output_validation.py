@@ -10,7 +10,10 @@ NUMBER_PATTERN = re.compile(r"(?<![\w])\d+(?:[.,]\d+)?(?![\w])")
 SOURCE_MARKER_PATTERN = re.compile(r"\[((?:SRC|DEMO)-[A-Z0-9_-]+)\]", re.IGNORECASE)
 SOURCE_ID_PATTERN = re.compile(r"\b(?:SRC|DEMO)-[A-Z0-9_-]+\b", re.IGNORECASE)
 BRACKETED_SOURCE_PATTERN = re.compile(r"\[((?:[A-Za-z][A-Za-z0-9]*)-[A-Za-z0-9_-]{1,80})\]")
+BRACKETED_SOURCE_GROUP_PATTERN = re.compile(r"\[([^\]\r\n]{1,240})\]")
+SOURCE_TOKEN_PATTERN = re.compile(r"\b[A-Za-z][A-Za-z0-9]*-[A-Za-z0-9_-]{1,80}\b")
 URL_PATTERN = re.compile(r"https?://[^\s<>\]\)\"']+", re.IGNORECASE)
+GENERIC_VALIDATION_REASON = "provider_output_rejected"
 SOURCE_ATTRIBUTION_PATTERN = re.compile(
     r"\b(?:source|sources|citation|citations|reference|references|from|แหล่ง(?:ที่มา|ข้อมูล)?|"
     r"อ้างอิง|ข้อมูลจาก|จาก)\s*(?:is|are|คือ|ได้แก่|:)?\s*((?:SRC|DEMO)-[A-Z0-9_-]+)\b",
@@ -120,6 +123,10 @@ UNAUTHORIZED_TRANSACTION_PATTERN = re.compile(
 
 class OutputValidationError(ValueError):
     """Raised when provider output cannot be proven safe for this request."""
+
+    def __init__(self, code: str | None = None) -> None:
+        self.code = code if isinstance(code, str) and re.fullmatch(r"[a-z][a-z0-9_.-]{0,79}", code) else GENERIC_VALIDATION_REASON
+        super().__init__(self.code)
 
 
 BUSINESS_CONCEPT_HINTS: dict[str, tuple[str, ...]] = {
@@ -540,6 +547,45 @@ def _validate_source_urls(candidate: str, items: tuple[Any, ...]) -> None:
             raise OutputValidationError("provider_output_forged_source_url")
 
 
+def _bracketed_source_ids(candidate: str) -> set[str]:
+    return {
+        source.casefold()
+        for group in BRACKETED_SOURCE_GROUP_PATTERN.findall(candidate)
+        for source in SOURCE_TOKEN_PATTERN.findall(group)
+    }
+
+
+def attributed_source_ids(candidate: str) -> set[str]:
+    """Return source IDs explicitly attributed in the provider's bracket syntax."""
+    return _bracketed_source_ids(candidate)
+
+
+def _is_nonfactual_response(candidate: str) -> bool:
+    """Allow sanitized abstentions/questions without manufacturing a citation."""
+    normalized = " ".join(candidate.casefold().split()).strip(" .!?。！？")
+    if len(normalized) > 180 or NUMBER_PATTERN.search(normalized):
+        return False
+    exact_templates = {
+        "i could not verify the generated response against the retrieved sources",
+        "i could not verify this information",
+        "i could not verify that information",
+        "i need more information",
+        "i need additional context",
+        "i need more details",
+        "i need additional information to answer this question",
+        "please provide the test name",
+        "please provide the value and unit",
+        "please provide the reference range",
+        "please provide the relevant context",
+        "no approved laboratory education source is available for this question yet",
+        "ไม่สามารถยืนยันข้อมูลนี้ได้",
+        "ไม่สามารถยืนยันคำตอบนี้จากแหล่งข้อมูลที่ค้นพบได้",
+        "ยังไม่มีข้อมูลที่ยืนยันได้สำหรับคำถามนี้",
+        "กรุณาระบุชื่อการตรวจ ค่า หน่วย หรือช่วงอ้างอิง",
+    }
+    return normalized in exact_templates
+
+
 def _price_amount(data: dict[str, Any]) -> float | int | None:
     price = data.get("price")
     amount = price.get("amount") if isinstance(price, dict) else price
@@ -639,6 +685,7 @@ def validate_provider_text(
     analysis: Any,
     intent: str,
     confirmed_extraction: dict[str, Any] | None = None,
+    require_source_attribution: bool = False,
 ) -> str:
     candidate = text.strip() if isinstance(text, str) else ""
     if not candidate or len(candidate) > settings.MAX_PROVIDER_OUTPUT_CHARS:
@@ -662,7 +709,12 @@ def validate_provider_text(
     if UNAUTHORIZED_TRANSACTION_PATTERN.search(candidate):
         raise OutputValidationError("provider_output_unauthorized_transaction")
     allowed_numbers = _allowed_numbers(query, items, analysis, intent, confirmed_extraction)
-    if not set(NUMBER_PATTERN.findall(candidate)).issubset(allowed_numbers):
+    # Numeric suffixes in bracketed source IDs are identifiers, not factual claims.
+    numeric_claim_text = BRACKETED_SOURCE_GROUP_PATTERN.sub(
+        lambda match: SOURCE_TOKEN_PATTERN.sub(" ", match.group(0)),
+        candidate,
+    )
+    if not set(NUMBER_PATTERN.findall(numeric_claim_text)).issubset(allowed_numbers):
         raise OutputValidationError("provider_output_ungrounded_number")
     if intent == "business":
         _validate_business_numbers(candidate, query, items)
@@ -702,16 +754,20 @@ def validate_provider_text(
         _validate_lab_claims(candidate, analysis)
     allowed_sources = {source.casefold() for item in items for source in item.record.source_ids}
     known_lab_units = _known_lab_units(analysis, confirmed_extraction)
+    bracketed_sources = _bracketed_source_ids(candidate)
     mentioned = {
         source.casefold()
         for pattern in (SOURCE_MARKER_PATTERN, SOURCE_ID_PATTERN, BRACKETED_SOURCE_PATTERN, SOURCE_ATTRIBUTION_PATTERN)
         for source in pattern.findall(candidate)
         if source.casefold() not in known_lab_units
     }
+    mentioned.update(bracketed_sources)
     if not mentioned.issubset(allowed_sources):
         raise OutputValidationError("provider_output_forged_citation")
     _validate_source_attributions(candidate, allowed_sources)
     _validate_source_urls(candidate, items)
+    if require_source_attribution and not (bracketed_sources & allowed_sources) and not _is_nonfactual_response(candidate):
+        raise OutputValidationError("provider_output_missing_citation")
     return candidate
 
 
@@ -721,13 +777,24 @@ def validate_answer_result(
     items: tuple[Any, ...],
     analysis: Any,
     confirmed_extraction: dict[str, Any] | None = None,
+    require_source_attribution: bool | None = None,
 ) -> Any:
     """Re-check an answer at the route boundary before persistence/output."""
     if not isinstance(result.text, str) or len(result.text.strip()) > settings.MAX_PROVIDER_OUTPUT_CHARS + 500:
         raise OutputValidationError("answer_result_invalid")
     if result.status == "answered":
         body = result.text.split("\n\nSources:", 1)[0]
-        validate_provider_text(body, query, items, analysis, result.intent, confirmed_extraction)
+        validate_provider_text(
+            body,
+            query,
+            items,
+            analysis,
+            result.intent,
+            confirmed_extraction,
+            result.corpus_mode == "public_reference"
+            if require_source_attribution is None
+            else require_source_attribution,
+        )
         allowed_citations = {
             (source.casefold(), item.record.record_id, item.record.chunk_id)
             for item in items

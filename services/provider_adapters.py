@@ -6,14 +6,30 @@ from typing import Any
 
 import httpx
 
+from services.provider_budget import (
+    AttemptReservation,
+    AttemptReceipt,
+    ProviderBudgetError,
+    finish_provider_attempt,
+    last_provider_attempt,
+    reserve_provider_attempt,
+    SQLiteAttemptBudget,
+)
 from services.provider_config import ProviderConfigError, RuntimeProvider
 
 
 class ProviderAdapterError(Exception):
-    def __init__(self, code: str, message: str, status_code: int = 502) -> None:
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        status_code: int = 502,
+        provider_attempt: AttemptReceipt | None = None,
+    ) -> None:
         self.code = code
         self.message = message
         self.status_code = status_code
+        self.provider_attempt = provider_attempt
         super().__init__(message)
 
 
@@ -152,12 +168,48 @@ def _request_for(provider: RuntimeProvider, payload: dict[str, Any]) -> tuple[st
     }, payload
 
 
-async def test_provider(provider: RuntimeProvider, *, live: bool = False) -> dict[str, Any]:
+def _slot_for(provider: RuntimeProvider) -> str:
+    if provider.protocol == "systemone":
+        return "systemone"
+    if provider.protocol == "typhoon_ocr_document":
+        return "ocr"
+    return "llm"
+
+
+def _budget_error(
+    error: ProviderBudgetError,
+    provider_attempt: AttemptReceipt | None = None,
+) -> ProviderAdapterError:
+    status_code = 429 if error.code == "provider_budget_exhausted" else 503
+    return ProviderAdapterError(error.code, error.message, status_code, provider_attempt)
+
+
+def _finish_attempt(
+    reservation: AttemptReservation | None,
+    outcome: str,
+    reason_code: str | None = None,
+) -> AttemptReceipt | None:
+    if reservation is None:
+        return None
+    try:
+        finish_provider_attempt(reservation, outcome, reason_code)
+    except ProviderBudgetError:
+        # The reservation remains consumed if the process cannot write its outcome.
+        return None
+    return last_provider_attempt()
+
+
+async def test_provider(
+    provider: RuntimeProvider,
+    *,
+    live: bool = False,
+    source_path: str = "admin_test",
+) -> dict[str, Any]:
     """Run a bounded synthetic probe. `live=False` never opens a network connection."""
-    if not provider.enabled or not provider.api_key:
-        raise ProviderAdapterError("provider_not_configured", "This provider is not configured.", 503)
     if not live:
         return {"status": "mocked", "provider_id": provider.provider_id, "network_called": False, "quota_used": False}
+    if not provider.enabled or not provider.api_key:
+        raise ProviderAdapterError("provider_not_configured", "This provider is not configured.", 503)
     if provider.protocol == "systemone":
         payload = build_systemone_payload(
             {"resultscope_probe": "synthetic laboratory routing probe"},
@@ -169,24 +221,39 @@ async def test_provider(provider: RuntimeProvider, *, live: bool = False) -> dic
         payload = build_openai_chat_payload(provider, message="Reply with exactly: ResultScope provider probe")
     url, headers, body = _request_for(provider, payload)
     try:
-        async with httpx.AsyncClient(timeout=provider.timeout_seconds) as client:
-            response = await client.post(url, headers=headers, json=body)
-    except httpx.TimeoutException as exc:
-        raise ProviderAdapterError("provider_timeout", "The provider probe timed out.", 504) from exc
-    except httpx.HTTPError as exc:
-        raise ProviderAdapterError("provider_unavailable", "The provider probe could not connect.", 502) from exc
-    if response.status_code >= 400:
-        raise _error_for_status(response.status_code)
+        reservation = reserve_provider_attempt(_slot_for(provider), source_path)
+    except ProviderBudgetError as exc:
+        raise _budget_error(exc) from exc
     try:
-        data = response.json()
-    except ValueError as exc:
-        raise ProviderAdapterError("provider_invalid_response", "The provider returned invalid JSON.") from exc
-    if provider.protocol == "systemone":
-        parse_systemone_response(data)
-    elif provider.protocol == "anthropic_messages":
-        parse_anthropic_messages_response(data)
-    elif provider.protocol == "gemini_generate_content":
-        parse_gemini_response(data)
-    else:
-        parse_openai_chat_response(data)
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=provider.timeout_seconds, follow_redirects=False) as client:
+            response = await client.post(url, headers=headers, json=body)
+    except ProviderBudgetError as exc:
+        attempt = _finish_attempt(reservation, "blocked", exc.code)
+        raise _budget_error(exc, attempt) from exc
+    except httpx.TimeoutException as exc:
+        attempt = _finish_attempt(reservation, "failed", "provider_timeout")
+        raise ProviderAdapterError("provider_timeout", "The provider probe timed out.", 504, attempt) from exc
+    except httpx.HTTPError as exc:
+        attempt = _finish_attempt(reservation, "failed", "provider_unavailable")
+        raise ProviderAdapterError("provider_unavailable", "The provider probe could not connect.", 502, attempt) from exc
+    try:
+        if response.status_code >= 400:
+            raise _error_for_status(response.status_code)
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise ProviderAdapterError("provider_invalid_response", "The provider returned invalid JSON.") from exc
+        if provider.protocol == "systemone":
+            parse_systemone_response(data)
+        elif provider.protocol == "anthropic_messages":
+            parse_anthropic_messages_response(data)
+        elif provider.protocol == "gemini_generate_content":
+            parse_gemini_response(data)
+        else:
+            parse_openai_chat_response(data)
+    except ProviderAdapterError as exc:
+        exc.provider_attempt = _finish_attempt(reservation, "failed", exc.code)
+        raise
+    _finish_attempt(reservation, "succeeded")
     return {"status": "live", "provider_id": provider.provider_id, "network_called": True, "quota_used": True}

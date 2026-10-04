@@ -13,6 +13,13 @@ from services.provider_adapters import (
     build_typhoon_ocr_payload,
     parse_openai_chat_response,
 )
+from services.provider_budget import (
+    AttemptReservation,
+    ProviderBudgetError,
+    SQLiteAttemptBudget,
+    finish_provider_attempt,
+    reserve_provider_attempt,
+)
 from services.provider_config import RuntimeProvider, runtime_provider
 
 
@@ -120,6 +127,16 @@ def _provider_error(status_code: int) -> VisionError:
     return VisionError("vision_provider_error", "The Vision provider is temporarily unavailable.", 502)
 
 
+def _finish(reservation: AttemptReservation | None, outcome: str, reason_code: str | None = None) -> None:
+    if reservation is None:
+        return
+    try:
+        finish_provider_attempt(reservation, outcome, reason_code)
+    except ProviderBudgetError:
+        # The consumed reservation is never restored when outcome persistence fails.
+        pass
+
+
 async def extract_image(image_bytes: bytes, media_type: str) -> VisionExtractionPayload:
     provider = _configured_provider()
     if provider.protocol == "typhoon_ocr_document":
@@ -153,7 +170,12 @@ async def extract_image(image_bytes: bytes, media_type: str) -> VisionExtraction
         }
     endpoint = f"{provider.base_url.rstrip('/')}/chat/completions"
     try:
-        async with httpx.AsyncClient(timeout=provider.timeout_seconds) as client:
+        reservation = reserve_provider_attempt("ocr", "ocr")
+    except ProviderBudgetError as exc:
+        raise VisionError(exc.code, exc.message, 429 if exc.code == "provider_budget_exhausted" else 503) from exc
+    try:
+        SQLiteAttemptBudget.ensure_network_enabled()
+        async with httpx.AsyncClient(timeout=provider.timeout_seconds, follow_redirects=False) as client:
             response = await client.post(
                 endpoint,
                 headers={"Authorization": f"Bearer {provider.api_key}", "Content-Type": "application/json"},
@@ -165,16 +187,29 @@ async def extract_image(image_bytes: bytes, media_type: str) -> VisionExtraction
                 data = response.json()
             except ValueError as exc:
                 raise VisionError("vision_invalid_response", "Vision provider returned invalid extraction data.") from exc
-    except VisionError:
+        content = parse_openai_chat_response(data)
+        result = (
+            _parse_typhoon_markdown(content)
+            if provider.protocol == "typhoon_ocr_document"
+            else _parse_provider_response(data)
+        )
+    except ProviderBudgetError as exc:
+        _finish(reservation, "blocked", exc.code)
+        raise VisionError(exc.code, exc.message, 503) from exc
+    except VisionError as exc:
+        _finish(reservation, "failed", exc.code)
         raise
     except httpx.TimeoutException as exc:
-        raise VisionError("vision_timeout", "The Vision provider took too long to respond.", 504) from exc
+        error = VisionError("vision_timeout", "The Vision provider took too long to respond.", 504)
+        _finish(reservation, "failed", error.code)
+        raise error from exc
     except httpx.HTTPError as exc:
-        raise VisionError("vision_provider_error", "The Vision provider is temporarily unavailable.", 502) from exc
-    try:
-        content = parse_openai_chat_response(data)
-        if provider.protocol == "typhoon_ocr_document":
-            return _parse_typhoon_markdown(content)
-        return _parse_provider_response(data)
+        error = VisionError("vision_provider_error", "The Vision provider is temporarily unavailable.", 502)
+        _finish(reservation, "failed", error.code)
+        raise error from exc
     except ProviderAdapterError as exc:
-        raise VisionError("vision_invalid_response", exc.message) from exc
+        error = VisionError("vision_invalid_response", "Vision provider returned invalid extraction data.")
+        _finish(reservation, "failed", error.code)
+        raise error from exc
+    _finish(reservation, "succeeded")
+    return result
