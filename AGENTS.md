@@ -19,7 +19,7 @@ spectral instrument direction. Historical instructions are evidence, not new wor
 - Preserve keys, sessions, stored data and the existing budget ledger. Never reset counters to retry.
 - Keep keys server-side. Never log bodies, patient data, keys or arbitrary exception details.
 - SystemOne stays shadow-only. Paid fallback and Clef remain disabled.
-- No automatic push, deployment, migration, remote branch deletion or unrelated worktree changes.
+- Delivery closeout is mandatory after every authorized work cycle: MAIN must inspect and stage only intended changes, merge the completed branch into local `main` (a no-op or fast-forward is valid when it is already an ancestor), delete the merged local branch and its clean auxiliary worktree when applicable, commit the in-scope result, and push `main` to `origin` before reporting completion. Stop and report conflicts, dirty or unrelated changes, protected-state changes, or failed push; do not force through them. This does not authorize deployment, migration, remote branch deletion, or unrelated worktree changes.
 - MAIN integrates and commits on local main. Use real FO review when available; report NOT_RUN otherwise.
 - PROMPT.md is local owner communication and must remain excluded from Git.
 
