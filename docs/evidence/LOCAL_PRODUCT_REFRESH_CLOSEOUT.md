@@ -29,7 +29,9 @@ The visual treatment uses the requested theme colors and preserves the approved 
 
 - Cleanup preflight: 144 eligible, 0 absent.
 - Cleanup apply: 144 removed successfully.
-- Integrated verifier: PASS.
+- Supplied-package verification before cleanup: PASS, 129 payload files.
+- Integrated verifier on the unchanged supplied refresh candidate (`ee14ef8368958c9d5decbc066d9abe6ee7d6642c`): PASS.
+- Strict integrated verifier re-run at the final HEAD: `BLOCKED` because the three owner-requested post-package UI files (`static/css/style.css`, `static/js/chat.js`, `static/js/experience.js`) intentionally differ from supplied-package hashes. No manifest hashes were changed to hide this deviation.
 - Verified sibling backup: `C:\Users\User\Desktop\myProject\ResultScope-pre-refresh-backup-i6gxfos2\removed-files.zip`
 - The backup was not added to Git.
 
@@ -39,8 +41,13 @@ Commands and actual outcomes:
 
 - `tests/test_phase5_ui.py -q`: PASS, 3 passed.
 - `scripts/check.ps1`: PASS, 236 passed, 1 skipped, 1 existing `StarletteDeprecationWarning` about `httpx`.
+- `validation/validate_corpus.py --mode structural`: PASS; release readiness `BLOCKED` by the expected missing approved corpus.
+- `addons/resultscope_evidence_v1/verify.py`: PASS, 50 tests.
+- `scripts/verify_product_refresh.py --integrated` at final HEAD: `BLOCKED` only for the three intentional post-package UI deviations listed above.
 - `node --check static/js/chat.js`: PASS.
 - `node --check static/js/experience.js`: PASS.
+- `node --check static/js/admin.js`: PASS.
+- `node --check scripts/capture_product_docs.cjs`: PASS.
 - `git diff --check`: PASS.
 - Fresh loopback browser run on temporary port `8787`: PASS for settled desktop render and 390px mobile render, hero example with zero API requests, mobile report modal and Escape close, no horizontal overflow, no page errors, synthetic result reveal, reduced-motion static result, and error-state loading cleanup.
 - Provider calls: `0`. No live LLM, OCR, or SystemOne cycle was started. No key, provider setting, ledger, admin state, or budget counter was changed.
