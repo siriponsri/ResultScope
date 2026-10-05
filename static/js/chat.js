@@ -14,6 +14,18 @@ const charCount = document.getElementById("char-count");
 const imageInput = document.getElementById("image-input");
 const imageStatus = document.getElementById("image-status");
 const imageReview = document.getElementById("image-review");
+const reportContextEmpty = document.getElementById("report-context-empty");
+const reportContextFilled = document.getElementById("report-context-filled");
+const reportContextState = document.getElementById("report-context-state");
+const contextFileName = document.getElementById("context-file-name");
+const contextFileMeta = document.getElementById("context-file-meta");
+const contextFileStatus = document.getElementById("context-file-status");
+const reportContextFields = document.getElementById("report-context-fields");
+const clearFieldFocus = document.getElementById("clear-field-focus");
+const fieldReadingTitle = document.getElementById("field-reading-title");
+const fieldReadingState = document.getElementById("field-reading-state");
+const fieldReadingContent = document.getElementById("field-reading-content");
+const followupContext = document.getElementById("followup-context");
 
 const followupForm = document.getElementById("followup-form");
 const followupInput = document.getElementById("followup-input");
@@ -31,6 +43,8 @@ let lastMessage = "";
 let lastOrigin = "starter";
 let imageRequestController = null;
 let imageRequestToken = 0;
+let confirmedExtraction = null;
+let focusedFieldId = null;
 
 function renderMarkdown(rawText) {
   if (window.marked && window.DOMPurify) {
@@ -432,6 +446,108 @@ function renderCitations(surface, metadata) {
   disclosure.classList.remove("hidden");
 }
 
+function fieldStatusCopy(field) {
+  if (field?.range_state === "invalid") return "Invalid supplied range";
+  return {
+    low: "Below supplied range",
+    high: "Above supplied range",
+    within: "Within supplied range",
+    unknown: "Range unknown",
+  }[field?.flag] || "Range unknown";
+}
+
+function fieldValueCopy(field) {
+  const value = field?.numeric_value ?? field?.raw_value ?? "Value unavailable";
+  return `${value}${field?.unit ? ` ${field.unit}` : ""}`;
+}
+
+function suppliedRangeCopy(field) {
+  if (field?.reference_range_raw) return field.reference_range_raw;
+  if (field?.reference_low != null && field?.reference_high != null) {
+    return `${field.reference_low}-${field.reference_high}${field.unit ? ` ${field.unit}` : ""}`;
+  }
+  return "Not supplied";
+}
+
+function renderFieldReading(field) {
+  if (!field) {
+    fieldReadingTitle.textContent = "Select a value to read it closely";
+    fieldReadingState.textContent = "Whole report";
+    fieldReadingContent.replaceChildren(createElement("p", "field-reading-empty", "When you select a confirmed report value, its supplied range and comparison will stay here while you read the explanation."));
+    followupContext.textContent = "Reading the whole report. Select a value above to focus your next question.";
+    clearFieldFocus.hidden = true;
+    return;
+  }
+  fieldReadingTitle.textContent = `${field.marker || "Selected value"}: ${fieldValueCopy(field)}`;
+  fieldReadingState.textContent = fieldStatusCopy(field);
+  const details = createElement("div", "field-reading-details");
+  details.append(
+    createElement("div", "field-reading-row", "Value"),
+    createElement("strong", "field-reading-value", fieldValueCopy(field)),
+    createElement("div", "field-reading-row", "Supplied reference range"),
+    createElement("strong", "field-reading-range", suppliedRangeCopy(field)),
+    createElement("p", "field-reading-status", fieldStatusCopy(field)),
+  );
+  fieldReadingContent.replaceChildren(details);
+  followupContext.textContent = `Focused on ${field.marker || "this value"}. Your next question will include only this confirmed field.`;
+  clearFieldFocus.hidden = false;
+}
+
+function selectFocusedField(field) {
+  if (!confirmedExtraction || confirmedExtraction.status !== "confirmed") return;
+  focusedFieldId = field.field_id;
+  reportContextFields.querySelectorAll("[data-field-id]").forEach((node) => {
+    const selected = node.dataset.fieldId === focusedFieldId;
+    node.classList.toggle("is-selected", selected);
+    node.setAttribute("aria-pressed", String(selected));
+  });
+  renderFieldReading(field);
+}
+
+function renderReportContext(extraction = null) {
+  confirmedExtraction = extraction?.status === "confirmed" ? extraction : null;
+  const file = currentImageFile;
+  if (!extraction && !file) {
+    reportContextEmpty.hidden = false;
+    reportContextFilled.hidden = true;
+    reportContextState.textContent = "Not selected";
+    focusedFieldId = null;
+    renderFieldReading(null);
+    return;
+  }
+  reportContextEmpty.hidden = true;
+  reportContextFilled.hidden = false;
+  reportContextState.textContent = extraction?.status === "confirmed" ? "Confirmed" : extraction?.status === "review_required" ? "Needs review" : "Selected";
+  contextFileName.textContent = file?.name || "Report values";
+  contextFileMeta.textContent = file ? `${(file.size / 1024).toFixed(1)} KB` : "Values entered in this analysis";
+  contextFileStatus.textContent = extraction?.status === "confirmed"
+    ? "Confirmed values are available as reading context."
+    : "The report is selected, but values stay unavailable until review and confirmation.";
+  reportContextFields.replaceChildren();
+  (extraction?.fields || []).forEach((field) => {
+    const node = extraction.status === "confirmed" ? document.createElement("button") : document.createElement("div");
+    node.type = extraction.status === "confirmed" ? "button" : undefined;
+    node.className = "report-context-field";
+    node.dataset.fieldId = field.field_id;
+    if (extraction.status === "confirmed") {
+      node.setAttribute("aria-pressed", String(field.field_id === focusedFieldId));
+      node.addEventListener("click", () => selectFocusedField(field));
+    }
+    node.append(
+      createElement("span", "report-context-marker", field.marker || "Unknown field"),
+      createElement("strong", "report-context-value", fieldValueCopy(field)),
+      createElement("small", "report-context-range", `${fieldStatusCopy(field)} · ${suppliedRangeCopy(field)}`),
+    );
+    reportContextFields.appendChild(node);
+  });
+  if (focusedFieldId) {
+    const selected = extraction.fields?.find((field) => field.field_id === focusedFieldId);
+    if (selected) renderFieldReading(selected);
+    else { focusedFieldId = null; renderFieldReading(null); }
+  } else {
+    renderFieldReading(null);
+  }
+}
 function setImageStatus(message, state = "") {
   imageStatus.textContent = message;
   imageStatus.dataset.state = state;
@@ -450,15 +566,19 @@ function resetImageState() {
   clearImagePreview();
   pendingExtraction = null;
   confirmedExtractionId = null;
+  confirmedExtraction = null;
+  focusedFieldId = null;
   currentImageFile = null;
   imageInput.value = "";
   imageReview.replaceChildren();
   imageReview.classList.add("hidden");
   setImageStatus("No file selected");
+  renderReportContext(null);
 }
 
 function renderImageReview(file, extraction) {
   pendingExtraction = extraction;
+  renderReportContext(extraction);
   imageReview.replaceChildren();
   imageReview.classList.remove("hidden");
   clearImagePreview();
@@ -565,6 +685,8 @@ async function confirmImageExtraction(fieldNodes) {
     if (!response.ok) throw new Error(body.message || "The extracted fields could not be confirmed.");
     pendingExtraction = body;
     confirmedExtractionId = body.extraction_id;
+    confirmedExtraction = body;
+    focusedFieldId = null;
     renderImageReview(currentImageFile, body);
     messageInput.value = "Please explain the values extracted from this laboratory report.";
     updateCount();
@@ -640,7 +762,7 @@ async function sendMessage(message, origin = "followup") {
     const response = await fetch("/api/v1/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, extraction_id: confirmedExtractionId }),
+      body: JSON.stringify({ message, extraction_id: confirmedExtractionId, focus_field_id: focusedFieldId }),
       signal: activeAbortController.signal,
     });
 
@@ -776,6 +898,14 @@ followupForm.addEventListener("submit", (event) => {
 
 analysisStopButton.addEventListener("click", () => activeAbortController?.abort());
 newChatButton.addEventListener("click", resetConversation);
+clearFieldFocus?.addEventListener("click", () => {
+  focusedFieldId = null;
+  reportContextFields.querySelectorAll("[data-field-id]").forEach((node) => {
+    node.classList.remove("is-selected");
+    node.setAttribute("aria-pressed", "false");
+  });
+  renderFieldReading(null);
+});
 window.addEventListener("resultscope:hero-example", async () => {
   if (requestInFlight) {
     followupInput.focus({ preventScroll: true });

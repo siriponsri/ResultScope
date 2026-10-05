@@ -37,6 +37,7 @@ SESSION_MAX_AGE = settings.SESSION_TTL_SECONDS
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=settings.MAX_MESSAGE_CHARS)
     extraction_id: str | None = Field(default=None, max_length=64)
+    focus_field_id: str | None = Field(default=None, max_length=64)
 
 
 class ChatResponse(BaseModel):
@@ -238,7 +239,31 @@ async def _run_pipeline(
     return intent, analysis, answer
 
 
-async def _load_confirmed_extraction(session_id: str, extraction_id: str | None) -> dict[str, Any] | None:
+def _focused_field_context(field: dict[str, Any]) -> dict[str, Any]:
+    """Keep contextual follow-ups limited to the selected, server-normalized field."""
+    return {
+        "marker": field.get("marker"),
+        "raw_value": field.get("raw_value"),
+        "numeric_value": field.get("numeric_value"),
+        "unit": field.get("unit"),
+        "reference_low": field.get("reference_low"),
+        "reference_high": field.get("reference_high"),
+        "reference_range_raw": field.get("reference_range_raw"),
+        "flag": field.get("flag"),
+    }
+
+
+async def _load_confirmed_extraction(
+    session_id: str,
+    extraction_id: str | None,
+    focus_field_id: str | None = None,
+) -> dict[str, Any] | None:
+    if focus_field_id and not extraction_id:
+        raise ExtractionRequestError(
+            "focus_field_requires_extraction",
+            "Select a confirmed report before focusing on a field.",
+            422,
+        )
     if not extraction_id:
         return None
     try:
@@ -252,11 +277,22 @@ async def _load_confirmed_extraction(session_id: str, extraction_id: str | None)
         raise ExtractionRequestError("extraction_not_found", "The extraction is not available for this session.", 404)
     if record.status != "confirmed":
         raise ExtractionRequestError("extraction_confirmation_required", "Review and confirm the image fields before asking about them.", 409)
+    fields = record.fields
+    if focus_field_id:
+        selected = next((field for field in fields if field.get("field_id") == focus_field_id), None)
+        if selected is None:
+            raise ExtractionRequestError(
+                "focus_field_not_found",
+                "The selected report field is not available in this extraction.",
+                422,
+            )
+        fields = [{"field_id": focus_field_id, **_focused_field_context(selected)}]
     return {
         "extraction_id": record.extraction_id,
         "document_type": record.document_type,
-        "fields": record.fields,
+        "fields": fields,
         "warnings": record.warnings,
+        "focus_field_id": focus_field_id,
     }
 
 
@@ -456,7 +492,9 @@ async def post_chat(chat_request: ChatRequest, request: Request, response: Respo
         async with session_locks.lock(session_id):
             await _recover_pending_reset(session_id)
             history = _bounded_history(await conversation_store.get(session_id))
-            confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
+            confirmed_extraction = await _load_confirmed_extraction(
+                session_id, chat_request.extraction_id, chat_request.focus_field_id
+            )
             intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
             result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id, started_at)
             await _persist_turn(session_id, history, chat_request.message, result)
@@ -509,7 +547,9 @@ async def post_chat_stream(chat_request: ChatRequest, request: Request):
             async with session_locks.lock(session_id):
                 await _recover_pending_reset(session_id)
                 history = _bounded_history(await conversation_store.get(session_id))
-                confirmed_extraction = await _load_confirmed_extraction(session_id, chat_request.extraction_id)
+                confirmed_extraction = await _load_confirmed_extraction(
+                    session_id, chat_request.extraction_id, chat_request.focus_field_id
+                )
                 intent, analysis, result = await _run_pipeline(chat_request.message, history, confirmed_extraction)
                 result = _validated_result(result, chat_request.message, analysis, confirmed_extraction, request_id, started_at)
                 await _persist_turn(session_id, history, chat_request.message, result)

@@ -1,4 +1,4 @@
-/* Presentation only. Provider calls and report state remain owned by chat.js. */
+﻿/* Presentation only. Provider calls and report state remain owned by chat.js. */
 (() => {
   const workspace = document.getElementById('workspace');
   const hero = document.querySelector('.hero-content');
@@ -7,7 +7,7 @@
   const mobile = matchMedia('(max-width: 760px)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const triggers = [...document.querySelectorAll('[data-open-report]')];
-  const background = [document.querySelector('.app-header'), document.querySelector('.landing'), document.querySelector('.workspace-header'), document.querySelector('.demo-notice'), document.getElementById('chat-pane'), document.querySelector('.app-footer')].filter(Boolean);
+  const background = [document.querySelector('.app-header'), document.querySelector('.landing'), document.querySelector('.workspace-header'), document.querySelector('.demo-notice'), document.getElementById('chat-pane'), document.getElementById('report-context'), document.querySelector('.app-footer')].filter(Boolean);
   let returnFocus = null, timeline = null, scheduled = false, previewURL = null, busy = false;
   const fileInput = document.getElementById('image-input');
   const preview = document.createElement('img');
@@ -104,7 +104,7 @@
     const summary = document.getElementById('file-summary');
     summary.hidden = !file;
     document.getElementById('file-name').textContent = file?.name || '';
-    document.getElementById('file-size').textContent = file ? `${(file.size / 1024).toFixed(1)} KB · ${file.type === 'image/png' ? 'PNG' : 'JPEG'}` : '';
+    document.getElementById('file-size').textContent = file ? `${(file.size / 1024).toFixed(1)} KB ยท ${file.type === 'image/png' ? 'PNG' : 'JPEG'}` : '';
     document.getElementById('drawer-empty').hidden = Boolean(file);
     document.querySelectorAll('[data-report-label]').forEach(node => {node.textContent = file ? 'Your report' : 'Report';});
     if (previewURL) URL.revokeObjectURL(previewURL);

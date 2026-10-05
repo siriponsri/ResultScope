@@ -1,7 +1,8 @@
 # Repository Hygiene Closeout
 
-Status: Documentation-only closeout candidate assembled; independent review and
-the normal push state are recorded below.
+Status: Historical repository-hygiene record. The independent review and normal
+push state below apply only to the exact candidates named in this document; they
+do not verify current HEAD or a later documentation-only sidecar.
 
 ## Candidate and scope
 
@@ -11,6 +12,13 @@ the normal push state are recorded below.
 - Documentation-alignment base: `1d90492c15244241ad22586365b8cea085219e88`; the exact closeout candidate is the reviewed commit containing this record.
 - Integration branch: `codex/resultscope-restructure-20261004` (fast-forwarded into local `main` and deleted).
 - Scope: relocate the pinned evidence and synthetic coursework bundles, update active consumers and guidance, untrack regenerable synthetic indexes, refresh documentation captures/manual, and preserve offline/provider safety.
+
+The maintained audit mapping is maintained in
+[AUDIT_REMEDIATION_20261005.md](AUDIT_REMEDIATION_20261005.md), and the asset
+register is maintained in
+[ASSET_OWNERSHIP.md](../engineering/ASSET_OWNERSHIP.md). Those records do not
+retroactively change this historical candidate receipt or serve as an
+independent review of a later candidate.
 
 The two bundle moves are unit-preserving. A Git-archive comparison against the
 audited starting tree found matching relative paths and SHA-256 bytes for
@@ -57,9 +65,10 @@ repository. Owner port `8765`, `.env`, keys, sessions, databases, ledgers, and
 the locked `C:\Users\User\orca\workspaces\ResultScope\cod` directory were not
 touched.
 
-## Independent review
+## Historical independent review
 
-Fresh configured O1 REVIEW inspected exact candidate `dd323ac` through the
+Fresh configured O1 REVIEW inspected exact candidate
+`dd323acc00237b4ab2472c5052aa068e15620dd3` through the
 headless read-only route `0172f99a227e481fad72a3b1b745ea5e` and returned PASS
 with no new specification or standards findings. Account independence was
 present: MAIN/IMPLEMENT MaxPlus and REVIEW O1. The review verified exact
@@ -67,6 +76,22 @@ capture timing, application fingerprint, both bundle moves, active path
 references, protected-state exclusions, provider guard, clean status, and
 `git diff --check`. It did not rerun tests or browser capture; those receipts
 remain recorded above.
+
+This is an application review receipt for the historical candidate named above,
+not a receipt for current HEAD `12ccb8a27428f819386fa17c4412c764de0f1867`.
+For the current sidecar, exact-head application review is
+`NOT_VERIFIABLE_FROM_REPOSITORY`; no independent documentation-only review
+receipt is recorded. A later review must name the full SHA, path scope, verdict,
+review route, and limitations. A nearby commit, screenshot, or this document
+alone is not evidence of exact-head review.
+
+## Motion qualification
+
+The application does not bundle or load a verified HyperFrames player. The
+retained presentation source is an editable reference that uses local GSAP; the
+application remains usable through static, reduced-motion, no-player, and
+keyboard paths. HyperFrames CLI lint, inspect, render, and export are `NOT_RUN`.
+Do not describe HyperFrames as implemented, integrated, live, or validated.
 
 ## Git closeout
 
@@ -77,7 +102,8 @@ remain recorded above.
 - Prior closeout commit and normal push: `c184f6d8e102289402393dabaf212ffec459dd7f`.
 - Current documentation-only candidate: MAIN performs the normal push of this
   exact reviewed candidate after independent O1 PASS; final parity is recorded
-  in the user handoff and Project Brain.
+  in the historical closeout record. This statement does not establish a push
+  or review for current HEAD or for the present documentation sidecar.
 - Force push, deployment, migration, remote branch deletion, and unrelated
   worktree changes: not performed and not authorized.
 

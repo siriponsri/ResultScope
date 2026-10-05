@@ -166,11 +166,17 @@ def _requested_missing_fact(query: str, items: tuple[RetrievedRecord, ...]) -> b
 def _missing_fact_message(query: str) -> str:
     normalized = query.casefold()
     if any(term in normalized for term in ("prepare", "preparation", "specimen", "งดอาหาร", "เตรียมตัว", "สิ่งส่งตรวจ")):
-        return "The available source does not confirm preparation or specimen requirements for that item."
+        return "The available source does not confirm preparation or specimen requirements for that item, and it does not specify a fixed fasting duration."
     if any(term in normalized for term in ("turnaround", "result time", "how long", "กี่วัน", "กี่ชั่วโมง", "ออกใน", "ใช้เวลา", "รับผล")):
-        return "The available source does not confirm a result turnaround or delivery time."
+        return "The available source does not confirm a result turnaround or delivery time, and it does not connect to patient result data."
     if any(term in normalized for term in ("discount", "promotion", "ส่วนลด", "โปรโมชั่น", "โปรโมชัน")):
         return "The available source does not confirm a discount or promotion."
+    if any(term in normalized for term in (
+        "refund", "return", "cancel",
+        "\u0e04\u0e37\u0e19\u0e40\u0e07\u0e34\u0e19",
+        "\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01",
+    )):
+        return "This synthetic demonstration does not accept real payment and has no confirmed real refund policy."
     return "The available source does not confirm a price or currency for that item."
 
 
@@ -468,9 +474,16 @@ async def answer_query(
     }
     if result.reason == "ambiguous":
         return _local_result("clarify", "I found more than one matching item. Please name the exact service or test.", intent, **mode_meta)
-    if not result.items:
+    # A confirmed report is itself an authorized user-provided context source.
+    # It may still be explainable when the local education corpus has no
+    # matching record; the provider must remain constrained to the confirmed
+    # fields and supplied ranges, with no invented external facts.
+    confirmed_context_only = bool(confirmed_extraction and intent.kind == "lab")
+    if not result.items and not confirmed_context_only:
         text = (
-            "I could not verify that information in the available knowledge sources."
+            "I could not find that service in the available synthetic catalog. This does not establish that no such service exists in the real world."
+            if intent.kind == "business" and base.demo
+            else "I could not verify that information in the available knowledge sources."
             if intent.kind in {"business", "mixed"}
             else "No approved laboratory education source is available for this question yet."
         )
@@ -482,7 +495,7 @@ async def answer_query(
             intent,
             **mode_meta,
         )
-    if intent.kind == "lab" and not public_bundle:
+    if intent.kind == "lab" and not public_bundle and not confirmed_context_only:
         education_items = tuple(item for item in result.items if item.record.kind == "education")
         if not education_items:
             return _local_result(

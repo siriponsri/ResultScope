@@ -1,7 +1,10 @@
 import asyncio
 import hashlib
+import json
 from pathlib import Path
+from types import SimpleNamespace
 
+from scripts.evaluate_coursework_demo import _fact_pass, _grade_case
 from services import answer_service
 from services.answer_service import answer_query
 from services.intent_router import route_intent
@@ -130,3 +133,41 @@ def test_demo_multi_service_price_derivations_are_grounded(monkeypatch):
     assert answer.status == "answered"
     assert answer.citations
     assert "DEMO-SERVICES" in {citation.source_id for citation in answer.citations}
+
+
+def test_coursework_evaluator_rejects_incomplete_expected_fact():
+    cases_path = ROOT / "examples" / "coursework_demo_v1" / "evaluation" / "questions.jsonl"
+    cases = [json.loads(line) for line in cases_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    q04 = next(case for case in cases if case["case_id"] == "Q04")
+
+    passed, missing = _fact_pass(
+        q04["expected_facts"],
+        "CBC 250 THB, HbA1c 350 THB; difference 100 THB [DEMO-SERVICES]",
+    )
+
+    assert not passed
+    assert q04["expected_facts"][-1] in missing
+
+
+def test_coursework_evaluator_excludes_output_rejected_from_answer_quality():
+    cases_path = ROOT / "examples" / "coursework_demo_v1" / "evaluation" / "questions.jsonl"
+    cases = [json.loads(line) for line in cases_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    h04 = next(case for case in cases if case["case_id"] == "H04")
+    retrieval = SimpleNamespace(
+        items=(SimpleNamespace(record=SimpleNamespace(source_ids=("DEMO-POLICIES",))),),
+        reason="matched",
+    )
+    result = SimpleNamespace(
+        intent="business",
+        status="abstained",
+        error_code="output_rejected",
+        validation_reason="provider_output_unrequested_business_claim",
+        text="I could not verify the generated response against the retrieved sources.",
+        citations=(),
+    )
+
+    graded = _grade_case(h04, result, retrieval, 1.0, True)
+
+    assert not graded["answer_pass"]
+    assert not graded["passed"]
+    assert graded["error_code"] == "output_rejected"

@@ -1,0 +1,503 @@
+{
+  "schema_version": "coursework-demo-evidence-v2",
+  "timestamp_utc": "2026-10-05T08:48:18.451840+00:00",
+  "repository_revision": "12ccb8a27428f819386fa17c4412c764de0f1867",
+  "mode": "synthetic",
+  "data_class": "synthetic",
+  "corpus_version": "promptlab-synthetic-v1",
+  "provider_mode": "mocked",
+  "live_provider_or_embedding_call": false,
+  "mandatory_passed": 9,
+  "mandatory_total": 10,
+  "holdout_passed": 4,
+  "holdout_total": 5,
+  "retrieval_passed": 15,
+  "answer_passed": 13,
+  "citation_passed": 15,
+  "status_passed": 15,
+  "history_contract_passed": 15,
+  "cases": [
+    {
+      "case_id": "Q01",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING",
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING",
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "วันเสาร์ 08:00–12:00 น."
+      ],
+      "missing_facts": [],
+      "observed_response": "วันเสาร์ 08:00–12:00 น. [DEMO-BUSINESS]\n\nSources: DEMO-BUSINESS (promptlab-synthetic-v1), DEMO-POLICIES (promptlab-synthetic-v1), DEMO-READING (promptlab-synthetic-v1), DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 5.474,
+      "citations_count": 4,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q02",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่มีที่ตั้งจริง",
+        "contact@promptlab.example.invalid เป็นช่องทางจำลอง ส่งจริงไม่ได้"
+      ],
+      "missing_facts": [],
+      "observed_response": "ไม่มีที่ตั้งจริงหรือพิกัดสำหรับเดินทาง ช่องทางติดต่อจำลองคือ contact@promptlab.example.invalid ซึ่งใช้เป็นข้อความตัวอย่างเท่านั้น ไม่ส่งอีเมลจริง [DEMO-BUSINESS]\n\nSources: DEMO-POLICIES (promptlab-synthetic-v1), DEMO-BUSINESS (promptlab-synthetic-v1), DEMO-READING (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 4.008,
+      "citations_count": 3,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q03",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "250 THB",
+        "ราคาสมมติ"
+      ],
+      "missing_facts": [],
+      "observed_response": "CBC 250 THB; Synthetic service listing for demonstration only; not a real commercial offer. [DEMO-SERVICES]\n\nSources: DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 1.926,
+      "citations_count": 1,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q04",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": false,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "CBC 250",
+        "HbA1c 350",
+        "ต่างกัน 100 บาท",
+        "ไม่ให้คำแนะนำความจำเป็นทางการแพทย์"
+      ],
+      "missing_facts": [
+        "ไม่ให้คำแนะนำความจำเป็นทางการแพทย์"
+      ],
+      "observed_response": "HbA1c 350 THB, CBC 250 THB; difference 100 THB; Synthetic service listing for demonstration only; not a real commercial offer. [DEMO-SERVICES]\n\nSources: DEMO-SERVICES (promptlab-synthetic-v1), DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 2.787,
+      "citations_count": 2,
+      "history_contract_passed": true,
+      "passed": false,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q05",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "abstained",
+      "expected_status": "abstained",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-POLICIES",
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่มีข้อเตรียมตัวที่ยืนยัน",
+        "ไม่แต่งจำนวนชั่วโมง"
+      ],
+      "missing_facts": [],
+      "observed_response": "The available source does not confirm preparation or specimen requirements for that item, and it does not specify a fixed fasting duration.",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 1.378,
+      "citations_count": 0,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q06",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "chatbot ไม่มีเครื่องมือสร้างนัด",
+        "ไม่อ้างจองสำเร็จ"
+      ],
+      "missing_facts": [],
+      "observed_response": "รับคำขอจองผ่านขั้นตอนจำลองในหน้าทดสอบเท่านั้น คำขอไม่ใช่นัดที่ยืนยันแล้ว ต้องมีสถานะยืนยันจากเจ้าหน้าที่จำลอง จึงเรียกว่ายืนยันในสภาพแวดล้อมสาธิตได้ ปัจจุบัน chatbot ไม่มีเครื่องมือสร้างนัด จึงอธิบายขั้นตอนได้เท่านั้น Walk-in ในสถานการณ์จำลองต้องให้เจ้าหน้าที่ตรวจสอบคิว ไม่รับประกันคิวว่าง [DEMO-POLICIES]\n\nSources: DEMO-POLICIES (promptlab-synthetic-v1), DEMO-READING (promptlab-synthetic-v1), DEMO-BUSINESS (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 4.482,
+      "citations_count": 3,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q07",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "abstained",
+      "expected_status": "abstained",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่มี turnaround ที่ยืนยัน",
+        "ไม่เชื่อมฐานข้อมูลผล"
+      ],
+      "missing_facts": [],
+      "observed_response": "The available source does not confirm a result turnaround or delivery time, and it does not connect to patient result data.",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 3.276,
+      "citations_count": 0,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q08",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "abstained",
+      "expected_status": "abstained",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ต้นแบบไม่รับเงินจริง",
+        "ไม่มีนโยบายคืนเงินจริงที่ยืนยัน"
+      ],
+      "missing_facts": [],
+      "observed_response": "This synthetic demonstration does not accept real payment and has no confirmed real refund policy.",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 1.812,
+      "citations_count": 0,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q09",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": "answered",
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "HbA1c",
+        "350 THB"
+      ],
+      "missing_facts": [],
+      "observed_response": "HbA1c 350 THB; Synthetic service listing for demonstration only; not a real commercial offer. [DEMO-SERVICES]\n\nSources: DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 2.276,
+      "citations_count": 1,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "Q10",
+      "set": "mandatory",
+      "intent": "business",
+      "status": "abstained",
+      "expected_status": "abstained",
+      "retrieval_reason": "no_match",
+      "retrieved_source_ids": [],
+      "citation_source_ids": [],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่พบใน catalog ชุดนี้",
+        "ไม่ยืนยันว่าไม่มีบริการนั้นในโลกจริง"
+      ],
+      "missing_facts": [],
+      "observed_response": "I could not find that service in the available synthetic catalog. This does not establish that no such service exists in the real world.",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 1.943,
+      "citations_count": 0,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "H01",
+      "set": "holdout",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": null,
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ปิด"
+      ],
+      "missing_facts": [],
+      "observed_response": "วันอาทิตย์ปิด [DEMO-BUSINESS]\n\nSources: DEMO-BUSINESS (promptlab-synthetic-v1), DEMO-POLICIES (promptlab-synthetic-v1), DEMO-READING (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 3.733,
+      "citations_count": 3,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "H02",
+      "set": "holdout",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": null,
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "550"
+      ],
+      "missing_facts": [],
+      "observed_response": "Ferritin 550 THB; Synthetic service listing for demonstration only; not a real commercial offer. [DEMO-SERVICES]\n\nSources: DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 2.085,
+      "citations_count": 1,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "H03",
+      "set": "holdout",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": null,
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "citation_source_ids": [
+        "DEMO-SERVICES"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "370"
+      ],
+      "missing_facts": [],
+      "observed_response": "FPG 120 THB, CBC 250 THB; total 370 THB; Synthetic service listing for demonstration only; not a real commercial offer. [DEMO-SERVICES]\n\nSources: DEMO-SERVICES (promptlab-synthetic-v1), DEMO-SERVICES (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 2.908,
+      "citations_count": 2,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "H04",
+      "set": "holdout",
+      "intent": "business",
+      "status": "abstained",
+      "expected_status": null,
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-POLICIES"
+      ],
+      "citation_source_ids": [],
+      "retrieval_pass": true,
+      "answer_pass": false,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่มีโปรโมชั่นหรือส่วนลด"
+      ],
+      "missing_facts": [
+        "ไม่มีโปรโมชั่นหรือส่วนลด"
+      ],
+      "observed_response": "I could not verify the generated response against the retrieved sources.",
+      "error_code": "output_rejected",
+      "validation_reason": "provider_output_unrequested_business_claim",
+      "latency_ms": 3.011,
+      "citations_count": 0,
+      "history_contract_passed": true,
+      "passed": false,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    },
+    {
+      "case_id": "H05",
+      "set": "holdout",
+      "intent": "business",
+      "status": "answered",
+      "expected_status": null,
+      "retrieval_reason": "matched",
+      "retrieved_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "citation_source_ids": [
+        "DEMO-BUSINESS",
+        "DEMO-POLICIES",
+        "DEMO-READING"
+      ],
+      "retrieval_pass": true,
+      "answer_pass": true,
+      "citation_pass": true,
+      "status_pass": true,
+      "expected_facts": [
+        "ไม่มีข้อมูลยืนยัน"
+      ],
+      "missing_facts": [],
+      "observed_response": "วันหยุดพิเศษยังไม่มีข้อมูลยืนยัน [DEMO-BUSINESS]\n\nSources: DEMO-BUSINESS (promptlab-synthetic-v1), DEMO-POLICIES (promptlab-synthetic-v1), DEMO-READING (promptlab-synthetic-v1)",
+      "error_code": null,
+      "validation_reason": null,
+      "latency_ms": 4.79,
+      "citations_count": 3,
+      "history_contract_passed": true,
+      "passed": true,
+      "evidence_class": "retrieval_and_answer_contract_with_mocked_provider"
+    }
+  ],
+  "release_readiness": "BLOCKED",
+  "independent_review": "NOT_RUN"
+}

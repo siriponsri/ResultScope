@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from main import app
 from routers import chat as chat_router
 from services.store import MemoryConversationStore
+from services.extraction_store import MemoryExtractionStore
 
 
 client = TestClient(app)
@@ -74,3 +75,183 @@ def test_lab_abstention_retains_context_for_follow_up(monkeypatch):
     assert scope.status_code == 200
     assert scope.json()["allowed"] is True
     assert scope.json()["reason"] == "lab_follow_up"
+
+
+def test_focus_field_context_is_session_bound_and_limited_to_selected_field(monkeypatch):
+    from services.extraction_store import MemoryExtractionStore
+
+    extraction_store = MemoryExtractionStore()
+    monkeypatch.setattr(chat_router, "extraction_store", extraction_store)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+
+    record = __import__("asyncio").run(
+        extraction_store.create(
+            "focus-session",
+            "synthetic laboratory report",
+            [
+                {
+                    "field_id": "hb", "marker": "Hb", "raw_value": "10.8",
+                    "numeric_value": "10.8", "unit": "g/dL", "reference_low": "12",
+                    "reference_high": "16", "reference_range_raw": "12-16",
+                    "flag": "low",
+                },
+                {
+                    "field_id": "mcv", "marker": "MCV", "raw_value": "72",
+                    "numeric_value": "72", "unit": "fL", "reference_low": "80",
+                    "reference_high": "100", "reference_range_raw": "80-100",
+                    "flag": "low",
+                },
+            ],
+            [],
+        )
+    )
+    # The route helper is the authority; use a confirmed record without a provider call.
+    record = record.__class__(
+        record.extraction_id, record.session_id, record.revision, "confirmed",
+        record.document_type, record.fields, record.warnings, record.created_at,
+        record.expires_at, record.confirmed_at,
+    )
+    extraction_store._data[record.extraction_id] = record
+
+    focused = __import__("asyncio").run(
+        chat_router._load_confirmed_extraction("focus-session", record.extraction_id, "hb")
+    )
+    assert focused["focus_field_id"] == "hb"
+    assert [field["field_id"] for field in focused["fields"]] == ["hb"]
+    assert focused["fields"][0]["reference_range_raw"] == "12-16"
+    assert "provenance" not in focused["fields"][0]
+
+
+def test_invalid_focus_field_is_rejected_before_provider(monkeypatch):
+    from services.extraction_store import MemoryExtractionStore
+
+    extraction_store = MemoryExtractionStore()
+    monkeypatch.setattr(chat_router, "extraction_store", extraction_store)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    called = False
+
+    async def unexpected_call(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("invalid focus must not call the provider")
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", unexpected_call)
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/chat",
+        json={"message": "Explain this result", "focus_field_id": "hb"},
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "focus_field_requires_extraction"
+    assert called is False
+
+
+def _confirmed_record(store, session_id="focus-session"):
+    import asyncio
+    record = asyncio.run(
+        store.create(
+            session_id,
+            "synthetic laboratory report",
+            [
+                {
+                    "field_id": "hb", "marker": "Hb", "raw_value": "10.8",
+                    "numeric_value": "10.8", "unit": "g/dL", "reference_low": "12",
+                    "reference_high": "16", "reference_range_raw": "12-16",
+                    "flag": "low",
+                },
+                {
+                    "field_id": "mcv", "marker": "MCV", "raw_value": "72",
+                    "numeric_value": "72", "unit": "fL", "reference_low": "80",
+                    "reference_high": "100", "reference_range_raw": "80-100",
+                    "flag": "low",
+                },
+            ],
+            [],
+        )
+    )
+    confirmed = record.__class__(
+        record.extraction_id, record.session_id, record.revision, "confirmed",
+        record.document_type, record.fields, record.warnings, record.created_at,
+        record.expires_at, record.confirmed_at,
+    )
+    store._data[record.extraction_id] = confirmed
+    return confirmed
+
+
+def test_focus_field_is_sent_to_the_authoritative_analysis_prompt(monkeypatch):
+    store = MemoryExtractionStore()
+    record = _confirmed_record(store)
+    monkeypatch.setattr(chat_router, "extraction_store", store)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr(chat_router, "_session_id", lambda request: ("focus-session", False))
+    monkeypatch.setattr("config.settings.KNOWLEDGE_MODE", "synthetic")
+    captured = {}
+
+    async def fake_chat(history, prompt, rule_grounding):
+        captured["prompt"] = prompt
+        return "Hb 10.8 g/dL is below the supplied range of 12-16 g/dL. This is educational information, not a diagnosis."
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", fake_chat)
+    response = TestClient(app).post(
+        "/api/v1/chat",
+        json={
+            "message": "Please explain this Hb result and why it is below the supplied range.",
+            "extraction_id": record.extraction_id,
+            "focus_field_id": "hb",
+        },
+    )
+    assert response.status_code == 200
+    assert "Hb" in captured["prompt"]
+    assert "10.8" in captured["prompt"]
+    assert "MCV" not in captured["prompt"]
+    assert "72" not in captured["prompt"]
+
+
+def test_unknown_focus_field_and_unconfirmed_extraction_fail_closed(monkeypatch):
+    store = MemoryExtractionStore()
+    confirmed = _confirmed_record(store)
+    import asyncio
+    review = asyncio.run(store.create("focus-session", "synthetic report", confirmed.fields, []))
+    monkeypatch.setattr(chat_router, "extraction_store", store)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr(chat_router, "_session_id", lambda request: ("focus-session", False))
+    monkeypatch.setattr(chat_router.llm_client, "chat", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("provider must not run")))
+    client = TestClient(app)
+
+    unknown = client.post("/api/v1/chat", json={"message": "Explain this", "extraction_id": confirmed.extraction_id, "focus_field_id": "missing"})
+    assert unknown.status_code == 422
+    assert unknown.json()["code"] == "focus_field_not_found"
+
+    unconfirmed = client.post("/api/v1/chat", json={"message": "Explain this", "extraction_id": review.extraction_id, "focus_field_id": "hb"})
+    assert unconfirmed.status_code == 409
+    assert unconfirmed.json()["code"] == "extraction_confirmation_required"
+
+
+def test_stream_focus_validation_returns_sanitized_error_without_provider(monkeypatch):
+    store = MemoryExtractionStore()
+    confirmed = _confirmed_record(store)
+    monkeypatch.setattr(chat_router, "extraction_store", store)
+    monkeypatch.setattr(chat_router, "conversation_store", MemoryConversationStore())
+    monkeypatch.setattr(chat_router, "_session_id", lambda request: ("focus-session", False))
+    called = False
+
+    async def unexpected_call(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("invalid focus must not call the provider")
+
+    monkeypatch.setattr(chat_router.llm_client, "chat", unexpected_call)
+    response = TestClient(app).post(
+        "/api/v1/chat/stream",
+        json={"message": "Explain this", "extraction_id": confirmed.extraction_id, "focus_field_id": "missing"},
+    )
+    events = [
+        json.loads(line.removeprefix("data: "))
+        for line in response.text.splitlines()
+        if line.startswith("data: ")
+    ]
+    assert response.status_code == 200
+    assert events[0]["code"] == "focus_field_not_found"
+    assert events[0]["message"] == "The selected report field is not available in this extraction."
+    assert called is False

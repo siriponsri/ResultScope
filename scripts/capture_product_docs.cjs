@@ -34,7 +34,9 @@ const receipts=[];let networkBlocks=[],errors=[];const interactions={};
  }
  await page.goto(base);await page.locator('#message-input').waitFor();await snap('00-landing-desktop','real landing, approved purple atmosphere','viewport');await snap('01-workspace-desktop','real UI, provider offline');
  await page.locator('#sample-button').click();await snap('02-example-loaded','real example control, synthetic values');
- // Actual offline route, no browser mock here.
+ // Use a synthetic business query so the offline provider guard is exercised
+ // without making a provider call or relying on an approved education corpus.
+ await page.locator('#message-input').fill('What is the CBC price?');
  await page.locator('#send-button').click();await page.locator('#error-banner:not(.hidden)').waitFor();if(/API_KEY|\.env|Vercel/.test(await page.locator('#error-banner').innerText()))throw Error('Technical configuration leaked into user error');
  if(/will appear|Preparing your explanation/.test(await page.locator('.narrative-zone').innerText()))throw Error('Terminal error retained pending copy');
  await snap('07-provider-unavailable','real offline/missing-configuration route');

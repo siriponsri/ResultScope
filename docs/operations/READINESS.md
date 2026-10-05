@@ -14,17 +14,27 @@ This document distinguishes retained evidence from tests of a new candidate. It 
 | Public-reference addon | Phase 6 records 50 addon tests and a 15/15 tree versus 12/15 flat fixture comparison | A clinical study, broad retrieval superiority, or live RAG quality |
 | Historical live calls | LLM transport and some OCR/SystemOne behavior were observed | Acceptance of the complete workflow or release readiness |
 | Post-remediation live validation | `NOT_RUN` | No later live result may be inferred from offline fixes |
-| Repository migration candidate review | `PASS` for exact pre-integration candidate `dd323ac`; earlier pushed `c184f6d` and later documentation-only closeout commits add closeout metadata only | O1 review was read-only and did not rerun tests or browser capture |
+| Historical repository migration candidate review | `PASS` for exact pre-integration candidate `dd323ac00237b4ab2472c5052aa068e15620dd3`; earlier pushed `c184f6d` and later documentation-only closeout commits add closeout metadata only | This receipt is not an exact-head review of current HEAD `12ccb8a27428f819386fa17c4412c764de0f1867` or the current dirty worktree. O1 review was read-only and did not rerun tests or browser capture |
+| Current Report Canvas candidate | Offline browser capture, focused/full tests, sanitized synthetic evaluator receipt, and provenance tooling are maintained for the candidate | This evidence does not establish live provider quality, clinical safety, production readiness, or independent final review |
+| Current independent final review | `NOT_RUN` | No independent reviewer/route receipt is available for the exact current candidate |
+| HyperFrames runtime/toolchain | Unavailable in the application; HyperFrames player/artifact and CLI/export checks are `NOT_RUN` | Local GSAP and static/reduced-motion fallbacks are presentation support, not a HyperFrames implementation or provider evidence |
 | Independent human usability validation | `NOT_RUN` in the retained Phase 6 record | Screenshots are not evidence of user comprehension |
 
 Sources: the original offline-remediation, Phase 6, and live-verification reports preserved in the [historical archive](../archive/README.md), indexed by [evidence history](../evidence/HISTORY.md). The owner-reported checkpoint is separate session evidence, not a rewritten version of those reports.
 
 The redesign's actual checks, screenshots and scoped visual review are recorded in [redesign verification](../evidence/REDESIGN_VERIFICATION.md). Those checks do not close the live or online gates. No provider call is authorized or implied by this documentation.
 
-The current repository migration, clean Git closeout, focused checks, and O1
+The historical repository migration, clean Git closeout, focused checks, and O1
 receipt are recorded in [repository hygiene closeout](../evidence/REPO_HYGIENE_CLOSEOUT.md).
-That closeout does not upgrade the controlled-local, online, clinical, or
-production decision.
+That closeout is bound to the candidate and scope named in its receipt. The
+current candidate's offline evidence is maintained in the screenshot manifest,
+the sanitized coursework receipt, and the provenance record; none of those
+records upgrades the controlled-local, online, clinical, or production decision.
+
+The audit mapping and review-language rules are maintained in
+[audit remediation](../evidence/AUDIT_REMEDIATION_20261005.md), with asset
+ownership and license boundaries in
+[asset ownership](../engineering/ASSET_OWNERSHIP.md).
 
 The later local UI-refresh closeout is recorded in
 [LOCAL_PRODUCT_REFRESH_CLOSEOUT.md](../evidence/LOCAL_PRODUCT_REFRESH_CLOSEOUT.md).
@@ -48,7 +58,7 @@ Failed, timed-out, malformed, output-rejected, blocked-after-reservation, and un
 
 | Gate | Required evidence or work |
 |---|---|
-| Exact-candidate verification | Reproducible checks, recorded browser findings, independent final review, and closure of material findings |
+| Exact-candidate verification | Reproducible checks, recorded browser findings, and an inspectable independent receipt naming the full exact SHA, scope, verdict, and limitations. Without that receipt, status is `NOT_VERIFIABLE_FROM_REPOSITORY` |
 | Provider contracts and quality | Explicitly authorized bounded live validation, accepted quality cases, and retained sanitized attempt receipts |
 | Corpus and rights | Owner-approved business/education content; source provenance; permitted distribution and commercial use |
 | Application rights | Resolution of the upstream code-rights issue recorded in `NOTICE.md` |
