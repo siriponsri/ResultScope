@@ -1,8 +1,8 @@
 {
   "description": "Real redesigned pages; all mocked stages labeled explicitly. Not live provider or clinical validation.",
-  "capture_time_utc": "2026-10-05T09:13:08.045Z",
-  "candidate_sha": "12ccb8a27428f819386fa17c4412c764de0f1867",
-  "application_files_dirty": true,
+  "capture_time_utc": "2026-10-05T09:31:49.872Z",
+  "candidate_sha": "1684c41c3a6db782bf546264a34c0253982aacf7",
+  "application_files_dirty": false,
   "application_source_fingerprint": "bc9d73545524a489432cb222d0291a8053b20aa93a62b46a7933e56c9256ccba",
   "interactions": {
     "confirmed_fields_readonly": true,
