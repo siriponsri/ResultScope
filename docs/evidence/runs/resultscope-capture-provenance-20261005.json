@@ -1,7 +1,7 @@
 {
   "schema_version": "resultscope-capture-provenance-v1",
-  "candidate_sha": "1684c41c3a6db782bf546264a34c0253982aacf7",
-  "candidate_ref": "HEAD",
+  "candidate_sha": "128f064ff6304ff567b2b6f61b10d9687049119a",
+  "candidate_ref": "128f064ff6304ff567b2b6f61b10d9687049119a",
   "hash_algorithm": "sha256",
   "aggregate_format": "path-nul-bytes-nul-v1",
   "content_policy": "git_blob_bytes_at_candidate_ref",
@@ -15,7 +15,7 @@
     "generated_docs_excluded": true,
     "root_attachments_excluded": true
   },
-  "source_fingerprint": "87e8a984e7e32810931ec4fb434d4fc30af9734359967c4d53e582077018fd3d",
+  "source_fingerprint": "c0db7d67c1753afc85e39f5b76d6cc87ab7c103d6281537722ddf89c9017d45e",
   "files": [
     {
       "path": ".env.example",
@@ -289,8 +289,8 @@
     },
     {
       "path": "docs/evidence/AUDIT_REMEDIATION_20261005.md",
-      "git_blob_sha256": "5b32ee75a1ff93a0c5a40053509deeea40cf488443360e69dfe0d0aaf4fa0c1d",
-      "working_tree_sha256": "5b32ee75a1ff93a0c5a40053509deeea40cf488443360e69dfe0d0aaf4fa0c1d",
+      "git_blob_sha256": "c3f90ebca1715a3f01c170e0dffc1f96d4befc499c032a4a36b68f0f2530ca75",
+      "working_tree_sha256": "c3f90ebca1715a3f01c170e0dffc1f96d4befc499c032a4a36b68f0f2530ca75",
       "working_tree_matches_candidate": true
     },
     {
@@ -349,14 +349,20 @@
     },
     {
       "path": "docs/evidence/runs/coursework-demo-evaluation-20261005.json",
-      "git_blob_sha256": "6c4fdaca7037f2586aca1e355aed3491fde7dc8ace1e4e694a7055a589f54652",
-      "working_tree_sha256": "9aedb323ddf792afc0c7b3e2a4abdd51a76dcbcee3cfc214328d40c3c6c83630",
+      "git_blob_sha256": "65f2e4d05c8c3e40a711fa26a8679c93775fb55d8efa75c5ee52167b906470dd",
+      "working_tree_sha256": "8a0aea6448dbd815f3a6d1c697a7fbaab9b85cb10c86ebabe1e57028b0636d06",
       "working_tree_matches_candidate": false
     },
     {
       "path": "docs/evidence/runs/coursework-demo-evaluation.json",
       "git_blob_sha256": "c29cb9e77a12b7eaa750fc93c57de533cbf22f5ce8d4c05c907dbc2375ef181b",
       "working_tree_sha256": "260e297776c875a83ead7298b24192380bfc14149740ab15187b05b10ef7d36d",
+      "working_tree_matches_candidate": false
+    },
+    {
+      "path": "docs/evidence/runs/resultscope-capture-provenance-20261005.json",
+      "git_blob_sha256": "3a68ceb89762a118b167ce46bc8403f5ede181410b9a60edfe7e37715397fe60",
+      "working_tree_sha256": "3faaf04a0a932087d06f2a79bc67f21e74502cf19eb47527781e5c36a41b9515",
       "working_tree_matches_candidate": false
     },
     {
@@ -403,8 +409,8 @@
     },
     {
       "path": "docs/operations/READINESS.md",
-      "git_blob_sha256": "257f54c3a0cc2634aef19e588500ac009619464f01f55e5b935d7139de012058",
-      "working_tree_sha256": "ffbe051f8014bdc68b3e747fc476e1527dd0bebe56905ac5f11c9593f29d413a",
+      "git_blob_sha256": "3b40b973bc042c812190bdc7985cc5d024cf1102a996d0d255ea47e35d9ec687",
+      "working_tree_sha256": "fbcc37928e5ed665cde84b442348ff5914f913f52db76460fb37812c6f838b8c",
       "working_tree_matches_candidate": false
     },
     {
@@ -1820,6 +1826,14 @@
     {
       "path": "docs/assets/screenshots/07-provider-unavailable.png",
       "sha256": "8fb601e49d06276bef5654d80400089f19f514cf5155a82d72ed3d895379cbcb"
+    },
+    {
+      "path": "docs/assets/screenshots/08-admin-login.png",
+      "sha256": "307692c79ad64b7463a0c5e39aa4ee7affa578eef047cb23007e8ee46d35858d"
+    },
+    {
+      "path": "docs/assets/screenshots/09-provider-settings.png",
+      "sha256": "01f218ee362448414fe1159200bc2028385376b0d730d394d99a42b57e9139ce"
     },
     {
       "path": "docs/assets/screenshots/10-workspace-mobile.png",
