@@ -129,6 +129,15 @@ class Settings(BaseSettings):
     # External retrieval may rank only records in our verified local manifest.
     RETRIEVAL_TIMEOUT_SECONDS: float = 12.0
 
+    # Project-total THB cost ledger (owner decision 2026-10-06: 300 THB total until
+    # coursework submission, not monthly). Fail-closed: unknown prior spend or an
+    # unpriced model blocks paid calls. Prices are THB per one million tokens.
+    COST_LEDGER_ENABLED: bool = True
+    PROJECT_BUDGET_THB: float = 300.0
+    PROJECT_BUDGET_PRIOR_SPEND_THB: str = ""
+    MODEL_PRICES_THB: str = ""
+    COST_IMAGE_TOKEN_ESTIMATE: int = 1500
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -85,6 +85,15 @@ def transaction():
         c.rollback();raise
     finally:c.close()
 
+def derived_secret(purpose:str)->bytes:
+    """Purpose-bound secret derived from the stable data key (never the key itself)."""
+    import hmac
+    key=os.getenv('BUSINESS_DATA_KEY','')
+    if not key:
+        cipher()  # creates/validates the local key file or raises the hosted setup error
+        key=Path(os.getenv('BUSINESS_KEY_PATH',str(ROOT/'data/business.key'))).read_text().strip()
+    return hmac.new(key.encode(),('resultscope:'+purpose).encode(),hashlib.sha256).digest()
+
 def digest(value):return hashlib.sha256(value.encode()).hexdigest()
 def password_hash(value,salt=None):
     salt=salt or secrets.token_hex(16)

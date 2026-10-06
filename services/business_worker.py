@@ -5,7 +5,8 @@ from services import business_store as db,business_integrations as integration
 from services.conversation_transport import ConversationError
 
 async def once():
-    integration.external();lease=secrets.token_hex(12)
+    if not integration.line_simulated():integration.external()
+    lease=secrets.token_hex(12)
     with db.transaction() as tx:
         rows=tx.find('line_job')+tx.find('line_outbox')
         job=next((r for r in rows if r['state']=='pending' or (r['state']=='working' and r['data'].get('lease_until',0)<time.time())),None)
@@ -49,28 +50,28 @@ async def once():
                             elif action['data']['expires']<time.time() or action['data']['version']!=c['data']['version']:answer='This preview expired. Please ask for a new one.'
                             else:
                                 if a['type'] in ['book','quote'] and db.quote(a['quote']['package_ids'],tx)!=a['quote']:raise ConversationError('quote_changed','Package changed. Ask for a fresh preview.',409)
-                                if a['type']=='book':r=booking_create(tx,owner,Book(package_ids=a['quote']['package_ids'],branch_id=a['branch_id'],date=a['date'],time=a['time'],idempotency_key=aid));answer='Booking confirmed: '+r['id']+'. Payment is pending at the center.'
+                                if a['type']=='book':r=booking_create(tx,owner,Book(package_ids=a['quote']['package_ids'],branch_id=a['branch_id'],date=a['date'],time=a['time'],idempotency_key=aid));answer='Appointment request sent: '+r['id']+'. Our team will confirm it; payment opens after confirmation.'
                                 elif a['type']=='handoff':r=ticket_create(tx,owner,a['summary']);answer='Your staff request is queued: '+r['id']
                                 else:answer='Review this request on the website.'
                                 action['data']['result']={'message':answer};tx.put(aid,'action',owner,action['data'],'done')
                     else:
                         result=await turn(owner,text);answer=result.get('reply') or 'Your message is in the staff conversation.'
-                        if result.get('action_id') and result.get('action',{}).get('type') in ['book','handoff','pay']:
+                        if result.get('action_id') and (result.get('action') or {}).get('type') in ['book','handoff','pay']:
                             answer+='\n\nTo confirm this preview, send /confirm '+result['action_id']
-                        if result.get('action',{}).get('type')=='link':
+                        if (result.get('action') or {}).get('type')=='link':
                             with db.transaction() as tx:answer+='\n'+integration.create_link(tx,owner)
                 d.update(reply=answer,stage='ready')
                 with db.transaction() as tx:tx.put(job['id'],job['kind'],owner,d,'working')
             elif d.get('stage')=='generating':
                 d.update(reply='Your previous request was interrupted. Please send it again, or contact staff.',stage='ready')
             reply_token=event.get('replyToken','') if time.time()-d['queued_at']<45 and d['attempts']==1 else ''
-            if not reply_token and os.getenv('LINE_ALLOW_PUSH')!='true':raise ConversationError('line_reply_expired','Enable consented push delivery or retry in LINE.')
+            if not reply_token and os.getenv('LINE_ALLOW_PUSH')!='true' and not integration.line_simulated():raise ConversationError('line_reply_expired','Enable consented push delivery or retry in LINE.')
             with db.transaction() as tx:
                 current=tx.get('line_'+db.digest(uid))
                 if not current or current['owner']!=owner:raise ConversationError('line_link_changed','Account link changed during processing.')
             await integration.line_send(uid,d['reply'],d['retry_key'],reply_token)
         else:
-            if os.getenv('LINE_ALLOW_PUSH')!='true':raise ConversationError('line_push_disabled','Staff LINE delivery requires LINE_ALLOW_PUSH.')
+            if os.getenv('LINE_ALLOW_PUSH')!='true' and not integration.line_simulated():raise ConversationError('line_push_disabled','Staff LINE delivery requires LINE_ALLOW_PUSH.')
             with db.transaction() as tx:
                 current=tx.get('line_'+db.digest(d['line_user_id']))
                 if not current or current['owner']!=job['owner']:raise ConversationError('line_link_changed','Account link changed before delivery.')

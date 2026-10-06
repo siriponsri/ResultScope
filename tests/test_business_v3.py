@@ -36,6 +36,15 @@ def slot():
     while dt.weekday()==6:dt+=timedelta(days=1)
     return dt.strftime('%Y-%m-%d')
 
+def staff_confirm(booking_id):
+    # Staff confirmation step added in the full business release (owner decision 2026-10-06).
+    s=client();promote(s)
+    r=s.post('/api/business/staff/bookings/'+booking_id+'/decision',json={'decision':'confirm'});assert r.status_code==200,r.text
+    return r.json()
+
+def confirmed(c,**kw):
+    b=book(c,**kw).json();staff_confirm(b['id']);return b
+
 def book(c,key=None,**kw):
     return c.post('/api/business/bookings',json={'package_ids':['P02'],'branch_id':'BKK01','date':slot(),'time':'09:00','idempotency_key':key or secrets.token_hex(12),**kw})
 
@@ -63,7 +72,7 @@ def test_duplicate_booking_and_price():
     c=client();a=book(c,key='abcdefghijkl');b=book(c,key='abcdefghijkl')
     assert a.status_code==200,a.text;assert a.json()['id']==b.json()['id']
     assert a.json()['data']['total_thb']==1690
-    assert a.json()['state']=='confirmed' and a.json()['data']['payment_status']=='pending'
+    assert a.json()['state']=='requested' and a.json()['data']['payment_status']=='pending'
     assert len(c.get('/api/business/workspace').json()['bookings'])==1
 
 def test_idempotency_key_cannot_change_payload():
@@ -88,12 +97,17 @@ def test_payments_reject_another_owner():
     a=client();b=book(a).json();c=client()
     assert c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'center'}).status_code==404
 
-def test_external_payment_disabled():
-    c=client();b=book(c).json();assert c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'}).status_code==503
+def test_external_payment_disabled_uses_labelled_simulator():
+    c=client();b=book(c).json()
+    r=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'})
+    assert r.status_code==409 and r.json()['code']=='awaiting_confirmation'
+    staff_confirm(b['id'])
+    r=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'})
+    assert r.status_code==200 and r.json()['mode']=='SIMULATED_INTEGRATION' and r.json()['simulator_url'].startswith('/pay/sim/')
 
 def test_live_stripe_key_rejected(monkeypatch):
     monkeypatch.setenv('BUSINESS_EXTERNAL_ENABLED','true');monkeypatch.setenv('STRIPE_SECRET_KEY','sk_live_not-a-real-key')
-    c=client();b=book(c).json();r=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'})
+    c=client();b=confirmed(c);r=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'})
     assert r.status_code==503 and r.json()['code']=='sandbox_required'
 
 def signed_event(event,stamp=None):
@@ -226,20 +240,23 @@ def test_organization_quote_acceptance_and_owner():
 def test_checkout_reuses_fixed_amount_and_method(monkeypatch):
     calls=[]
     async def fake(b,method):calls.append((b['data']['checkout_expires'],method));return {'session_id':'cs_test','url':'https://checkout.stripe.com/test'}
-    monkeypatch.setattr(integrations,'stripe_checkout',fake);c=client();b=book(c).json()
+    monkeypatch.setenv('BUSINESS_EXTERNAL_ENABLED','true');monkeypatch.setenv('STRIPE_SECRET_KEY','sk_test_placeholder')
+    monkeypatch.setattr(integrations,'stripe_checkout',fake);c=client();b=confirmed(c)
     r=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'});assert r.status_code==200
     r2=c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'card'});assert r.json()==r2.json() and len(calls)==1
     assert c.post('/api/business/payments/checkout',json={'booking_id':b['id'],'method':'promptpay'}).status_code==409
 
 def test_center_settlement_and_refund_need_role():
     c=client();b=book(c).json();s=client();promote(s)
+    assert s.post('/api/business/staff/bookings/'+b['id']+'/settle').status_code==409  # not confirmed yet
+    staff_confirm(b['id'])
     assert c.post('/api/business/staff/bookings/'+b['id']+'/settle').status_code==403
     assert s.post('/api/business/staff/bookings/'+b['id']+'/settle').status_code==200
     r=s.post('/api/business/staff/bookings/'+b['id']+'/refund',json={'reason':'Synthetic cancellation'})
     assert r.status_code==200 and r.json()['status']=='refunded'
 
 def test_settlement_is_idempotent_and_refund_is_terminal():
-    c=client();b=book(c).json();s=client();promote(s)
+    c=client();b=confirmed(c);s=client();promote(s)
     path='/api/business/staff/bookings/'+b['id']
     first=s.post(path+'/settle')
     assert first.status_code==200

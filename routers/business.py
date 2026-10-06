@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter,Request,Response,UploadFile,File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel,ConfigDict,Field
-from services import business_store as db,business_agent
+from services import business_store as db,business_agent,business_ops as ops
 from services.conversation_transport import ConversationError
 from services.request_limits import request_rate_limiter
 from services.lab_fields_v2 import ReportField,normalize
@@ -86,22 +86,34 @@ def booking_create(tx,owner,payload):
     q=db.quote(payload.package_ids,tx)
     if q['staff_review_required']:raise ConversationError('staff_review','A staff review is required before booking these follow-up services.',409)
     branch=next((b for b in db.branches(tx)['branches'] if b['id']==payload.branch_id),None)
+    if branch and any(payload.branch_id not in p.get('branch_ids',[payload.branch_id]) for p in db.catalog(tx)['packages'] if p['id'] in payload.package_ids):
+        raise ConversationError('branch_unavailable','This health check is not offered at the selected center.',422)
     try:dt=datetime.strptime(payload.date+' '+payload.time,'%Y-%m-%d %H:%M').replace(tzinfo=TZ)
     except ValueError:raise ConversationError('slot_invalid','Choose a valid date and time.',422) from None
     now=datetime.now(TZ)
     if not branch or dt.weekday()==6 or not now<dt<now+timedelta(days=30) or dt.hour<7 or dt.hour>=16 or dt.minute not in [0,30]:raise ConversationError('slot_invalid','Choose an available half-hour slot within 30 days, Monday–Saturday, 07:00–15:30.',422)
-    count=sum(1 for x in tx.find('booking') if not x['data'].get('organization') and x['branch']==payload.branch_id and x['state'] not in ['cancelled'] and x['data']['date']==payload.date and x['data']['time']==payload.time)
+    count=ops.used_capacity(tx,payload.branch_id,payload.date,payload.time)
     if count>=branch['capacity_per_slot']:raise ConversationError('slot_full','This time is full. Choose another time.',409)
-    row=tx.put(id,'booking',owner,{**q,'date':payload.date,'time':payload.time,'branch_id':payload.branch_id,'payment_status':'pending','payment_method':'center','request_hash':fingerprint},'confirmed',payload.branch_id)
-    tx.audit(owner,'booking.confirmed',id);return row
+    # Customer submission holds capacity as a request; staff confirm or decline it.
+    row=tx.put(id,'booking',owner,{**q,'date':payload.date,'time':payload.time,'branch_id':payload.branch_id,'payment_status':'pending','payment_method':'center','request_hash':fingerprint,'requested_at':time.time()},'requested',payload.branch_id)
+    tx.audit(owner,'booking.requested',id)
+    names=', '.join(i['name'] for i in q['items'])
+    ops.notify(tx,owner,'Appointment request sent',f'{names} on {payload.date} at {payload.time}. Our team will confirm it.',id,'/app?view=bookings')
+    ops.notify_staff(tx,payload.branch_id,'New appointment request',f'{names} · {payload.date} {payload.time}',id,'/staff?view=operations')
+    return row
 
-def ticket_create(tx,owner,summary):
+def ticket_create(tx,owner,summary,pause_bot=True,extra=None):
     c=conversation(tx,owner);existing=next((x for x in tx.find('ticket',owner) if x['state']!='closed'),None)
     latest=tx.find('booking',owner)
-    branch=latest[-1]['branch'] if latest else ''
-    row=existing or tx.put('ticket_'+secrets.token_hex(12),'ticket',owner,{'summary':summary,'assigned_to':''},'waiting',branch)
-    c['data']['mode']='waiting';c['data']['version']+=1;tx.put(c['id'],'conversation',owner,c['data'])
-    tx.audit(owner,'handoff.requested',row['id']);return row
+    branch=(extra or {}).get('branch_id') or (latest[-1]['branch'] if latest else '')
+    row=existing or tx.put('ticket_'+secrets.token_hex(12),'ticket',owner,{'summary':summary,'assigned_to':'',**(extra or {})},'waiting',branch)
+    if existing and extra:
+        existing['data'].update(extra);existing['data']['summary']=summary;row=tx.put(existing['id'],'ticket',owner,existing['data'],existing['state'],existing['branch'] or branch)
+    if pause_bot and c['data']['mode']=='bot':
+        c['data']['mode']='waiting';c['data']['version']+=1;tx.put(c['id'],'conversation',owner,c['data'])
+    tx.audit(owner,'handoff.requested',row['id'])
+    if not existing:ops.notify_staff(tx,row['branch'],'New customer request',summary[:200],row['id'],'/staff')
+    return row
 
 @router.get('/catalog')
 async def get_catalog():return db.catalog()
@@ -227,19 +239,20 @@ async def create_quote(body:PackageChoice,request:Request):
 async def slots(branch_id:str,date:str,request:Request):
     with db.transaction() as tx:
         session_row(tx,request,False)
-        if branch_id not in {b['id'] for b in db.branches(tx)['branches']}:raise ConversationError('branch_invalid','Unknown branch.',422)
+        branch=ops.branch(tx,branch_id)
+        if not branch:raise ConversationError('branch_invalid','Unknown branch.',422)
         try:day=datetime.strptime(date,'%Y-%m-%d').replace(tzinfo=TZ)
         except ValueError:raise ConversationError('date_invalid','Use YYYY-MM-DD.',422) from None
         now=datetime.now(TZ)
         if day.weekday()==6 or day.date()<now.date() or day>now+timedelta(days=30):return {'slots':[]}
-        bookings=tx.find('booking');result=[]
+        result=[]
         for hour in range(7,16):
             for minute in [0,30]:
                 tm=f'{hour:02}:{minute:02}'
                 if day.replace(hour=hour,minute=minute)<=now:continue
-                used=sum(not x['data'].get('organization') and x['state']!='cancelled' and x['branch']==branch_id and x['data']['date']==date and x['data']['time']==tm for x in bookings)
-                result.append({'time':tm,'available':max(0,3-used)})
-        return {'slots':result}
+                used=ops.used_capacity(tx,branch_id,date,tm)
+                result.append({'time':tm,'available':max(0,branch['capacity_per_slot']-used),'capacity':branch['capacity_per_slot']})
+        return {'slots':result,'branch_id':branch_id,'date':date,'mode':'SIMULATED_INTEGRATION'}
 
 @router.post('/bookings')
 async def book(body:Book,request:Request):
@@ -268,15 +281,23 @@ async def change_booking(id:str,body:BookingChange,request:Request):
     with db.transaction() as tx:
         u,_=session_row(tx,request);b=tx.own(id,u['id'],'booking');d=b['data']
         dt=datetime.strptime(d['date']+' '+d['time'],'%Y-%m-%d %H:%M').replace(tzinfo=TZ)
+        if b['state'] in ['cancelled','declined']:return b
+        unpaid=d.get('payment_status')!='paid'
+        if b['state']=='requested' and body.operation=='cancel' and unpaid:
+            result=tx.put(id,'booking',u['id'],d,'cancelled',b['branch']);tx.audit(u['id'],'booking.cancel',id)
+            ops.notify_staff(tx,b['branch'],'Appointment request withdrawn',f"{d['date']} {d['time']}",id);return result
         if d.get('organization') or body.operation=='refund_request' or dt-datetime.now(TZ)<timedelta(hours=24):
-            return ticket_create(tx,u['id'],f'{body.operation} request for {id}; staff review required.')
-        if b['state']=='cancelled':return b
+            return ticket_create(tx,u['id'],f'{body.operation} request for {id}; staff review required.',pause_bot=False)
         if body.operation=='reschedule':
             replacement=booking_create(tx,u['id'],Book(package_ids=d['package_ids'],branch_id=b['branch'],date=body.date,time=body.time,idempotency_key='reschedule-'+id+'-'+body.date+'-'+body.time))
             # Move the existing appointment only; keep its payment/order identity.
             tx.delete(replacement['id']);d.update(date=body.date,time=body.time)
-            result=tx.put(id,'booking',u['id'],d,b['state'],b['branch'])
-        else:result=tx.put(id,'booking',u['id'],d,'cancelled',b['branch'])
+            # A new slot needs a fresh staff confirmation.
+            result=tx.put(id,'booking',u['id'],d,'requested',b['branch'])
+            ops.notify_staff(tx,b['branch'],'Reschedule needs confirmation',f"New slot {body.date} {body.time}",id,'/staff?view=operations')
+        else:
+            result=tx.put(id,'booking',u['id'],d,'cancelled',b['branch'])
+            ops.notify_staff(tx,b['branch'],'Appointment cancelled',f"{d['date']} {d['time']}",id)
         tx.audit(u['id'],'booking.'+body.operation,id);return result
 
 @router.post('/handoffs')
@@ -376,6 +397,8 @@ async def ticket_state(id:str,body:TicketChange,request:Request):
         t['data']['assigned_to']=u['id'];tx.put(id,'ticket',t['owner'],t['data'],body.state,t['branch'])
         c=conversation(tx,t['owner']);c['data']['mode']='staff' if body.state=='staff' else 'bot';c['data']['version']+=1;c['data']['busy_until']=0
         tx.put(c['id'],'conversation',t['owner'],c['data']);tx.audit(u['id'],'handoff.'+body.state,id)
+        text={'staff':('A team member joined your conversation','The assistant is paused while our team replies.'),'bot':('The assistant is back','Our team handed the conversation back to the assistant.'),'closed':('Your request was resolved','Our team closed this request. Start a new message any time.')}[body.state]
+        ops.notify(tx,t['owner'],text[0],text[1],id,'/app')
     return {'ok':True}
 
 @router.post('/staff/tickets/{id}/messages')
@@ -384,6 +407,7 @@ async def staff_send(id:str,body:StaffMessage,request:Request):
         u,t=staff_ticket(tx,request,id)
         if t['state']!='staff' or t['data'].get('assigned_to')!=u['id']:raise ConversationError('takeover_required','Take over this case before replying.',409)
         c=conversation(tx,t['owner']);c['data']['messages']=(c['data']['messages']+[msg('staff',body.message)])[-100:];tx.put(c['id'],'conversation',t['owner'],c['data']);tx.audit(u['id'],'staff.message',id)
+        ops.notify(tx,t['owner'],'New reply from our team',body.message[:160],id,'/app')
         for link in tx.find('line_identity',t['owner']):
             tx.put('outbox_'+secrets.token_hex(12),'line_outbox',t['owner'],{'line_user_id':link['data']['line_user_id'],'reply':body.message,'retry_key':str(__import__('uuid').uuid4()),'attempts':0},'pending')
     return {'ok':True}
@@ -393,20 +417,26 @@ async def settle(id:str,request:Request):
     with db.transaction() as tx:
         u=staff(tx,request);b=tx.get(id)
         if not b or b['kind']!='booking' or (u['data']['role']!='manager' and b['branch']!=u['data'].get('branch')):raise ConversationError('not_found','Booking unavailable.',404)
-        if b['data']['payment_method']!='center' or b['state']=='cancelled':raise ConversationError('invalid_state','This order cannot be settled at the center.',409)
+        if b['data']['payment_method']!='center' or b['state']!='confirmed':raise ConversationError('invalid_state','This order cannot be settled at the center.',409)
         if b['data']['payment_status']=='paid':return {'ok':True,'receipt_id':b['data'].get('receipt_id','')}
         if b['data']['payment_status']!='pending':raise ConversationError('payment_state','Only a pending center payment can be settled.',409)
         b['data']['payment_status']='paid';b['data']['receipt_id']='demo-receipt-'+secrets.token_hex(8);tx.put(id,'booking',b['owner'],b['data'],b['state'],b['branch']);tx.audit(u['id'],'payment.center_settled',id)
+        ops.notify(tx,b['owner'],'Payment recorded at the center','The center recorded your payment (simulation receipt).',id,'/app?view=bookings')
         return {'ok':True,'receipt_id':b['data']['receipt_id']}
 
 async def create_checkout(owner,booking_id,method):
     from services.business_integrations import stripe_checkout
     with db.transaction() as tx:
         b=tx.own(booking_id,owner,'booking')
-        if b['state']=='cancelled' or b['data']['payment_status']!='pending':raise ConversationError('payment_state','This booking cannot start a payment.',409)
+        if b['state']=='requested':raise ConversationError('awaiting_confirmation','Payment opens after our team confirms this appointment.',409)
+        if b['state']!='confirmed' or b['data']['payment_status']!='pending':raise ConversationError('payment_state','This booking cannot start a payment.',409)
         d=b['data']
+        if method!='center' and ops.payment_mode()=='SIMULATED_INTEGRATION':
+            txn=ops.sim_create(tx,b,method)
+            return {'simulator_url':'/pay/sim/'+txn['id'],'txn':ops.sim_view(tx,txn),'mode':'SIMULATED_INTEGRATION'}
         if method=='center':
-            if d.get('checkout_method'):raise ConversationError('checkout_active','A checkout already exists. Ask staff to change the payment method.',409)
+            if d.get('checkout_method') or d.get('active_txn'):raise ConversationError('checkout_active','A checkout already exists. Cancel it or ask staff to change the payment method.',409)
+            d.update(payment_method='center');tx.put(b['id'],'booking',owner,d,b['state'],b['branch'])
             return {'message':'Payment is due at the center.'}
         if d.get('checkout_method') and d['checkout_method']!=method:raise ConversationError('checkout_active','A checkout with another method already exists.',409)
         if d.get('checkout_url') and d.get('checkout_expires',0)>time.time():return {'url':d['checkout_url'],'session_id':d['checkout_session_id']}
@@ -498,6 +528,7 @@ class CorporateQuote(Strict):
     date:str;time:str=Field(pattern=r'^\d{2}:\d{2}$');branch_id:str='BKK01'
     venue:str=Field(min_length=1,max_length=250)
     travel_fee_thb:int=Field(default=0,ge=0,le=20000)
+    note:str=Field(default='',max_length=500)
 class AcceptQuote(Strict):quote_id:str
 
 @router.get('/staff/operations')
@@ -532,9 +563,17 @@ async def corporate_quote(body:CorporateQuote,request:Request):
         except ValueError:raise ConversationError('date_invalid','Choose a valid date and time.',422) from None
         if dt<=datetime.now(TZ):raise ConversationError('date_invalid','Choose a future date.',422)
         total=p['price_thb']*body.people+body.travel_fee_thb
-        q=tx.put('quote_'+secrets.token_hex(12),'corporate_quote',t['owner'],{**body.model_dump(),'unit_price_thb':p['price_thb'],'total_thb':total,'currency':'THB','expires':time.time()+7*86400,'items':[{'id':p['id'],'name':p['name']+' × '+str(body.people),'price_thb':total,'price_unit':'group'}],'is_demo':True},'offered',body.branch_id)
-        c=conversation(tx,t['owner']);c['data']['messages'].append(msg('staff','Your organization quote is ready: '+str(body.people)+' people, '+p['name']+', THB '+str(total)+'. Review and accept it in My appointments.'))
-        tx.put(c['id'],'conversation',t['owner'],c['data']);tx.audit(u['id'],'quote.offered',q['id']);return q
+        # Versioned quotations: a revision supersedes the open offer for the same case.
+        previous=[x for x in tx.find('corporate_quote',t['owner']) if x['data'].get('ticket_id')==body.ticket_id]
+        if any(x['state']=='accepted' for x in previous):raise ConversationError('quote_accepted','The customer already accepted a quotation for this case.',409)
+        for old in previous:
+            if old['state']=='offered':tx.put(old['id'],old['kind'],old['owner'],old['data'],'superseded',old['branch'])
+        version=len(previous)+1
+        q=tx.put('quote_'+secrets.token_hex(12),'corporate_quote',t['owner'],{**body.model_dump(),'version':version,'issued_by':u['id'],'inquiry_id':t['data'].get('inquiry_id',''),'unit_price_thb':p['price_thb'],'total_thb':total,'currency':'THB','expires':time.time()+7*86400,'items':[{'id':p['id'],'name':p['name']+' × '+str(body.people),'price_thb':total,'price_unit':'group'}],'is_demo':True},'offered',body.branch_id)
+        c=conversation(tx,t['owner']);c['data']['messages'].append(msg('staff',f"Your organization quotation (version {version}) is ready: {body.people} people, {p['name']}, THB {total:,}. Review, download or accept it in My appointments."))
+        tx.put(c['id'],'conversation',t['owner'],c['data']);tx.audit(u['id'],'quote.offered',q['id'])
+        ops.notify(tx,t['owner'],f'Quotation version {version} is ready',f"{p['name']} for {body.people} people · THB {total:,}",q['id'],'/app?view=bookings')
+        return q
 
 @router.post('/quotes/accept')
 async def accept_quote(body:AcceptQuote,request:Request):
@@ -543,9 +582,12 @@ async def accept_quote(body:AcceptQuote,request:Request):
         if not u['data'].get('password'):raise ConversationError('account_required','Sign in before accepting a quotation.',409)
         id='booking_'+q['id']
         if tx.get(id):return tx.get(id)
+        if q['state']=='superseded':raise ConversationError('quote_superseded','A newer version of this quotation exists. Review the latest version.',409)
         if q['state']!='offered' or q['data']['expires']<time.time():raise ConversationError('quote_expired','This quotation is no longer available.',409)
         d={**q['data'],'payment_status':'pending','payment_method':'center','package_ids':[q['data']['package_id']],'organization':True}
-        b=tx.put(id,'booking',u['id'],d,'confirmed',q['branch']);tx.put(q['id'],q['kind'],q['owner'],q['data'],'accepted',q['branch']);tx.audit(u['id'],'quote.accepted',id);return b
+        b=tx.put(id,'booking',u['id'],d,'confirmed',q['branch']);tx.put(q['id'],q['kind'],q['owner'],q['data'],'accepted',q['branch']);tx.audit(u['id'],'quote.accepted',id)
+        ops.notify_staff(tx,q['branch'],'Quotation accepted',f"Version {q['data'].get('version',1)} · THB {q['data']['total_thb']:,}",id,'/staff?view=operations')
+        return b
 
 class RefundRequest(Strict):reason:str=Field(min_length=3,max_length=500)
 @router.post('/staff/bookings/{id}/refund')
@@ -558,6 +600,14 @@ async def refund_booking(id:str,body:RefundRequest,request:Request):
         if b['data']['payment_status']=='refunded':return {'status':'refunded'}
         if b['data']['payment_status']!='paid':raise ConversationError('payment_state','Only a settled payment can be refunded.',409)
     if b['data']['payment_method']=='center':result={'status':'succeeded','id':'demo-refund-'+secrets.token_hex(8)}
+    elif b['data'].get('payment_provider')=='simulator':
+        with db.transaction() as tx:
+            txn=next((t for t in tx.find('payment_txn',b['owner']) if t['data']['booking_id']==id and t['state']=='succeeded'),None)
+            if not txn:raise ConversationError('refund_setup','No settled test payment exists for this appointment.',409)
+        raw=ops.sim_event_payload(txn,'refund');ops.sim_apply(raw,ops.sim_sign(raw))
+        with db.transaction() as tx:
+            b=tx.get(id);b['data']['refund_reason']=body.reason;tx.put(id,'booking',b['owner'],b['data'],b['state'],b['branch']);tx.audit(u['id'],'payment.refund',id)
+        return {'status':b['data']['payment_status']}
     else:
         from services.business_integrations import external
         import httpx

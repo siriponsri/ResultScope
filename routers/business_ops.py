@@ -1,0 +1,294 @@
+"""Business API additions: catalog search/compare, decisions, notifications,
+organization inquiries, documents, payment simulator and LINE simulator.
+
+All routes reuse the session, CSRF, ownership and role checks of routers.business.
+"""
+from __future__ import annotations
+
+import base64
+import hashlib
+import hmac
+import json
+import os
+import secrets
+import time
+from datetime import datetime
+
+from fastapi import APIRouter, Request
+from fastapi.responses import Response
+from pydantic import Field
+
+from routers.business import (TZ, ConversationError, Strict, conversation, msg, session_row, staff,
+                              staff_ticket, ticket_create)
+from services import business_documents as documents
+from services import business_ops as ops
+from services import business_store as db
+
+router = APIRouter(prefix="/api/business")
+
+
+# ------------------------------------------------------------ catalog (public)
+
+@router.get("/catalog/search")
+async def catalog_search(q: str = "", segment: str = "", branch_id: str = "", max_price: int | None = None,
+                         min_price: int | None = None, review: str = "", sort: str = "featured"):
+    if segment not in ("", "individual", "organization") or review not in ("", "excluded", "only"):
+        raise ConversationError("filter_invalid", "Unknown filter value.", 422)
+    with db.transaction() as tx:
+        return ops.catalog_search(tx, q, segment, branch_id, max_price, min_price, review, sort)
+
+
+@router.get("/catalog/compare")
+async def catalog_compare(ids: str = ""):
+    with db.transaction() as tx:
+        return ops.compare(tx, [i.strip() for i in ids.split(",")])
+
+
+@router.get("/catalog/{package_id}")
+async def catalog_detail(package_id: str):
+    with db.transaction() as tx:
+        return ops.package_detail(tx, package_id)
+
+
+@router.get("/modes")
+async def integration_modes():
+    return {"modes": ops.modes(), "is_demo": True}
+
+
+# ------------------------------------------------------------ notifications
+
+class ReadNotices(Strict):
+    ids: list[str] | None = Field(default=None, max_length=100)
+
+
+def _audiences(tx, request, mutation: bool) -> list[str]:
+    user, _ = session_row(tx, request, mutation)
+    if request.url.path.endswith("/staff/notifications") or request.url.path.endswith("/staff/notifications/read"):
+        if user["data"].get("role") not in ("staff", "manager", "clinical"):
+            raise ConversationError("forbidden", "Staff access required.", 403)
+        return ops.staff_audiences(tx, user)
+    return [user["id"]]
+
+
+@router.get("/notifications")
+@router.get("/staff/notifications")
+async def notifications(request: Request):
+    with db.transaction() as tx:
+        return ops.list_notifications(tx, _audiences(tx, request, False))
+
+
+@router.post("/notifications/read")
+@router.post("/staff/notifications/read")
+async def notifications_read(body: ReadNotices, request: Request):
+    with db.transaction() as tx:
+        return {"updated": ops.mark_read(tx, _audiences(tx, request, True), body.ids)}
+
+
+# ------------------------------------------------------------ booking decisions
+
+class Decision(Strict):
+    decision: str = Field(pattern="^(confirm|decline)$")
+    note: str = Field(default="", max_length=500)
+
+
+@router.post("/staff/bookings/{booking_id}/decision")
+async def booking_decision(booking_id: str, body: Decision, request: Request):
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        booking = tx.get(booking_id)
+        if not booking or booking["kind"] != "booking" or (user["data"]["role"] != "manager" and booking["branch"] != user["data"].get("branch")):
+            raise ConversationError("not_found", "Booking unavailable.", 404)
+        d = booking["data"]
+        target = "confirmed" if body.decision == "confirm" else "declined"
+        if booking["state"] == target:
+            return booking
+        if booking["state"] != "requested":
+            raise ConversationError("invalid_state", f"A {booking['state']} appointment cannot be {target}.", 409)
+        start = datetime.strptime(d["date"] + " " + d["time"], "%Y-%m-%d %H:%M").replace(tzinfo=TZ)
+        if body.decision == "confirm" and start <= datetime.now(TZ):
+            raise ConversationError("slot_past", "This slot has passed. Decline it and ask the customer to choose another time.", 409)
+        d.update(decided_by=user["id"], decided_at=time.time(), decision_note=body.note)
+        row = tx.put(booking_id, "booking", booking["owner"], d, target, booking["branch"])
+        tx.audit(user["id"], "booking." + target, booking_id)
+        if target == "confirmed":
+            ops.notify(tx, booking["owner"], "Appointment confirmed",
+                       f"{d['date']} at {d['time']}. You can now pay by test payment or at the center, or add it to your calendar.",
+                       booking_id, "/app?view=bookings")
+        else:
+            ops.notify(tx, booking["owner"], "Appointment request declined",
+                       (body.note or "This slot could not be confirmed.") + " Choose another time or contact our team.",
+                       booking_id, "/app?view=bookings")
+        return row
+
+
+@router.get("/bookings/{booking_id}/calendar.ics")
+async def booking_calendar(booking_id: str, request: Request):
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request, False)
+        booking = tx.own(booking_id, user["id"], "booking")
+        if booking["state"] != "confirmed":
+            raise ConversationError("not_confirmed", "Calendar files are available after confirmation.", 409)
+        branch = ops.branch(tx, booking["branch"]) or {"name": booking["branch"], "area": ""}
+        body = documents.appointment_ics(booking, branch)
+    return Response(body, media_type="text/calendar; charset=utf-8", headers={
+        "Content-Disposition": f'attachment; filename="resultscope-{booking_id[-8:]}.ics"', "Cache-Control": "no-store"})
+
+
+# ------------------------------------------------------------ organization inquiries and quotes
+
+class Inquiry(Strict):
+    organization: str = Field(min_length=2, max_length=160)
+    contact_name: str = Field(min_length=2, max_length=120)
+    headcount: int = Field(ge=20, le=10000)
+    service_mode: str = Field(pattern="^(center|onsite)$")
+    branch_id: str = Field(min_length=3, max_length=10)
+    preferred_date: str = Field(default="", max_length=10)
+    package_ids: list[str] = Field(default_factory=list, max_length=3)
+    notes: str = Field(default="", max_length=1000)
+
+
+@router.post("/organizations/inquiries")
+async def organization_inquiry(body: Inquiry, request: Request):
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request)
+        if not user["data"].get("password"):
+            raise ConversationError("account_required", "Create an account or sign in so you can follow your quotation.", 409)
+        if not ops.branch(tx, body.branch_id):
+            raise ConversationError("branch_invalid", "Choose one of our centers.", 422)
+        if body.preferred_date:
+            try:
+                if datetime.strptime(body.preferred_date, "%Y-%m-%d").date() <= datetime.now(TZ).date():
+                    raise ValueError
+            except ValueError:
+                raise ConversationError("date_invalid", "Choose a future preferred date (YYYY-MM-DD).", 422) from None
+        org_ids = {p["id"] for p in db.catalog(tx)["packages"] if p["segment"] == "organization" and p.get("active", True)}
+        if any(i not in org_ids for i in body.package_ids):
+            raise ConversationError("package_invalid", "Choose organization packages only.", 422)
+        inquiry = tx.put("inquiry_" + secrets.token_hex(12), "org_inquiry", user["id"], {**body.model_dump(), "email": user["data"]["email"], "at": time.time()}, "submitted", body.branch_id)
+        summary = f"Organization inquiry: {body.organization}, {body.headcount} people, {'onsite' if body.service_mode == 'onsite' else 'at center'}"
+        ticket = ticket_create(tx, user["id"], summary, pause_bot=False, extra={"inquiry_id": inquiry["id"], "branch_id": body.branch_id, "topic": "organization"})
+        inquiry["data"]["ticket_id"] = ticket["id"]
+        tx.put(inquiry["id"], "org_inquiry", user["id"], inquiry["data"], "submitted", body.branch_id)
+        tx.audit(user["id"], "organization.inquiry", inquiry["id"])
+        ops.notify(tx, user["id"], "Organization request received",
+                   "Our coordinators will prepare a quotation. You will see it in My appointments.", inquiry["id"], "/app?view=bookings")
+        return {"inquiry": tx.get(inquiry["id"]), "ticket_id": ticket["id"]}
+
+
+@router.get("/organizations/inquiries")
+async def my_inquiries(request: Request):
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request, False)
+        return {"inquiries": tx.find("org_inquiry", user["id"])}
+
+
+@router.get("/staff/tickets/{ticket_id}/inquiry")
+async def ticket_inquiry(ticket_id: str, request: Request):
+    with db.transaction() as tx:
+        _, ticket = staff_ticket(tx, request, ticket_id)
+        inquiry = tx.get(ticket["data"].get("inquiry_id", "")) if ticket["data"].get("inquiry_id") else None
+        quotes = [q for q in tx.find("corporate_quote", ticket["owner"]) if q["data"].get("ticket_id") == ticket_id]
+        return {"inquiry": inquiry, "quotes": quotes}
+
+
+@router.get("/quotes/{quote_id}/document.pdf")
+async def quote_document(quote_id: str, request: Request):
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request, False)
+        quote = tx.get(quote_id)
+        is_staff = user["data"].get("role") in ("staff", "manager", "clinical")
+        allowed = quote and quote["kind"] == "corporate_quote" and (
+            quote["owner"] == user["id"] or (is_staff and (user["data"]["role"] == "manager" or quote["branch"] == user["data"].get("branch"))))
+        if not allowed:
+            raise ConversationError("not_found", "This quotation is unavailable.", 404)
+        branch = ops.branch(tx, quote["branch"]) or {"name": quote["branch"]}
+        body = documents.quotation_pdf(quote, branch["name"])
+    return Response(body, media_type="application/pdf", headers={
+        "Content-Disposition": f'attachment; filename="resultscope-quotation-{quote_id[-8:]}-v{quote["data"].get("version", 1)}.pdf"',
+        "Cache-Control": "no-store"})
+
+
+# ------------------------------------------------------------ payment simulator
+
+class SimOutcome(Strict):
+    outcome: str = Field(pattern="^(success|failure|expire|cancel)$")
+
+
+@router.get("/payments/simulator/{txn_id}")
+async def sim_status(txn_id: str, request: Request):
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request, False)
+        txn = tx.own(txn_id, user["id"], "payment_txn")
+        return ops.sim_view(tx, txn)
+
+
+@router.post("/payments/simulator/{txn_id}/events")
+async def sim_trigger(txn_id: str, body: SimOutcome, request: Request):
+    """The simulator panel acts as the payer's test bank app and sends a signed event."""
+    with db.transaction() as tx:
+        user, _ = session_row(tx, request)
+        txn = tx.own(txn_id, user["id"], "payment_txn")
+        if body.outcome == "expire" and txn["state"] == "pending":
+            txn["data"]["expires_at"] = time.time() - 1
+            tx.put(txn["id"], "payment_txn", txn["owner"], txn["data"], txn["state"], txn["branch"])
+    raw = ops.sim_event_payload(txn, body.outcome)
+    result = ops.sim_apply(raw, ops.sim_sign(raw))
+    with db.transaction() as tx:
+        return {**result, "txn": ops.sim_view(tx, tx.get(txn_id))}
+
+
+@router.post("/payments/simulator/webhook")
+async def sim_webhook(request: Request):
+    return ops.sim_apply(await request.body(), request.headers.get("x-simulator-signature", ""))
+
+
+# ------------------------------------------------------------ LINE simulator (staff/manager)
+
+class LineSimMessage(Strict):
+    line_user_id: str = Field(pattern=r"^Usim[0-9a-f]{8,32}$")
+    text: str = Field(min_length=1, max_length=2000)
+    event_id: str = Field(default="", max_length=60)
+
+
+@router.post("/staff/line-simulator/events")
+async def line_sim_event(body: LineSimMessage, request: Request):
+    """Builds a LINE-shaped webhook event, signs it with the simulator secret and feeds the
+    same verify -> enqueue path as the real webhook. Delivery goes to the simulated transport."""
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required for the channel simulator.", 403)
+    from services import business_integrations as integration
+    event_id = body.event_id or "simline_" + secrets.token_hex(10)
+    payload = {"destination": "Usimulator", "events": [{
+        "type": "message", "mode": "active", "timestamp": int(time.time() * 1000), "webhookEventId": event_id,
+        "source": {"type": "user", "userId": body.line_user_id}, "replyToken": "sim-" + secrets.token_hex(8),
+        "message": {"type": "text", "id": str(secrets.randbelow(10**12)), "text": body.text}}]}
+    raw = json.dumps(payload, separators=(",", ":")).encode()
+    secret = integration.line_secret()
+    signature = base64.b64encode(hmac.new(secret.encode(), raw, hashlib.sha256).digest()).decode()
+    integration.enqueue_line(integration.verify_line(raw, signature))
+    return {"queued": True, "event_id": event_id, "mode": ops.line_mode()}
+
+
+@router.get("/staff/line-simulator/outbox")
+async def line_sim_outbox(request: Request):
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required for the channel simulator.", 403)
+        jobs = [{"id": j["id"], "kind": j["kind"], "state": j["state"], "error_code": j["data"].get("error_code", ""),
+                 "created": j["created"]} for kind in ("line_job", "line_outbox") for j in tx.find(kind)]
+        sent = [{"id": r["id"], "to": r["data"]["to"], "text": r["data"]["text"], "at": r["data"]["at"]}
+                for r in tx.find("line_sim_delivery")]
+        return {"jobs": jobs[-50:], "deliveries": sent[-50:], "mode": ops.line_mode()}
+
+
+@router.post("/staff/line-simulator/run")
+async def line_sim_run(request: Request):
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required for the channel simulator.", 403)
+    from services.business_worker import once
+    return await once()

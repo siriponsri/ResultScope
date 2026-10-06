@@ -104,6 +104,13 @@ def finish(reservation, outcome: str, reason: str | None = None):
 async def post_json(url: str, headers: dict[str, str], body: dict, slot: str, timeout: float) -> dict:
     endpoint = validate_server_url(url)
     reservation = await reserve(slot)
+    from services import cost_ledger
+    try:
+        # THB reservation after the call-count gate; both must pass before any request.
+        cost = cost_ledger.reserve(str(body.get("model") or slot + "-service"), body)
+    except ConversationError:
+        finish(reservation, "failed", "cost_blocked")
+        raise
     try:
         async with httpx.AsyncClient(timeout=min(timeout, 75), follow_redirects=False) as client:
             async with client.stream("POST", endpoint, headers=headers, json=body) as response:
@@ -119,12 +126,15 @@ async def post_json(url: str, headers: dict[str, str], body: dict, slot: str, ti
                 if not isinstance(result, dict):
                     raise ValueError
         finish(reservation, "succeeded")
+        cost_ledger.settle(cost, result.get("usage"), "succeeded")
         return result
     except asyncio.CancelledError:
         finish(reservation, "failed", "cancelled")
+        cost_ledger.settle(cost, None, "cancelled")
         raise
     except (httpx.HTTPError, ValueError, ConversationError) as exc:
         finish(reservation, "failed", "request_failed")
+        cost_ledger.settle(cost, None, "failed")
         if isinstance(exc, ConversationError):
             raise
         raise ConversationError("service_unavailable", "A connected service could not complete this request. Please try again.", 502) from None

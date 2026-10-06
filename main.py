@@ -15,6 +15,7 @@ from routers.images import router as images_router
 from routers.admin import router as admin_router
 from routers.conversation import router as conversation_router
 from routers.business import router as business_router
+from routers.business_ops import router as business_ops_router
 from services.conversation_transport import ConversationError
 from fastapi.responses import JSONResponse
 
@@ -52,6 +53,7 @@ app.include_router(images_router)
 app.include_router(admin_router)
 app.include_router(conversation_router)
 app.include_router(business_router)
+app.include_router(business_ops_router)
 
 @app.exception_handler(ConversationError)
 async def business_error(request: Request, exc: ConversationError):

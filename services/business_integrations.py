@@ -8,6 +8,15 @@ from services.conversation_transport import ConversationError
 def external():
     if os.getenv('BUSINESS_EXTERNAL_ENABLED')!='true':raise ConversationError('integration_disabled','External business integrations are disabled. Configure the sandbox connection first.')
 
+def line_simulated():
+    """Server-owned decision: without real LINE credentials the channel runs through the simulator transport."""
+    from services.business_ops import line_mode
+    return line_mode()=='SIMULATED_INTEGRATION'
+
+def line_secret():
+    # A configured channel secret always verifies inbound events; the simulator signs with the same secret.
+    return os.getenv('LINE_CHANNEL_SECRET','') or db.derived_secret('line-simulator').hex()
+
 def public_url():
     from urllib.parse import urlparse
     url=os.getenv('BUSINESS_PUBLIC_URL','').rstrip('/')
@@ -65,7 +74,7 @@ def apply_stripe(event):
     return {'received':True}
 
 def verify_line(raw,signature):
-    secret=os.getenv('LINE_CHANNEL_SECRET','')
+    secret=line_secret()
     if not secret:raise ConversationError('line_setup','LINE is not configured.',503)
     expected=base64.b64encode(hmac.new(secret.encode(),raw,hashlib.sha256).digest()).decode()
     if not hmac.compare_digest(expected,signature):raise ConversationError('signature_invalid','Invalid LINE signature.',400)
@@ -89,6 +98,12 @@ def enqueue_line(payload):
     return {'ok':True}
 
 async def line_send(uid,text,retry_key,reply_token=''):
+    if line_simulated():
+        # SIMULATED_INTEGRATION transport: same chunking/dedup contract, persisted instead of sent.
+        with db.transaction() as tx:
+            rid='linesim_'+db.digest(retry_key+':'+reply_token)
+            if not tx.get(rid):tx.put(rid,'line_sim_delivery','system',{'to':uid,'text':text[:18000],'endpoint':'reply' if reply_token else 'push','at':time.time()},'delivered')
+        return
     external();key=os.getenv('LINE_CHANNEL_ACCESS_TOKEN','')
     if not key:raise ConversationError('line_setup','LINE access token is missing.')
     messages=[{'type':'text','text':text[i:i+4500]} for i in range(0,min(len(text),18000),4500)] or [{'type':'text','text':'Your request is ready on the website.'}]
@@ -101,6 +116,7 @@ async def line_send(uid,text,retry_key,reply_token=''):
     if r.status_code not in [200,409]:raise ConversationError('line_delivery_failed','LINE delivery failed.',502)
 
 async def line_image(message_id):
+    if line_simulated():raise ConversationError('line_image_unavailable','Image messages are not available in the LINE simulator. Upload the report on the website.',409)
     external();key=os.getenv('LINE_CHANNEL_ACCESS_TOKEN','')
     if not re_id(message_id):raise ConversationError('line_image_invalid','Invalid image ID.',422)
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
@@ -117,4 +133,5 @@ def re_id(v):return isinstance(v,str) and v.isdigit() and len(v)<=40
 def create_link(tx,owner):
     token=secrets.token_urlsafe(32)
     tx.put('link_'+db.digest(token),'account_link',owner,{'expires':time.time()+600},'pending')
-    return public_url()+'/app?link='+token
+    base='' if line_simulated() and not os.getenv('BUSINESS_PUBLIC_URL') else public_url()
+    return base+'/app?link='+token
