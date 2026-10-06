@@ -18,7 +18,14 @@ class Strict(BaseModel):model_config=ConfigDict(extra='forbid')
 class Credentials(Strict):
     email:str=Field(min_length=5,max_length=180)
     password:str=Field(min_length=12,max_length=200)
-class Chat(Strict):message:str=Field(min_length=1,max_length=8000)
+class PageContext(Strict):
+    path:str=Field(default='',max_length=120,pattern=r'^[A-Za-z0-9/_\-]*$')
+    package_id:str=Field(default='',max_length=10,pattern=r'^[A-Z0-9]*$')
+    compare_ids:list[str]=Field(default_factory=list,max_length=3)
+    view:str=Field(default='',max_length=20,pattern=r'^[a-z\-]*$')
+class Chat(Strict):
+    message:str=Field(min_length=1,max_length=8000)
+    page:PageContext|None=None
 class RetryChat(Strict):message_id:str=Field(min_length=8,max_length=40)
 class ActionConfirm(Strict):action_id:str=Field(min_length=1,max_length=100)
 class PackageChoice(Strict):package_ids:list[str]=Field(min_length=1,max_length=5)
@@ -177,7 +184,7 @@ async def workspace(request:Request):
         return {'conversation':c['data'],'bookings':tx.find('booking',owner),'tickets':tx.find('ticket',owner),'quotes':tx.find('corporate_quote',owner),'reports':reports,'user':db.user_public(u),'payments':payments,'unread_notifications':unread,'inquiries':tx.find('org_inquiry',owner)}
 
 RETRYABLE={'service_unavailable','provider_response_invalid','review_failed','guard_invalid','provider_rejected','storage_unavailable'}
-async def turn(owner,message,retry_id=''):
+async def turn(owner,message,retry_id='',page=None):
     if not message.strip() and not retry_id:raise ConversationError('empty_message','Type a message.',422)
     turn_id=secrets.token_hex(16)
     with db.transaction() as tx:
@@ -193,7 +200,7 @@ async def turn(owner,message,retry_id=''):
         if d['mode']!='bot':tx.put(c['id'],'conversation',owner,d);return {'reply':None,'queued_for_staff':True}
         version=d['version'];d['busy_until']=time.time()+240;d['turn_id']=turn_id;tx.put(c['id'],'conversation',owner,d)
         report=tx.own(d['report_id'],owner,'report')['data'] if d.get('report_id') else None
-        context={'history':[{'role':'assistant' if x['role']=='staff' else x['role'],'content':x['content']} for x in d['messages'][:-1][-12:]],'report':report if report and report.get('confirmed') else None,'previous_reports':[], 'customer_state':{'bookings':[{'id':b['id'],**b['data'],'status':b['state']} for b in tx.find('booking',owner)[-5:]]}}
+        context={'history':[{'role':'assistant' if x['role']=='staff' else x['role'],'content':x['content']} for x in d['messages'][:-1][-12:]],'report':report if report and report.get('confirmed') else None,'previous_reports':[], 'customer_state':{'bookings':[{'id':b['id'],**b['data'],'status':b['state']} for b in tx.find('booking',owner)[-5:]]},'page':page or {}}
         # Reports stay private, only explicitly selected comparison context is sent.
         other=d.get('compare_report_id')
         if other and other!=d.get('report_id'):
@@ -207,7 +214,7 @@ async def turn(owner,message,retry_id=''):
             if d['version']!=version or d['mode']!='bot' or d.get('turn_id')!=turn_id:return {'reply':None,'queued_for_staff':True}
             if result.get('action'):
                 aid='action_'+secrets.token_hex(16);tx.put(aid,'action',owner,{'action':result['action'],'expires':time.time()+600,'version':version},'pending');result['action_id']=aid
-            d['messages']=(d['messages']+[msg('assistant',result['reply'],sources=result['sources'],action=result.get('action'),action_id=result.get('action_id'),followups=result.get('followups',[]))])[-100:]
+            d['messages']=(d['messages']+[msg('assistant',result['reply'],sources=result['sources'],action=result.get('action'),action_id=result.get('action_id'),followups=result.get('followups',[]),dot=result.get('dot'),ui=result.get('ui',[]))])[-100:]
             d['busy_until']=0;tx.put(c['id'],'conversation',owner,d)
         return result
     except ConversationError as exc:
@@ -227,7 +234,9 @@ async def turn(owner,message,retry_id=''):
 async def chat(body:Chat,request:Request):
     provider_authorize(request)
     with db.transaction() as tx:u,_=session_row(tx,request)
-    return await turn(u['id'],body.message)
+    page=body.page.model_dump() if body.page else None
+    if page:page['compare_ids']=[i for i in page['compare_ids'] if re.fullmatch(r'P\d{2}',i)]
+    return await turn(u['id'],body.message,page=page)
 
 @router.post('/chat/retry')
 async def chat_retry(body:RetryChat,request:Request):

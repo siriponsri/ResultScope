@@ -52,6 +52,34 @@ async def integration_modes():
     return {"modes": ops.modes(), "is_demo": True}
 
 
+@router.get("/dots")
+async def dots_roster():
+    from services import business_dots
+    return {"dots": business_dots.public_roster(), "routing": "automatic", "is_demo": True}
+
+
+class DotToggle(Strict):
+    enabled: bool
+
+
+@router.put("/staff/dots/{dot_id}")
+async def toggle_dot(dot_id: str, body: DotToggle, request: Request):
+    from services import business_dots
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required.", 403)
+        config = business_dots.roster(tx)
+        dot = next((d for d in config["dots"] if d["id"] == dot_id), None)
+        if not dot:
+            raise ConversationError("not_found", "Unknown assistant role.", 404)
+        dot["enabled"] = body.enabled
+        config["version"] = "edited-" + secrets.token_hex(6)
+        tx.put("configuration_dots", "configuration", "system", config)
+        tx.audit(user["id"], "dot." + ("enabled" if body.enabled else "disabled"), dot_id)
+        return {"dots": business_dots.public_roster(tx), "version": config["version"]}
+
+
 @router.get("/staff/budget")
 async def budget_status(request: Request):
     from config import settings
