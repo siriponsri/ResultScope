@@ -51,8 +51,9 @@
       <button class="nav-item" data-view="packages" type="button">Health checks</button>
       <button class="nav-item" data-view="book" type="button">Request a time</button>
       <button class="nav-item" data-view="bookings" type="button">My appointments</button>
+      <button class="nav-item" data-view="labs" type="button">Lab dashboard</button>
       <button class="nav-item" data-view="reports" type="button">My reports</button>
-      <button class="nav-item" data-view="history" type="button">Past conversations</button>
+      <button class="nav-item" data-view="plan" type="button">Plan</button>
       <button class="nav-item" data-view="staff" id="staff-nav" type="button" hidden>Staff inbox</button>
     </nav>
     <h1 id="view-title" class="sr-only">Conversation</h1>
@@ -73,7 +74,7 @@
       <div class="conversation">
         <div class="col conv-bar">
           <div class="next" id="context-next"><span>No upcoming appointment</span></div>
-          <button type="button" class="btn ghost sm" id="new-chat">New conversation</button>
+          <div class="row"><button type="button" class="btn ghost sm" data-goto="history">Past conversations</button><button type="button" class="btn ghost sm" id="new-chat">New conversation</button></div>
         </div>
         <div id="messages" class="messages" aria-live="polite" aria-relevant="additions">
           <div class="welcome">
@@ -94,7 +95,7 @@
             <div class="attach-wrap">
               <button type="button" class="icon-btn" id="attach" aria-haspopup="menu" aria-expanded="false" aria-controls="attach-menu" aria-label="Add a report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 12.5 14 7a3 3 0 0 1 4.2 4.2l-7 7a5 5 0 0 1-7-7L11 4.5"/></svg></button>
               <div class="attach-menu" id="attach-menu" role="menu" hidden>
-                <button type="button" role="menuitem" id="add-report">Upload a report (JPG, PNG or PDF, up to 3 MB)</button>
+                <button type="button" role="menuitem" id="add-report">Upload a report (JPG, PNG or PDF, up to 3 MB each)</button>
                 <button type="button" role="menuitem" id="demo-open">Try a synthetic sample report</button>
               </div>
             </div>

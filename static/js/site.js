@@ -11,7 +11,7 @@
   const toggle = $('.nav-toggle'), nav = $('#main-nav');
   if (toggle && nav) {
     const set = open => { nav.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); };
-    document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav-pill')) set(false); });
+    document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav-bar')) set(false); });
     toggle.addEventListener('click', () => set(!nav.classList.contains('open')));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); toggle.focus(); } });
   }
@@ -21,12 +21,14 @@
     const tabs = $$('[role=tab]', box);
     const select = (tab, focus) => {
       tabs.forEach(t => { const on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; document.getElementById(t.getAttribute('aria-controls')).hidden = !on; });
-      if (focus) { tab.focus(); const field = document.getElementById(tab.getAttribute('aria-controls')).querySelector('textarea,input'); if (field && focus === 'field') field.focus(); }
+      if (focus) { tab.focus(); const field = document.getElementById(tab.getAttribute('aria-controls')).querySelector('textarea,input[type=search],input[type=text]'); if (field && focus === 'field') field.focus(); }
     };
     tabs.forEach((t, i) => {
       t.addEventListener('click', () => select(t, 'field'));
       t.addEventListener('keydown', e => {
-        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); select(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true); }
+        const vertical = box.hasAttribute('data-tabs-vertical') && matchMedia('(min-width:961px)').matches;
+        const next = vertical ? 'ArrowDown' : 'ArrowRight', prev = vertical ? 'ArrowUp' : 'ArrowLeft';
+        if (e.key === next || e.key === prev) { e.preventDefault(); select(tabs[(i + (e.key === next ? 1 : tabs.length - 1)) % tabs.length], true); }
       });
     });
   });

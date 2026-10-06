@@ -6,9 +6,12 @@
   "scripts": {
     "verify:ui": "node scripts/verify_ui_v2.cjs",
     "docs:build": "node scripts/build_guide_v2.cjs",
-    "uat:business": "node tests/browser/uat.cjs"
+    "uat:business": "node tests/browser/uat.cjs",
+    "build:3d": "esbuild static/js/src/hero3d.src.js --bundle --minify --format=esm --target=es2020 --legal-comments=eof --outfile=static/js/hero3d.js"
   },
   "devDependencies": {
-    "playwright": "1.56.1"
+    "esbuild": "^0.28.2",
+    "playwright": "1.56.1",
+    "three": "^0.186.1"
   }
 }

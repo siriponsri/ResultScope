@@ -9,7 +9,7 @@
   <section id="simulation" class="card stack-sm"><h2 class="h3">What is simulated</h2>
     <p>ResultScope is a university coursework business. The packages, prices, centers, staff accounts and payments are simulated. No clinic operates at the listed areas and no real money can be paid. Medical explanations use real public references listed on <a href="/sources">Medical sources</a>.</p>
     <ul class="plain small">
-      <li><span class="badge sim">Simulated business data</span> packages, prices, centers ({{ policies.version }})</li>
+      <li><span class="badge sim">Simulated business data</span> packages, prices, <span class="nowrap">centers ({{ policies.version }})</span></li>
       <li><span class="badge sim">Simulated integration</span> test payments, LINE channel simulator, center calendar</li>
       <li><span class="badge">Live model</span> only when the owner connects an AI provider; otherwise the assistant says it is unavailable</li>
     </ul></section>
@@ -26,7 +26,7 @@
     <p>{{ policies.discount_policy }}</p></section>
   <section id="team" class="card stack-sm"><h2 class="h3">Talking to our team</h2>
     <p>{{ policies.handoff_policy }}</p>
-    <ul class="plain small">{% for b in branches %}<li>{{ b.name }} · {{ b.hours }}</li>{% endfor %}</ul>
+    <ul class="plain small">{% for b in branches %}<li>{{ b.name }} · <span class="nowrap">{{ b.hours }}</span></li>{% endfor %}</ul>
     <a class="btn primary" href="/app?view=chat&team=1">Talk to our team</a></section>
 </div>
 {% endblock %}

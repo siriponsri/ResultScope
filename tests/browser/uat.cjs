@@ -232,6 +232,39 @@ async function signUp(page, email) {
       await c.locator('#account-open').click(); await c.locator('#modal').waitFor(); await c.keyboard.press('Escape'); await c.locator('#modal').waitFor({ state: 'hidden' });
       assert(await noOverflow(c), 'desktop overflow');
     });
+    await check('UI-26', 'AI Lab Report: free reading, upgrade prompt, Plus via signed test payment, multi-image reading, lab dashboard over time, printable Lab Report', async () => {
+      const lctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } }); const l = await lctx.newPage(); watch(l, 'labs');
+      const png = path.join(root, 'examples/thai_lab_reference_v3/png/01_A_Liver.png');
+      await l.goto(base + '/app?view=labs', { waitUntil: 'networkidle' }); await signUp(l, 'labs-' + Date.now() + '@example.invalid');
+      await l.goto(base + '/app?view=labs', { waitUntil: 'networkidle' }); await l.getByText('No confirmed reports yet').waitFor(); await l.getByText('Free plan', { exact: true }).waitFor();
+      const confirmReport = async () => { await l.locator('#modal').getByRole('button', { name: 'Confirm and use report' }).waitFor(); await l.locator('#modal input[type=checkbox]').check(); await l.locator('#modal').getByRole('button', { name: 'Confirm and use report' }).click(); await l.locator('#modal').waitFor({ state: 'hidden' }); };
+      await l.locator('#report-file').setInputFiles(png); await confirmReport();
+      await l.goto(base + '/app?view=labs', { waitUntil: 'networkidle' }); await l.getByRole('link', { name: 'Open Lab Report' }).waitFor(); await l.locator('.locked').waitFor();
+      await shot(l, 'labs-free-1440');
+      await l.getByRole('button', { name: 'Add a report' }).click(); await l.getByRole('heading', { name: 'This needs ResultScope Plus' }).waitFor();
+      await l.locator('#modal').getByRole('button', { name: 'See ResultScope Plus' }).click(); await l.getByRole('button', { name: 'Subscribe with test PromptPay' }).waitFor(); await shot(l, 'plan-free-1440');
+      await l.getByRole('button', { name: 'Subscribe with test PromptPay' }).click(); await l.waitForURL(/\/pay\/sim\//); await l.getByText('ResultScope Plus, 30 days', { exact: false }).waitFor();
+      await l.getByRole('button', { name: 'Simulate successful payment' }).click(); await l.getByRole('link', { name: 'Back to my plan' }).click(); await l.waitForURL(/view=plan/);
+      await l.locator('.plan-card.featured').getByText('Current plan').waitFor();
+      await l.goto(base + '/app?view=reports', { waitUntil: 'networkidle' }); assert(await l.locator('#report-file').evaluate(e => e.multiple), 'Plus should allow several files');
+      await l.locator('#report-file').setInputFiles([png, png]); await l.locator('#modal .report-pages img').nth(1).waitFor(); await confirmReport();
+      await l.goto(base + '/app?view=labs', { waitUntil: 'networkidle' }); await l.locator('.trend-card').first().waitFor(); assert(await l.locator('.trend-card svg.spark').count() > 0, 'no trend chart');
+      await shot(l, 'labs-plus-1440', true);
+      const href = await l.getByRole('link', { name: 'Open Lab Report' }).getAttribute('href'); await l.goto(base + href, { waitUntil: 'networkidle' });
+      await l.locator('.lab-table tbody tr').first().waitFor(); assert(await l.locator('.lab-table th', { hasText: /^Previous/ }).count() === 1, 'Plus Lab Report should compare with the previous report');
+      await l.getByRole('button', { name: 'Print or save as PDF' }).waitFor(); await shot(l, 'lab-report-1440', true); await lctx.close();
+    });
+    await check('UI-27', 'Website v5: product deck tabs, search dialog (Ctrl K), nav dropdown, AI Lab Report page', async () => {
+      const wctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } }); const w = await wctx.newPage(); watch(w, 'site-v5');
+      await w.goto(base, { waitUntil: 'networkidle' });
+      await w.locator('[data-deck] [role=tab]', { hasText: 'Book' }).click(); assert(await w.locator('#deck-book').getAttribute('data-pos') === '0', 'deck tab did not bring its card forward');
+      await w.locator('[data-deck] [role=tab][aria-selected=true]').press('ArrowRight'); assert(await w.locator('#deck-read').getAttribute('data-pos') === '0', 'arrow key did not move the deck');
+      await w.locator('.nav-drop-btn').click(); await w.locator('#menu-checks').getByRole('link', { name: /Compare packages/ }).waitFor(); await w.keyboard.press('Escape'); assert(await w.locator('#menu-checks').isHidden(), 'dropdown did not close');
+      await w.keyboard.press('Control+k'); await w.locator('#search-input').fill('lipid'); await w.locator('#search-results .search-item', { hasText: 'Package' }).first().waitFor();
+      await shot(w, 'search-dialog-1440'); await w.keyboard.press('Enter'); await w.waitForURL(/\/packages\/P\d+/);
+      await w.goto(base + '/lab-reports', { waitUntil: 'networkidle' }); await w.getByRole('heading', { level: 1 }).waitFor(); assert(await w.getByText('฿355').count() > 0, 'Plus price missing'); await shot(w, 'lab-reports-1440', true);
+      await wctx.close();
+    });
     for (const [w, h, label] of [[768, 1024, 'tablet'], [390, 844, 'mobile']]) {
       await check('UI-21-' + label, label + ': pages without horizontal overflow, navigation drawer, filters toggle, reduced motion', async () => {
         const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' }); const m = await ctx.newPage(); watch(m, label);

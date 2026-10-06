@@ -18,7 +18,8 @@ def test_rulebook_endpoint_and_home_surface():
 
     home = client.get("/")
     assert home.status_code == 200
-    assert "Know every test before you book." in home.text  # v4 home (owner direction 2026-10-06, Vertex-informed)
+    assert "Book the check. Understand the result." in home.text  # v5 home: two products (owner direction 2026-10-06)
+    assert "/lab-reports" in home.text and "฿355" in home.text
     assert 'lang="en"' in home.text
     assert '/app' in home.text
     lab = client.get('/lab')

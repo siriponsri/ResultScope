@@ -170,7 +170,7 @@
     if (cmd.type === 'prefill_booking') return act('Book ' + (x.name || 'a checkup') + (x.date ? ' on ' + x.date : ''), 'calendar', () => navigate('book', true, Object.fromEntries([['package', x.package_id], ['branch', x.branch_id], ['date', x.date]].filter(([, v]) => v))));
     if (cmd.type === 'open_org_form') return act('Organization request form', 'open', null, '/organizations#inq-title');
     if (cmd.type === 'highlight_report_field') return act('Show it on my report', 'value', async () => { const r = state?.conversation.report_id; if (r) reviewReport(await api('/reports/' + r), x.field_id); else notice('Select a confirmed report first.', 'bad'); });
-    if (cmd.type === 'open_view') return act({ packages: 'Browse packages', book: 'Request a time', bookings: 'My appointments', reports: 'My reports', notifications: 'Notifications' }[x.view] || 'Open', 'open', () => navigate(x.view));
+    if (cmd.type === 'open_view') return act({ packages: 'Browse packages', book: 'Request a time', bookings: 'My appointments', reports: 'My reports', labs: 'Lab dashboard', plan: 'Plan', notifications: 'Notifications' }[x.view] || 'Open', 'open', () => navigate(x.view));
     return null;
   }
   async function openCompare(ids, focus) {
@@ -495,8 +495,9 @@
   async function reports() {
     await refresh();
     const box = el('div'); box.append(intro('My reports', 'Check every extracted value before it is used. Choose a previous report for comparison only when it belongs to the same person.'));
+    box.append(planStrip());
     const actions = el('div', null, 'toolbar');
-    actions.append(button('Add a report', () => $('report-file').click(), 'btn primary sm'), button('Try a synthetic sample', demoPicker),
+    actions.append(button('Add a report', () => { if (!planOf().can_read) return upgradeDialog('Your free AI report reading has been used. Synthetic samples stay free.'); $('report-file').click(); }, 'btn primary sm'), button('Try a synthetic sample', demoPicker),
       button('Clear report context', async () => { await post('/reports/select', { report_id: '' }); await post('/reports/compare', { report_id: '' }); await refresh(); notice('Report context cleared.'); }, 'btn ghost sm'));
     box.append(actions);
     if (!state.reports.length) { box.append(empty('No reports yet', 'Upload a JPEG, PNG or PDF up to 3 MB, or read one of the synthetic samples.')); return box; }
@@ -506,8 +507,9 @@
       h.append(el('h3', r.label), r.confirmed ? badge('Confirmed', 'ok') : badge('Needs review', 'warn'));
       if (state.conversation.report_id === r.id) h.append(badge('In use'));
       if (state.conversation.compare_report_id === r.id) h.append(badge('Previous report', 'neutral'));
-      c.append(h, el('p', r.date || 'Collection date not entered', 'small muted'));
+      c.append(h, el('p', (r.date ? longDate(r.date) : 'Collection date not entered') + (r.pages > 1 ? ' · ' + r.pages + ' pages' : '') + (r.sample ? ' · Synthetic sample' : ''), 'small muted'));
       const a = el('div', null, 'record-actions');
+      if (r.confirmed) a.append(link('Lab Report', '/lab-report/' + encodeURIComponent(r.id), 'btn sm primary'));
       a.append(button(r.confirmed ? 'View fields' : 'Review fields', async () => reviewReport(await api('/reports/' + r.id))));
       if (r.confirmed) a.append(button('Use in conversation', async () => { await post('/reports/select', { report_id: r.id }); await refresh(); await navigate('chat'); notice('Report selected. Ask about it now.'); }),
         button('Use as previous report', async () => { await post('/reports/compare', { report_id: r.id }); await navigate('reports', false); notice('Previous report selected for comparison.'); }));
@@ -524,8 +526,9 @@
     const d = r.data, form = el('form', null, 'form-grid'), label = field('Report label', 'text', d.label && d.label !== 'Unconfirmed report' ? d.label : '', 'For example: Annual check, September 2026'), date = field('Collection date if known', 'date', d.collected_date || '');
     form.append(el('p', 'Compare every value with the source image. Leave missing values empty. Synthetic samples are not patient records.', 'small muted'), label.wrap, date.wrap);
     if (d.warnings?.length) form.append(el('p', d.warnings.join(' · '), 'callout warn small'));
-    const preview = el('img', null, 'report-preview'); preview.src = '/api/business/reports/' + encodeURIComponent(r.id) + '/source'; preview.alt = 'Source report first page for comparison';
-    form.append(preview);
+    const pages = d.pages || 1, previews = el('div', null, pages > 1 ? 'report-pages' : '');
+    for (let i = 1; i <= pages; i++) { const img = el('img', null, 'report-preview'); img.src = '/api/business/reports/' + encodeURIComponent(r.id) + '/source?page=' + i; img.alt = `Source report, page ${i} of ${pages}, for comparison`; img.loading = 'lazy'; previews.append(img); }
+    form.append(previews);
     const wrap = el('div', null, 'table-wrap'), table = el('table', null, 'data report-table'), head = el('tr');
     ['Test', 'Result', 'Unit', 'Reference', 'Flag'].forEach(x => head.append(el('th', x))); table.append(head);
     const fields = [];
@@ -559,19 +562,145 @@
     modal('Try a sample report', box);
   }
   if (!STAFF_MODE) {
-    $('add-report').onclick = () => $('report-file').click();
+    $('add-report').onclick = () => { if (!planOf().can_read) return upgradeDialog('Your free AI report reading has been used. Synthetic samples stay free.'); $('report-file').click(); };
     $('demo-open').onclick = () => demoPicker().catch(e => notice(e.message, 'bad'));
   }
   $('report-file').onchange = async () => {
-    const file = $('report-file').files[0]; if (!file) return;
+    const files = [...$('report-file').files]; if (!files.length) return;
     try {
-      if (file.size > 3 * 1024 * 1024) throw Error('Choose a file under 3 MB.');
-      if (!/\.(pdf|png|jpe?g)$/i.test(file.name)) throw Error('Use a PDF, PNG or JPEG file.');
-      const form = new FormData(); form.append('file', file);
-      notice('Reading your document. Please wait…');
-      reviewReport(await api('/reports/read', { method: 'POST', body: form }));
-    } catch (e) { notice(e.message, 'bad'); } finally { $('report-file').value = ''; }
+      const limit = planOf().images_per_read || 1;
+      if (files.length > limit) { upgradeDialog(limit === 1 ? 'The Free plan reads one image at a time. ResultScope Plus reads up to three pages or images together.' : 'Choose up to three files.'); return; }
+      files.forEach(file => {
+        if (file.size > 3 * 1024 * 1024) throw Error('Choose files under 3 MB each.');
+        if (!/\.(pdf|png|jpe?g)$/i.test(file.name)) throw Error('Use PDF, PNG or JPEG files.');
+      });
+      const form = new FormData(); files.forEach(f => form.append('files', f));
+      notice(files.length > 1 ? `Reading ${files.length} files together. Please wait…` : 'Reading your document. Please wait…');
+      const r = await api('/reports/read', { method: 'POST', body: form });
+      if (r.entitlement && state) state.plan = r.entitlement;
+      reviewReport(r);
+    } catch (e) { if (e.code === 'subscription_required') upgradeDialog(e.message); else notice(e.message, 'bad'); } finally { $('report-file').value = ''; }
   };
+  function syncFileInput() { $('report-file').multiple = (planOf().images_per_read || 1) > 1; }
+
+  /* ------------------------------------------------------------ plan, lab dashboard */
+  const planOf = () => state?.plan || { plan: 'free', images_per_read: 1, trends: false, can_read: true, ai_reads_used: 0, ai_reads_limit: 1 };
+  const isPlus = () => planOf().plan === 'plus';
+  const dayText = t => new Date(t * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const shortDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (d || '');
+  const LAB_STATUS = { within: ['Within printed range', 'ok'], high: ['Above printed range', 'warn'], low: ['Below printed range', 'warn'], unknown: ['No range to compare', 'neutral'] };
+  function planStrip() {
+    const p = planOf(), s = el('div', null, 'plan-strip');
+    if (isPlus()) s.append(badge('ResultScope Plus', 'ok'), el('span', 'Active until ' + dayText(p.period_end) + ' · up to 3 pages or images per reading', 'small muted'));
+    else {
+      s.append(badge('Free plan', 'neutral'), el('span', p.can_read ? 'One AI report reading of one image is included.' : 'Your free AI reading is used. Samples stay free.', 'small muted'));
+      s.append(button('Get Plus, ฿355 for 30 days', () => navigate('plan'), 'btn sm primary'));
+    }
+    return s;
+  }
+  function upgradeDialog(reason) {
+    const n = el('div', null, 'stack');
+    n.append(el('p', reason), el('p', 'ResultScope Plus costs ฿355 for 30 days. It reads reports without the one-report limit, up to three pages or images at once, and shows your results over time. It does not renew by itself.', 'small muted'),
+      button('See ResultScope Plus', () => { closeModal(); navigate('plan'); }, 'btn primary'));
+    modal('This needs ResultScope Plus', n);
+  }
+  async function planView() {
+    await refresh();
+    const [catalog, ent] = await Promise.all([api('/plans'), api('/subscription')]);
+    state.plan = ent; syncFileInput();
+    const box = el('div'); box.append(intro('Plan', 'Health-check packages are paid per visit. The AI Lab Report service has a free plan and ResultScope Plus. Payments here use the test simulator; no real money moves.'));
+    const grid = el('div', null, 'plan-grid');
+    catalog.plans.forEach(pl => {
+      const current = ent.plan === pl.id, card = el('article', null, 'plan-card' + (pl.id === 'plus' ? ' featured' : ''));
+      const head = el('div', null, 'plan-head'); head.append(el('h3', pl.name)); if (current) head.append(badge('Current plan', 'ok'));
+      const price = el('p', null, 'plan-price'); price.append(el('strong', pl.price_thb ? money(pl.price_thb) : '฿0', 'num'), el('span', pl.price_thb ? ' for ' + pl.period_days + ' days' : ' always', 'small muted'));
+      const ul = el('ul', null, 'plan-features'); pl.features.forEach(f => ul.append(el('li', f)));
+      card.append(head, el('p', pl.summary, 'small muted'), price, ul);
+      if (pl.id === 'plus') {
+        const act = el('div', null, 'record-actions'), renewable = !ent.active || (ent.period_end - Date.now() / 1000) <= 7 * 86400;
+        if (!user?.registered) act.append(button('Create an account to subscribe', account, 'btn primary sm'));
+        else if (renewable) {
+          const go = method => async () => { const r = await post('/subscriptions/checkout', { method }); location.href = r.simulator_url; };
+          act.append(button(ent.active ? 'Renew with test PromptPay' : 'Subscribe with test PromptPay', go('promptpay'), 'btn primary sm'), button('Test card', go('card')));
+        } else act.append(el('span', 'Renewal opens in the last 7 days of your period.', 'small muted'));
+        card.append(act);
+      }
+      grid.append(card);
+    });
+    box.append(grid);
+    const kv = el('dl', null, 'kv'), row = (k, v) => kv.append(el('dt', k), el('dd', v));
+    row('Plan', ent.plan_name); row('AI report readings used', String(ent.ai_reads_used) + (ent.ai_reads_limit ? ' of ' + ent.ai_reads_limit : ' (no limit on Plus)'));
+    row('Pages or images per reading', String(ent.images_per_read)); if (ent.active) row('Plus active until', dayText(ent.period_end));
+    if (ent.subscription?.payment_status === 'refunded') row('Last Plus period', 'Refunded (simulation)');
+    const status = el('section', null, 'card stack-sm'); status.append(el('h3', 'Your plan'), kv, el('p', 'Plus does not renew by itself. Synthetic sample reports never use a reading.', 'small muted'));
+    box.append(status); return box;
+  }
+
+  function sparkline(t) {
+    // One series per chart. Printed range of the latest report as a band (only for simple numeric ranges).
+    const pts = t.points.filter(x => x.number !== null && x.number !== undefined);
+    const W = 320, H = 96, P = { l: 8, r: 44, t: 12, b: 20 };
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'spark');
+    svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', `${t.name}: ${t.points.map(x => x.date + ' ' + x.value).join(', ')}`);
+    if (pts.length < 1) return svg;
+    const range = window.RSTurns?.parseRange(t.latest.reference);
+    const vals = pts.map(x => x.number).concat(range ? [range.lo, range.hi].filter(v => v !== null) : []);
+    let lo = Math.min(...vals), hi = Math.max(...vals); if (lo === hi) { lo -= 1; hi += 1; } const pad = (hi - lo) * .12; lo -= pad; hi += pad;
+    const x = i => P.l + (pts.length === 1 ? (W - P.l - P.r) / 2 : i * (W - P.l - P.r) / (pts.length - 1)), y = v => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
+    const ns = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
+    if (range) { const top = y(range.hi ?? hi), bot = y(range.lo ?? lo); svg.append(ns('rect', { x: P.l, y: Math.min(top, bot), width: W - P.l - P.r, height: Math.abs(bot - top), class: 'spark-band' })); }
+    svg.append(ns('line', { x1: P.l, x2: W - P.r, y1: H - P.b + .5, y2: H - P.b + .5, class: 'spark-axis' }));
+    if (pts.length > 1) svg.append(ns('polyline', { points: pts.map((p, i) => x(i) + ',' + y(p.number)).join(' '), class: 'spark-line' }));
+    pts.forEach((p, i) => { const c = ns('circle', { cx: x(i), cy: y(p.number), r: 4, class: 'spark-dot ' + p.status }); const tt = ns('title', {}); tt.textContent = `${p.date}: ${p.value} ${t.unit} (${(LAB_STATUS[p.status] || LAB_STATUS.unknown)[0]})`; c.append(tt); svg.append(c); });
+    const last = pts[pts.length - 1], lab = ns('text', { x: x(pts.length - 1) + 8, y: y(last.number) + 4, class: 'spark-label' }); lab.textContent = last.value; svg.append(lab);
+    const d0 = ns('text', { x: P.l, y: H - 4, class: 'spark-date' }); d0.textContent = shortDate(pts[0].date); svg.append(d0);
+    if (pts.length > 1 && last.date !== pts[0].date) { const d1 = ns('text', { x: W - P.r, y: H - 4, class: 'spark-date', 'text-anchor': 'end' }); d1.textContent = shortDate(last.date); svg.append(d1); }
+    return svg;
+  }
+  async function labsView() {
+    await refresh(); syncFileInput();
+    const box = el('div'); box.append(intro('Lab dashboard', 'Your confirmed reports in one place. Values are exactly as printed and confirmed by you; each status compares a value with the range printed on the same report. This is not a diagnosis.'));
+    box.append(planStrip());
+    const confirmed = state.reports.filter(r => r.confirmed);
+    const bar = el('div', null, 'toolbar'); bar.append(button('Add a report', () => { if (!planOf().can_read) return upgradeDialog('Your free AI report reading has been used.'); $('report-file').click(); }, 'btn primary sm'), button('Try a synthetic sample', demoPicker)); box.append(bar);
+    if (!confirmed.length) { box.append(empty('No confirmed reports yet', 'Add a report or read a synthetic sample, check the values and confirm them. Your Lab Report and dashboard appear here.')); return box; }
+    const latest = confirmed.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''))[confirmed.length - 1];
+    const lab = await api('/reports/' + latest.id + '/lab-report');
+    const sum = el('section', null, 'card stack-sm lab-latest'), head = el('div', null, 'record-head');
+    head.append(el('h3', 'Latest: ' + lab.label), el('span', lab.date ? longDate(lab.date) : '', 'small muted'), link('Open Lab Report', '/lab-report/' + encodeURIComponent(lab.id), 'btn sm primary'));
+    const kpis = el('div', null, 'kpi-grid four');
+    [['within', 'Within range'], ['high', 'Above range'], ['low', 'Below range'], ['unknown', 'No printed range']].forEach(([k, label]) => kpis.append(tile(label, String(lab.counts[k] || 0), k === 'within' ? 'of ' + lab.rows.length + (lab.rows.length === 1 ? ' test' : ' tests') : '')));
+    sum.append(head, kpis);
+    const flagged = lab.rows.filter(r => r.status === 'high' || r.status === 'low');
+    if (flagged.length) { const ul = el('ul', null, 'plain flag-list'); flagged.forEach(r => { const li = el('li'); li.append(el('strong', r.name), el('span', ` ${r.value} ${r.unit}`.trimEnd()), el('span', ' · printed range ' + (r.reference || 'none'), 'muted small'), badge(...LAB_STATUS[r.status])); ul.append(li); }); sum.append(ul); }
+    const askRow = el('div', null, 'row'); askRow.append(button('Ask about this report', async () => { await post('/reports/select', { report_id: lab.id }); await refresh(); await navigate('chat'); $('message').value = 'Please explain my latest report in plain language.'; $('message').focus(); }, 'btn sm'));
+    sum.append(askRow);
+    box.append(sum);
+    const trendBox = el('section', null, 'stack-sm'); trendBox.append(el('h3', 'Results over time'));
+    if (!isPlus()) {
+      const lock = el('div', null, 'locked');
+      lock.append(el('p', 'See every test across your reports, with the change since your previous report. This is part of ResultScope Plus.', 'small'), button('Get Plus, ฿355 for 30 days', () => navigate('plan'), 'btn primary sm'));
+      trendBox.append(lock); box.append(trendBox); return box;
+    }
+    const tr = await api('/reports/trends');
+    if (tr.reports.length < 2) trendBox.append(el('p', 'Confirm a second report to see changes over time. Each chart below shows one test.', 'small muted'));
+    const grid = el('div', null, 'trend-grid');
+    tr.tests.slice(0, 24).forEach(t => {
+      const card = el('article', null, 'trend-card'), h = el('div', null, 'trend-head');
+      h.append(el('strong', t.name), badge(...(LAB_STATUS[t.latest.status] || LAB_STATUS.unknown)));
+      const meta = el('p', null, 'small muted');
+      meta.textContent = `${t.latest.value} ${t.unit}`.trim() + (t.change === null || t.change === undefined ? (t.count > 1 ? ' · change not numeric' : ' · one report so far') : t.change === 0 ? ` · no change since ${shortDate(t.previous.date)}` : ` · ${t.change > 0 ? '+' : ''}${t.change} since ${shortDate(t.previous.date)}`);
+      card.append(h, meta, sparkline(t), el('p', t.latest.reference ? 'Band: range printed on the latest report (' + t.latest.reference + ')' : 'No printed range on the latest report', 'tiny muted'));
+      grid.append(card);
+    });
+    trendBox.append(grid);
+    const tableBtn = button('Show as a table', () => {
+      const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), hr = el('tr'); ['Test', ...tr.reports.map(r => r.date)].forEach(x => hr.append(el('th', x))); t.append(hr);
+      tr.tests.forEach(s => { const row = el('tr'); row.append(el('td', s.name + (s.unit ? ' (' + s.unit + ')' : ''))); tr.reports.forEach(r => { const pnt = s.points.find(p => p.report_id === r.id); row.append(el('td', pnt ? pnt.value : '—', 'n')); }); t.append(row); });
+      wrap.append(t); modal('Results over time', wrap);
+    }, 'btn ghost sm');
+    const tableRow = el('div', null, 'row'); tableRow.append(tableBtn); trendBox.append(tableRow); box.append(trendBox); return box;
+  }
 
   /* ------------------------------------------------------------ history and notifications */
   async function historyView() {
@@ -867,6 +996,7 @@
     block('Quotations', d.quotes.map(q => { const r = el('div', null, 'history-row'); r.append(el('strong', 'Version ' + q.version), el('span', q.people + ' people, ' + q.date), el('span', money(q.total_thb)), badge(q.state, q.state === 'accepted' ? 'ok' : q.state === 'offered' ? 'warn' : 'neutral'), link('PDF', '/api/business/quotes/' + encodeURIComponent(q.id) + '/document.pdf', 'btn ghost sm')); return r; }), 'No quotations.');
     block('Test payments', d.payments.slice().reverse().map(p => { const r = el('div', null, 'history-row'); r.append(el('span', p.reference), el('span', money(p.amount_thb)), el('span', { promptpay: 'Test PromptPay', card: 'Test card' }[p.method] || p.method), payBadge(p.state)); return r; }), 'No test payments.');
     box.append(el('p', d.reports.count ? d.reports.count + (d.reports.count === 1 ? ' report uploaded' : ' reports uploaded') + ', ' + d.reports.confirmed + ' confirmed. Values stay private to the customer.' : 'No reports uploaded.', 'small muted'));
+    if (d.plan) box.append(el('p', 'Lab Report plan: ' + d.plan.plan_name + (d.plan.active ? ' until ' + new Date(d.plan.period_end * 1000).toLocaleDateString('en-GB') : '') + ' · AI readings used: ' + d.plan.ai_reads_used, 'small muted'));
     modal(c.label, box);
   }
   const PAY = { pending: ['Waiting for payment', 'warn'], succeeded: ['Succeeded', 'ok'], failed: ['Failed', 'bad'], expired: ['Expired', 'neutral'], cancelled: ['Cancelled', 'neutral'], refunded: ['Refunded', 'neutral'], center: ['Paid at center', 'ok'] };
@@ -876,7 +1006,7 @@
     if (!isStaff()) return staffSignIn(box);
     const all = await api('/staff/payments'), d = payState ? await api('/staff/payments?state=' + payState) : all;
     const ml = el('p', null, 'money-line');
-    [['Succeeded', all.money.succeeded_thb], ['Paid at center', all.money.center_thb], ['Refunded', all.money.refunded_thb]].forEach(([k, v]) => { const x = el('span'); x.append(document.createTextNode(k + ' '), el('strong', money(v), 'num')); ml.append(x); });
+    [['Succeeded', all.money.succeeded_thb], ['of which Plus', all.money.plus_thb || 0], ['Paid at center', all.money.center_thb], ['Refunded', all.money.refunded_thb]].forEach(([k, v]) => { const x = el('span'); x.append(document.createTextNode(k + ' '), el('strong', money(v), 'num')); ml.append(x); });
     const bar = el('div', null, 'toolbar');
     [['', 'All', all.payments.length], ...Object.entries(PAY).map(([k, [label]]) => [k, label, all.totals[k]])].filter(([k, , n]) => !k || n).forEach(([k, label, n]) => {
       const c = el('button', label + ' (' + n + ')', 'chip'); c.type = 'button'; c.setAttribute('aria-pressed', String(payState === k)); c.onclick = () => { payState = k; navigate('payments', false); }; bar.append(c);
@@ -885,11 +1015,18 @@
     box.append(ml, bar);
     if (!d.payments.length) { box.append(empty('No payments here', payState ? 'Nothing in this group.' : 'Payments appear after a customer pays a confirmed appointment.')); return box; }
     const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), h = el('tr');
-    [['Time', ''], ['Customer', ''], ['Appointment', ''], ['Method', ''], ['Amount', 'n'], ['State', ''], ['Reference', '']].forEach(([x, c]) => { const th = el('th', x, c); th.scope = 'col'; h.append(th); }); t.append(h);
+    [['Time', ''], ['Customer', ''], ['Order', ''], ['Method', ''], ['Amount', 'n'], ['State', ''], ['Reference', '']].forEach(([x, c]) => { const th = el('th', x, c); th.scope = 'col'; h.append(th); }); t.append(h);
     d.payments.forEach(p => {
       const tr = el('tr'), st = el('td'); st.append(payBadge(p.state));
+      if (p.kind === 'subscription' && p.state === 'succeeded' && isManager()) st.append(button('Refund', () => {
+        const n = el('div', null, 'stack'), reason = field('Reason (kept in the audit log)', 'text');
+        n.append(el('p', 'A simulated refund ends this Plus period now. No real money moves.', 'small'), reason.wrap,
+          button('Refund Plus period', async () => { if (!reason.input.value.trim()) { reason.input.focus(); return; } await post('/staff/subscriptions/' + p.booking_id + '/refund', { reason: reason.input.value.trim() }); closeModal(); notice('Plus refunded (simulation).'); await navigate('payments', false); }, 'btn danger'));
+        modal('Refund ResultScope Plus', n);
+      }, 'btn sm ghost'));
       const ref = el('td'); ref.append(el('span', p.reference), el('span', p.events ? p.events + (p.events === 1 ? ' signed event' : ' signed events') : 'Recorded by staff', 'sub'));
-      tr.append(el('td', when(p.created)), el('td', p.customer), el('td', p.items.join(' + ') || 'Ref ' + p.booking_id.slice(-8)), el('td', { promptpay: 'Test PromptPay', card: 'Test card', center: 'At the center' }[p.method] || p.method), el('td', money(p.amount_thb), 'n'), st, ref);
+      const order = el('td'); order.append(el('span', p.items.join(' + ') || 'Ref ' + p.booking_id.slice(-8))); if (p.kind === 'subscription') order.append(el('span', 'Lab Report subscription', 'sub'));
+      tr.append(el('td', when(p.created)), el('td', p.customer), order, el('td', { promptpay: 'Test PromptPay', card: 'Test card', center: 'At the center' }[p.method] || p.method), el('td', money(p.amount_thb), 'n'), st, ref);
       t.append(tr);
     });
     wrap.append(t); box.append(wrap); return box;
@@ -980,6 +1117,12 @@
       entries.forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', k), el('td', String(v), 'n')); at.append(tr); }); if (entries.length) a.append(at);
       a.append(button('Manage assistant roles', () => navigate('roles'), 'btn sm')); grid.append(a);
     }
+    if (d.lab_reports) {
+      const l = el('section', null, 'card stack-sm'); l.append(el('h3', 'AI Lab Report'), el('p', 'Company-wide. Plus is ฿' + d.lab_reports.price_thb + ' for 30 days (test payments).', 'small muted'));
+      const lt = el('table', null, 'data compact');
+      [['Plus active now', d.lab_reports.plus_active], ['Plus revenue (simulated)', money(d.lab_reports.plus_revenue_thb)], ['Plus refunded', money(d.lab_reports.plus_refunded_thb)], ['AI readings used', d.lab_reports.ai_reads], ['Reports confirmed', d.lab_reports.reports_confirmed]].forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', k), el('td', String(v), 'n')); lt.append(tr); });
+      l.append(lt); grid.append(l);
+    }
     box.append(grid); return box;
   }
   async function centersAdmin() {
@@ -1025,8 +1168,8 @@
   }
 
   /* ------------------------------------------------------------ navigation */
-  const TITLES = { customers: 'Customers', payments: 'Payments', chat: 'Conversation', packages: 'Health checks', book: 'Request an appointment', bookings: 'My appointments', reports: 'My reports', history: 'Past conversations', notifications: 'Notifications', overview: 'Overview', staff: 'Inbox', operations: 'Appointments', 'catalog-admin': 'Catalog', centers: 'Centers', roles: 'Assistant roles', channels: 'Channels and budget', audit: 'Audit log' };
-  const FACTORIES = { customers: customersView, payments: paymentsView, packages, book: bookView, bookings, reports, history: historyView, notifications, overview, staff: staffView, operations: operationsView, 'catalog-admin': catalogAdmin, centers: centersAdmin, roles: rolesAdmin, channels, audit: auditView };
+  const TITLES = { customers: 'Customers', payments: 'Payments', chat: 'Conversation', packages: 'Health checks', book: 'Request an appointment', bookings: 'My appointments', reports: 'My reports', labs: 'Lab dashboard', plan: 'Plan', history: 'Past conversations', notifications: 'Notifications', overview: 'Overview', staff: 'Inbox', operations: 'Appointments', 'catalog-admin': 'Catalog', centers: 'Centers', roles: 'Assistant roles', channels: 'Channels and budget', audit: 'Audit log' };
+  const FACTORIES = { customers: customersView, payments: paymentsView, packages, book: bookView, bookings, reports, labs: labsView, plan: planView, history: historyView, notifications, overview, staff: staffView, operations: operationsView, 'catalog-admin': catalogAdmin, centers: centersAdmin, roles: rolesAdmin, channels, audit: auditView };
   const STAFF_ONLY = ['customers', 'payments', 'overview', 'operations', 'catalog-admin', 'centers', 'roles', 'channels', 'audit'];
   const mobile = matchMedia(STAFF_MODE ? '(max-width:860px)' : '(max-width:1100px)');
   function setMenu(open) { $('sidebar').classList.toggle('open', open); $('sidebar').inert = mobile.matches && !open; $('menu-toggle').setAttribute('aria-expanded', String(open)); $('menu-toggle').setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); }
@@ -1096,7 +1239,7 @@
     const p = new URLSearchParams(location.search);
     try {
       const s = await api('/session'); csrf = s.csrf; updateUser(s.user);
-      if (!STAFF_MODE) { await loadBusiness().catch(() => {}); await refresh(); } else setBell(0);
+      if (!STAFF_MODE) { await loadBusiness().catch(() => {}); await refresh(); syncFileInput(); } else setBell(0);
       await navigate(p.get('view') || view, false, Object.fromEntries(p));
       await checkLink(); await applyDeepLinks(p);
       if (STAFF_MODE && !isStaff()) account();

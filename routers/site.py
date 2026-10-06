@@ -75,7 +75,32 @@ async def home(request: Request):
                 publishers=sorted(publishers.items(), key=lambda x: -x[1]),
                 matrices=[{"id": "individual", "label": "Individuals", "unit": "per person", "packages": groups["core"][:3]},
                           {"id": "organization", "label": "Organizations", "unit": "per person, 20 or more", "packages": groups["org"][:3]}],
-                capacity=sum(b["capacity_per_slot"] for b in branches))
+                capacity=sum(b["capacity_per_slot"] for b in branches), plans=_plans(),
+                ladder=sorted(groups["core"], key=lambda p: p["price_thb"]),
+                min_price=min((p["price_thb"] for p in groups["core"]), default=0))
+
+
+def _plans() -> dict:
+    from services import business_plans
+    data = business_plans.plans()
+    return {p["id"]: p for p in data["plans"]}
+
+
+@router.get("/lab-reports", response_class=HTMLResponse)
+async def lab_reports(request: Request):
+    data = _business()
+    sources = json.loads((ROOT / "knowledge/evidence/catalog.json").read_text(encoding="utf-8"))["records"]
+    follow = [p for p in data["catalog"]["packages"] if p.get("active", True) and p["segment"] == "individual" and p.get("staff_review_required")]
+    return page(request, "site/lab_reports.html", "AI Lab Report | ResultScope",
+                "The AI reads your lab report, you confirm every value, and you get a Lab Report with sources. Free for one report; Plus is 355 THB for 30 days.",
+                plans=_plans(), source_count=len(sources), follow=follow[:3], policies=data["policies"])
+
+
+@router.get("/lab-report/{report_id}", response_class=HTMLResponse)
+async def lab_report_page(request: Request, report_id: str):
+    # Values load client-side with the owner's session cookie; the page itself holds no report data.
+    return page(request, "site/lab_report.html", "Lab Report | ResultScope",
+                "Your confirmed laboratory values on the ranges printed on your report.", report_id=report_id)
 
 
 @router.get("/packages", response_class=HTMLResponse)

@@ -155,3 +155,14 @@ def test_staff_see_plus_payments_and_a_manager_refund_ends_plus():
     r = manager.post(API + f"/staff/subscriptions/{body['subscription']['id']}/refund", json={"reason": "Customer request"})
     assert r.status_code == 200 and r.json()["state"] == "cancelled"
     assert c.get(API + "/subscription").json()["plan"] == "free"
+
+
+def test_lab_report_pages_render_without_report_data():
+    c = client(False)
+    page = c.get("/lab-reports")
+    assert page.status_code == 200 and "฿355" in page.text and "Read my report free" in page.text
+    # The printable page is a shell; values load with the owner's session, never embedded.
+    shell = c.get("/lab-report/report_does_not_matter")
+    assert shell.status_code == 200 and 'data-lab-report="report_does_not_matter"' in shell.text and "/static/js/lab_report.js" in shell.text
+    home = c.get("/")
+    assert "/lab-reports" in home.text and "data-hero3d" in home.text and "/static/js/motion.js" in home.text

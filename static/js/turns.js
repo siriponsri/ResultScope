@@ -130,5 +130,5 @@ window.RSTurns = (() => {
     if (extra.children.length) turn.append(extra);
     return turn;
   }
-  return { render, act, icon, make };
+  return { render, act, icon, make, parseRange };
 })();

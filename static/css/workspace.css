@@ -260,6 +260,38 @@ table.data td .sub{display:block;font-size:12px;color:var(--color-fg-muted)}
 .history-row{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;font:400 13px var(--font-sans)}
 
 /* ------------------------------------------------------------ responsive */
+/* ------------------------------------------------------------ lab dashboard, Lab Report plan (v5) */
+.plan-strip{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;padding:12px 16px;margin-bottom:16px;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-bg-subtle)}
+.plan-strip .btn{margin-left:auto}
+.plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.plan-card{display:grid;gap:12px;align-content:start;padding:24px;border:1px solid var(--color-border);border-radius:var(--radius-xl);background:var(--color-surface)}
+.plan-card.featured{border-color:var(--color-fg);box-shadow:var(--shadow-float)}
+.plan-head{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.plan-head h3{font:700 var(--text-xl)/1.15 var(--font-display);font-variation-settings:'opsz' 40}
+.plan-price strong{font:700 var(--text-3xl)/1.1 var(--font-display);font-variation-settings:'opsz' 60;letter-spacing:-.03em}
+.plan-features{margin:0;padding-left:20px;display:grid;gap:6px;font-size:var(--text-sm)}
+.kpi-grid.four{grid-template-columns:repeat(4,minmax(0,1fr));margin:8px 0}
+.lab-latest{margin-bottom:24px}
+.lab-latest .record-head h3{font-size:var(--text-lg)}
+.flag-list{display:grid;gap:8px;font-size:var(--text-sm)}
+.flag-list li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.flag-list .badge{margin-left:auto}
+.locked{display:grid;gap:12px;justify-items:start;padding:24px;border:1px dashed var(--color-border-strong);border-radius:var(--radius-xl);background:repeating-linear-gradient(-45deg,transparent 0 9px,var(--color-bg-subtle) 9px 10px)}
+.trend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.trend-card{display:grid;gap:6px;align-content:start;padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface)}
+.trend-head{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.trend-card .spark{margin:4px 0}
+.report-pages{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+/* view entrance: content slides in when a view opens (motion only) */
+.motion #content>div:not(.skeleton){animation:viewin .45s var(--ease-out)}
+.motion #content .record-list>*,.motion #content .kpi-grid>*,.motion #content .trend-grid>*,.motion #content .plan-grid>*{animation:viewin .5s var(--ease-out) backwards}
+.motion #content :is(.record-list,.kpi-grid,.trend-grid,.plan-grid)>:nth-child(2){animation-delay:40ms}
+.motion #content :is(.record-list,.kpi-grid,.trend-grid,.plan-grid)>:nth-child(3){animation-delay:80ms}
+.motion #content :is(.record-list,.kpi-grid,.trend-grid,.plan-grid)>:nth-child(4){animation-delay:120ms}
+.motion #content :is(.record-list,.kpi-grid,.trend-grid,.plan-grid)>:nth-child(n+5){animation-delay:160ms}
+@keyframes viewin{from{opacity:0;transform:translateY(8px)}}
+.view-intro h2{font-family:var(--font-display);font-weight:700;font-variation-settings:'opsz' 60;letter-spacing:-.03em}
+
 @media (max-width:1180px){
   .chat-view.with-canvas{grid-template-columns:minmax(0,1fr)}
   .chat-view.with-canvas .canvas{position:fixed;inset:61px 0 0 auto;width:min(520px,100vw);z-index:25;box-shadow:var(--shadow-float)}
@@ -300,4 +332,11 @@ table.data td .sub{display:block;font-size:12px;color:var(--color-fg-muted)}
   .kpi:nth-child(-n+2){border-top:0}
   .attach-menu{min-width:min(300px,calc(100vw - 40px))}
   .record{padding:16px}
+}
+@media (max-width:760px){
+  .plan-grid{grid-template-columns:minmax(0,1fr)}
+  .kpi-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi-grid.four .kpi:nth-child(3){border-left:0}
+  .kpi-grid.four .kpi:nth-child(n+3){border-top:1px solid var(--color-border)}
+  .plan-strip .btn{margin-left:0}
 }

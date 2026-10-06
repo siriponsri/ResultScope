@@ -12,7 +12,7 @@
       <h2 class="h3">{{ b.name }}</h2>
       <p class="muted">{{ b.area }}</p>
       <dl class="facts small">
-        <div><dt>Hours</dt><dd>{{ b.hours }} ({{ b.timezone }})</dd></div>
+        <div><dt>Hours</dt><dd>{{ b.hours }}, <span class="nowrap">{{ b.timezone.split('/')[-1]|replace('_', ' ') }} time</span></dd></div>
         <div><dt>Slots</dt><dd>Every {{ b.booking_slot_minutes }} minutes, up to {{ b.capacity_per_slot }} visits each</dd></div>
         <div><dt>Closed</dt><dd>{{ b.closed_days|join(', ') }}</dd></div>
       </dl>
