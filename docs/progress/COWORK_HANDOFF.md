@@ -66,3 +66,12 @@ Note: `tests/browser/uat.cjs` overwrites `docs/business-v3/evidence/*` (historic
 ## Progress log
 
 - 2026-10-06 Round A complete (baseline, gap map). Skills repos pinned for manual reference (see `docs/skills/SKILLS_LOCK.json`).
+
+## Update 2026-10-06 (afternoon): v4 design and back office
+
+- Commits (local only, not pushed): `229d762` v3 workspace, staff customers and payments, answer receipt, value rulers, inline citations, HTML 404; `38f037e` v4 light/dark design system.
+- Owner direction: Vertex-style minimal UX with light and dark themes, purple used sparingly; Hallmark and skillui installed. Vertex and X Fitness could only be read as text (egress proxy blocks both hosts; the computer was not linked). See `docs/design/VERTEX_REFERENCE.md`, `docs/design/XFITNESS_BENCHMARK.md`, `docs/design/HALLMARK_AUDIT.md`.
+- Verification: pytest 386 passed; browser UAT 27/27 (`docs/evidence/cowork-20261006/browser-v4`); approval bundle 58 screens per theme with no page errors or overflow (`tests/browser/screens.cjs`, sheets in `docs/evidence/cowork-20261006/screens-v4`).
+- Root cause found for earlier unexplained UAT failures: the UAT attached to an already-running server on port 8098 and tested its old database. `uat.cjs` now refuses to run when the port is taken.
+- Real defects fixed in this cycle: composer pushed below the fold in long conversations (flex sizing), conversation not scrolled to the latest turn, booking preview showing a center code, empty report label after confirmation, website 404 returned JSON, inline `[source-id]` markers shown raw.
+- Still open: connected Typhoon/OpenRouter evaluation (NOT_RUN), visual Fastwork/Vertex inspection (needs the owner's computer or screenshots), deploy guide and source ZIP.
