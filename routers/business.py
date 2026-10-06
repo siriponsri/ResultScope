@@ -19,6 +19,7 @@ class Credentials(Strict):
     email:str=Field(min_length=5,max_length=180)
     password:str=Field(min_length=12,max_length=200)
 class Chat(Strict):message:str=Field(min_length=1,max_length=8000)
+class RetryChat(Strict):message_id:str=Field(min_length=8,max_length=40)
 class ActionConfirm(Strict):action_id:str=Field(min_length=1,max_length=100)
 class PackageChoice(Strict):package_ids:list[str]=Field(min_length=1,max_length=5)
 class Book(PackageChoice):
@@ -171,15 +172,24 @@ async def workspace(request:Request):
     with db.transaction() as tx:
         u,_=session_row(tx,request,False);owner=u['id'];c=conversation(tx,owner)
         reports=[{'id':r['id'],'label':r['data'].get('label','Report'),'date':r['data'].get('collected_date',''),'confirmed':r['data'].get('confirmed',False)} for r in tx.find('report',owner)]
-        return {'conversation':c['data'],'bookings':tx.find('booking',owner),'tickets':tx.find('ticket',owner),'quotes':tx.find('corporate_quote',owner),'reports':reports,'user':db.user_public(u)}
+        payments=[ops.sim_view(tx,t) for t in tx.find('payment_txn',owner)]
+        unread=sum(1 for _ in tx.find('notification',owner,'unread'))
+        return {'conversation':c['data'],'bookings':tx.find('booking',owner),'tickets':tx.find('ticket',owner),'quotes':tx.find('corporate_quote',owner),'reports':reports,'user':db.user_public(u),'payments':payments,'unread_notifications':unread,'inquiries':tx.find('org_inquiry',owner)}
 
-async def turn(owner,message):
-    if not message.strip():raise ConversationError('empty_message','Type a message.',422)
+RETRYABLE={'service_unavailable','provider_response_invalid','review_failed','guard_invalid','provider_rejected','storage_unavailable'}
+async def turn(owner,message,retry_id=''):
+    if not message.strip() and not retry_id:raise ConversationError('empty_message','Type a message.',422)
     turn_id=secrets.token_hex(16)
     with db.transaction() as tx:
         c=conversation(tx,owner);d=c['data']
         if d.get('busy_until',0)>time.time():raise ConversationError('busy','Please wait for the previous message.',409)
-        d['messages']=(d['messages']+[msg('user',message)])[-100:]
+        if retry_id:
+            # Retry re-runs the last failed user message; it is never appended twice.
+            last=d['messages'][-1] if d['messages'] else None
+            if not last or last['id']!=retry_id or last['role']!='user' or not last.get('failed') or not last.get('retryable'):raise ConversationError('retry_unavailable','Only the latest unanswered message can be retried.',409)
+            last.pop('failed',None);last.pop('error',None);message=last['content']
+        else:d['messages']=(d['messages']+[msg('user',message)])[-100:]
+        user_message_id=d['messages'][-1]['id']
         if d['mode']!='bot':tx.put(c['id'],'conversation',owner,d);return {'reply':None,'queued_for_staff':True}
         version=d['version'];d['busy_until']=time.time()+240;d['turn_id']=turn_id;tx.put(c['id'],'conversation',owner,d)
         report=tx.own(d['report_id'],owner,'report')['data'] if d.get('report_id') else None
@@ -200,6 +210,14 @@ async def turn(owner,message):
             d['messages']=(d['messages']+[msg('assistant',result['reply'],sources=result['sources'],action=result.get('action'),action_id=result.get('action_id'),followups=result.get('followups',[]))])[-100:]
             d['busy_until']=0;tx.put(c['id'],'conversation',owner,d)
         return result
+    except ConversationError as exc:
+        with db.transaction() as tx:
+            c=conversation(tx,owner)
+            if c['data'].get('turn_id')==turn_id and c['data']['version']==version:
+                for m in c['data']['messages']:
+                    if m['id']==user_message_id:m['failed']=True;m['error']=exc.code;m['retryable']=exc.code in RETRYABLE
+                tx.put(c['id'],'conversation',owner,c['data'])
+        raise
     finally:
         with db.transaction() as tx:
             c=conversation(tx,owner)
@@ -210,6 +228,12 @@ async def chat(body:Chat,request:Request):
     provider_authorize(request)
     with db.transaction() as tx:u,_=session_row(tx,request)
     return await turn(u['id'],body.message)
+
+@router.post('/chat/retry')
+async def chat_retry(body:RetryChat,request:Request):
+    provider_authorize(request)
+    with db.transaction() as tx:u,_=session_row(tx,request)
+    return await turn(u['id'],'',body.message_id)
 
 @router.post('/stop')
 async def stop(request:Request):

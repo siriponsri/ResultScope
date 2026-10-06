@@ -1,34 +1,213 @@
-/** Offline browser UAT: real HTTP business routes; explicitly mocked LLM/OCR. */
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
-const {spawn}=require('child_process'),fs=require('fs'),path=require('path'),os=require('os');
-const root=path.resolve(__dirname,'../..'),out=path.join(root,'docs/business-v3/evidence');fs.mkdirSync(out,{recursive:true});
-const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'resultscope-uat-'));const port=8098,base='http://127.0.0.1:'+port;
-const py=process.env.TEST_PYTHON||path.join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
-const server=spawn(py,['tests/browser/fixture_server.py'],{cwd:root,env:{...process.env,PROVIDER_NETWORK_ENABLED:'false',BUSINESS_DB_PATH:path.join(tmp,'db.sqlite'),BUSINESS_KEY_PATH:path.join(tmp,'key'),DATABASE_URL:'',VERCEL:'',RENDER:'',APP_ENV:'test'},stdio:['ignore','ignore','pipe']});let log='';server.on('error',e=>{log+='Fixture process failed: '+e.message;});server.stderr.on('data',x=>log+=x);
-let browser;let records=[],errors=[];const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function check(name,fn){const start=Date.now();try{await fn();records.push({name,status:'PASS',ms:Date.now()-start});}catch(e){records.push({name,status:'FAIL',ms:Date.now()-start,error:e.message});throw e;}}
-const assert=(cond,msg)=>{if(!cond)throw Error(msg)};
-(async()=>{try{
- for(let i=0;i<60;i++){try{if((await fetch(base+'/health')).ok)break;}catch{}await wait(250);if(i===59)throw Error('Fixture server unavailable: '+log.slice(-1500));}
- browser=await chromium.launch({headless:true,args:['--no-sandbox']});const ctx=await browser.newContext({viewport:{width:1440,height:1000}}),p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));
- await check('Homepage: six supplied images and English navigation',async()=>{await p.goto(base,{waitUntil:'networkidle'});assert(await p.locator('img').count()===6,'Six photos missing');assert(await p.locator('.package-card').count()===3,'Packages missing');await p.screenshot({path:path.join(out,'homepage-desktop.png'),fullPage:true});});
- await check('Workspace: free-text first and account creation',async()=>{await p.goto(base+'/app',{waitUntil:'networkidle'});await p.locator('#message').waitFor();await p.locator('#account-open').click();await p.getByLabel('Email address').fill('customer@example.invalid');await p.getByLabel('Password',{exact:true}).fill('ui-test-only-password');await p.getByRole('button',{name:'Create account',exact:true}).click();await p.locator('#modal').waitFor({state:'hidden'});assert((await p.locator('#account-label').innerText()).includes('customer@'),'Account missing');});
- await check('Chat proposal does not book until confirmation',async()=>{await p.locator('#message').fill('UI_TEST_BOOK');await p.getByRole('button',{name:'Send message',exact:true}).click();await p.getByRole('button',{name:'Confirm booking',exact:true}).waitFor();const w=await ctx.request.get(base+'/api/business/workspace');assert((await w.json()).bookings.length===0,'Premature booking');await p.screenshot({path:path.join(out,'chat-preview.png')});});
- await check('Confirm creates exactly one appointment with canonical price',async()=>{await p.getByRole('button',{name:'Confirm booking',exact:true}).click();await p.locator('[data-view=bookings]').click();await p.getByText('Payment: pending',{exact:true}).waitFor();assert((await p.locator('#content').innerText()).includes('1,690'),'Incorrect price');await p.screenshot({path:path.join(out,'appointment.png')});});
- await check('Payment at center stays pending',async()=>{await p.getByRole('button',{name:'Pay at center',exact:true}).click();await p.getByText('Payment: pending',{exact:true}).waitFor();});
- await check('Upload opens source image and editable unconfirmed fields (OCR double)',async()=>{await p.locator('[data-view=reports]').click();await p.locator('#report-file').setInputFiles(path.join(root,'examples/thai_lab_reference_v3/png/04_B_Glucose_Urine.png'));await p.getByRole('heading',{name:'Review report fields',exact:true}).waitFor();await p.locator('.report-preview').evaluate(img=>img.decode());assert(await p.locator('.report-preview').evaluate(img=>img.naturalWidth>0),'Source image missing');await p.getByLabel('value for row 1',{exact:true}).fill('101');await p.screenshot({path:path.join(out,'report-review.png')});});
- await check('Explicit field confirmation and selected context',async()=>{await p.locator('#modal input[type=checkbox]').check();await p.getByRole('button',{name:'Confirm and use report',exact:true}).click();await p.locator('#modal').waitFor({state:'hidden'});await p.locator('#context-report').filter({hasText:'Selected:'}).waitFor();});
- await check('Archive and saved report survive reload',async()=>{await p.locator('#new-chat').click();await p.reload({waitUntil:'networkidle'});await p.locator('[data-view=history]').click();await p.getByRole('button',{name:'Read conversation',exact:true}).waitFor();await p.locator('[data-view=reports]').click();await p.getByRole('button',{name:'Review fields',exact:true}).waitFor();});
- await check('Staff handoff consent queues the conversation',async()=>{await p.locator('#staff-request').click();await p.getByLabel('How can our team help?').fill('UI UAT organization assistance');await p.getByRole('button',{name:'Send staff request',exact:true}).click();await p.locator('#modal').waitFor({state:'hidden'});});
- const staffCtx=await browser.newContext({viewport:{width:1440,height:1000}}),s=await staffCtx.newPage();s.on('pageerror',e=>errors.push(e.message));
- await check('Staff signs in and takes over a case',async()=>{await s.goto(base+'/staff',{waitUntil:'networkidle'});await s.locator('#account-open').click();await s.getByLabel('Email address').fill('staff@example.invalid');await s.getByLabel('Password',{exact:true}).fill('ui-test-only-password');await s.locator('#modal').getByRole('button',{name:'Sign in',exact:true}).click();await s.locator('#modal').waitFor({state:'hidden'});await s.getByRole('button',{name:/UI UAT organization assistance/}).click();await Promise.all([s.waitForResponse(r=>r.url().endsWith('/state')&&r.request().method()==='POST'),s.getByRole('button',{name:'Take over',exact:true}).click()]);await s.getByText('Case: staff',{exact:true}).waitFor();});
- await check('Live website staff reply reaches customer',async()=>{await s.getByLabel('Staff reply').fill('A staff member is reviewing your organization request.');const [response]=await Promise.all([s.waitForResponse(r=>r.url().includes('/tickets/')&&r.url().endsWith('/messages')&&r.request().method()==='POST'),s.getByRole('button',{name:'Send reply',exact:true}).click()]);assert(response.ok(),'Staff reply failed: '+await response.text());await p.bringToFront();await p.locator('[data-view=chat]').click();await p.getByText('A staff member is reviewing your organization request.',{exact:true}).waitFor({timeout:12000});await s.screenshot({path:path.join(out,'staff-inbox.png')});});
- await check('Manager operations and catalog are available',async()=>{await s.getByRole('button',{name:'Bookings, catalog and delivery status',exact:true}).click();await s.getByRole('heading',{name:'Catalog management',exact:true}).waitFor();assert(await s.getByRole('button',{name:'Save package',exact:true}).count()===18,'Catalog incomplete');await s.locator('#modal-close').click();});
- await check('Desktop keyboard focus visible and no overflow',async()=>{await p.keyboard.press('Tab');assert(await p.evaluate(()=>!!document.activeElement),'No focus');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Overflow');});
- const mobile=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),mp=await mobile.newPage();mp.on('pageerror',e=>errors.push(e.message));
- await check('390px fresh-load mobile navigation and reduced motion',async()=>{await mp.goto(base+'/app',{waitUntil:'networkidle'});await wait(300);assert(await mp.locator('#sidebar').evaluate(e=>e.inert),'Drawer should be inert');console.log('MOBILE',await mp.locator('#send,#chat-view,.workspace-body,.conversation-column,.composer-area,.context-panel').evaluateAll(es=>es.map(e=>({name:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right,display:getComputedStyle(e).display}))));assert(await mp.locator('#send').evaluate(e=>e.getBoundingClientRect().right<=innerWidth),'Send button clipped');await mp.screenshot({path:path.join(out,'workspace-mobile.png')});await mp.locator('#menu-toggle').click();await mp.locator('[data-view=packages]').click();await mp.locator('.package-card').nth(17).waitFor();assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile overflow');});
- await check('Mobile photographic home has no horizontal overflow',async()=>{await mp.goto(base,{waitUntil:'networkidle'});assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Home overflow');await mp.screenshot({path:path.join(out,'homepage-mobile.png'),fullPage:true});});
- await check('No browser JavaScript errors',async()=>assert(!errors.length,JSON.stringify(errors)));
- }catch(e){console.error(e.message);process.exitCode=1;}finally{
- fs.writeFileSync(path.join(out,'browser-uat.json'),JSON.stringify({date:new Date().toISOString(),mode:'OFFLINE — real UI/API/storage; LLM and OCR test doubles; not clinical/model validation',records,errors},null,2));console.log(JSON.stringify(records));if(browser)await browser.close();server.kill();}
+/* Full business browser UAT.
+   Real UI, HTTP routes, SQLite storage, auth, CSRF, permissions and state machines.
+   MOCKED_TEST_ONLY: LLM agent and OCR reader are doubles (tests/browser/fixture_server.py),
+   so these results are UI/flow evidence, never model or OCR quality evidence.
+   Usage: TEST_PYTHON=/path/to/python node tests/browser/uat.cjs   (UAT_OUT to change output folder) */
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { spawn, execSync } = require('child_process'), fs = require('fs'), path = require('path'), os = require('os');
+const root = path.resolve(__dirname, '../..');
+const out = path.resolve(root, process.env.UAT_OUT || 'docs/evidence/cowork-20261006/browser'); fs.mkdirSync(out, { recursive: true });
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'resultscope-uat-')); const port = Number(process.env.UI_TEST_PORT || 8098), base = 'http://127.0.0.1:' + port;
+const py = process.env.TEST_PYTHON || path.join(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+let sha = 'unknown', dirty = null; try { sha = execSync('git rev-parse HEAD', { cwd: root }).toString().trim(); dirty = execSync('git status --porcelain', { cwd: root }).toString().trim().length > 0; } catch { /* no git */ }
+const server = spawn(py, ['tests/browser/fixture_server.py'], { cwd: root, env: { ...process.env, UI_TEST_PORT: String(port), PROVIDER_NETWORK_ENABLED: 'false', BUSINESS_DB_PATH: path.join(tmp, 'db.sqlite'), BUSINESS_KEY_PATH: path.join(tmp, 'key'), BUSINESS_DATA_KEY: '', DATABASE_URL: '', VERCEL: '', RENDER: '', APP_ENV: 'test', BUSINESS_EXTERNAL_ENABLED: '', STRIPE_SECRET_KEY: '', LINE_CHANNEL_SECRET: '', LINE_CHANNEL_ACCESS_TOKEN: '' }, stdio: ['ignore', 'ignore', 'pipe'] });
+let log = ''; server.on('error', e => { log += 'Fixture process failed: ' + e.message; }); server.stderr.on('data', x => { log += x; });
+let browser; const records = [], errors = [], shots = []; const wait = ms => new Promise(r => setTimeout(r, ms));
+const assert = (c, m) => { if (!c) throw Error(m); };
+async function check(id, name, fn) { const start = Date.now(); try { await fn(); records.push({ id, name, status: 'PASS', ms: Date.now() - start }); } catch (e) { records.push({ id, name, status: 'FAIL', ms: Date.now() - start, error: e.message.split('\n')[0] }); } }
+async function shot(page, name, full = false) { const file = name + '.png'; await page.screenshot({ path: path.join(out, file), fullPage: full }); shots.push(file); }
+const noOverflow = page => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+function nextOpenDay(days) { const d = new Date(Date.now() + 7 * 3600e3 + days * 86400e3); while (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
+function watch(page, label) { page.on('pageerror', e => errors.push(label + ': ' + e.message)); page.on('console', m => { if (m.type() === 'error' && !/status of (4\d\d|502)|net::ERR_FAILED/.test(m.text())) errors.push(label + ' console: ' + m.text()); }); }
+async function signUp(page, email) {
+  await page.locator('#account-open').click();
+  await page.getByLabel('Email address').fill(email); await page.getByLabel('Password', { exact: true }).fill('ui-test-only-password');
+  await page.getByRole('button', { name: 'Create account', exact: true }).click(); await page.locator('#modal').waitFor({ state: 'hidden' });
+}
+(async () => {
+  try {
+    for (let i = 0; i < 80; i++) { try { if ((await fetch(base + '/health')).ok) break; } catch { } await wait(250); if (i === 79) throw Error('Fixture server unavailable: ' + log.slice(-1500)); }
+    browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+    const cctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true }); const c = await cctx.newPage(); watch(c, 'customer');
+    const day1 = nextOpenDay(3);
+
+    await check('UI-01', 'Home: hero tabs keyboard, search routes to filtered catalog, no overflow', async () => {
+      await c.goto(base, { waitUntil: 'networkidle' }); assert(await noOverflow(c), 'overflow'); await shot(c, 'home-1440', true);
+      await c.getByRole('tab', { name: 'Ask the assistant' }).focus(); await c.keyboard.press('ArrowRight');
+      assert(await c.getByRole('tab', { name: 'Search packages' }).getAttribute('aria-selected') === 'true', 'tab not selected');
+      await c.locator('#hero-search').fill('lipid'); await c.locator('#panel-search button[type=submit]').click();
+      await c.waitForURL(/\/packages\?q=lipid/); assert(Number(await c.locator('[data-count]').innerText()) >= 3, 'lipid results');
+    });
+    await check('UI-02', 'Catalog: filter, URL state, chip removal, empty state, reset, sort, back/forward', async () => {
+      await c.goto(base + '/packages', { waitUntil: 'networkidle' }); assert(await c.locator('[data-count]').innerText() === '18', 'initial 18');
+      await c.getByLabel('Organizations (20+ people)').check(); await c.waitForURL(/segment=organization/); await c.locator('[data-count]').filter({ hasText: '3' }).waitFor();
+      await c.getByRole('button', { name: 'Remove filter: Organizations' }).click(); await c.locator('[data-count]').filter({ hasText: '18' }).waitFor();
+      await c.locator('#filters input[name=q]').fill('zzz-no-such-test'); await c.locator('[data-empty]').waitFor({ state: 'visible' });
+      await c.locator('[data-empty] [data-reset]').click(); await c.locator('[data-count]').filter({ hasText: '18' }).waitFor(); assert(await c.locator('[data-empty]').isHidden(), 'empty hidden after reset');
+      await c.locator('#sort').selectOption('price_asc'); await c.waitForURL(/sort=price_asc/); await wait(300);
+      const prices = await c.locator('[data-results] .pkg-price strong').allInnerTexts(); const n = prices.map(p => Number(p.replace(/[^\d]/g, '')));
+      assert(n.every((v, i) => i === 0 || n[i - 1] <= v), 'not sorted ascending');
+      await c.getByLabel('Organizations (20+ people)').check(); await c.waitForURL(/segment=organization/); await c.goBack(); await c.waitForURL(u => !/segment=organization/.test(u.toString()));
+      await c.locator('[data-count]').filter({ hasText: '18' }).waitFor(); await shot(c, 'catalog-1440');
+    });
+    await check('UI-02b', 'Catalog: network error shows recoverable error state', async () => {
+      await c.route('**/api/business/catalog/search**', r => r.abort()); await c.getByLabel('Individuals and families').check();
+      await c.locator('[data-error]').waitFor({ state: 'visible' }); await c.unroute('**/api/business/catalog/search**');
+      await c.locator('[data-retry]').click(); await c.locator('[data-count]').filter({ hasText: /^15$/ }).waitFor(); assert(await c.locator('[data-error]').isHidden(), 'error still visible');
+    });
+    await check('UI-03', 'Compare: tray limit, compare table, assistant hand-off link, clear', async () => {
+      await c.goto(base + '/packages', { waitUntil: 'networkidle' });
+      for (const id of ['P01', 'P02', 'P03']) await c.locator(`[data-compare="${id}"]`).first().check();
+      await c.locator('[data-compare="P04"]').first().click(); await wait(100); assert(!(await c.locator('[data-compare="P04"]').first().isChecked()), 'fourth item accepted');
+      await c.locator('.compare-tray a.btn.primary').click(); await c.waitForURL(/compare\?ids=P01,P02,P03/);
+      assert(await c.locator('.compare-table tbody tr').count() >= 8, 'compare rows'); assert((await c.locator('.compare-table').innerText()).includes('Not included'), 'diff shown');
+      assert((await c.getByRole('link', { name: 'Ask the assistant to compare for me' }).getAttribute('href')).includes('compare=P01,P02,P03'), 'assistant link');
+      await shot(c, 'compare-1440'); await c.locator('[data-clear-compare]').click(); await c.waitForURL(/\/packages$/); assert(await c.locator('.compare-tray').isHidden(), 'tray still visible');
+    });
+    await check('UI-04', 'Package detail CTA leads to booking view; guest must create an account', async () => {
+      await c.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await c.getByRole('link', { name: 'Request an appointment' }).click();
+      await c.waitForURL(/view=book/); await c.locator('select').first().waitFor(); assert(await c.locator('.field select').first().inputValue() === 'P02', 'package preselected');
+      assert((await c.goto(base + '/packages/P99')).status() === 404, '404 page');
+    });
+    await check('UI-05', 'Account: create account, label updates, survives reload', async () => {
+      await c.goto(base + '/app', { waitUntil: 'networkidle' }); await signUp(c, 'customer@example.invalid');
+      assert((await c.locator('#account-label').innerText()).includes('customer@'), 'label'); await c.reload({ waitUntil: 'networkidle' });
+      assert((await c.locator('#account-label').innerText()).includes('customer@'), 'session lost');
+    });
+    let bookingRef = '';
+    await check('UI-06', 'Booking form: center, date, live slots, request created as awaiting confirmation', async () => {
+      await c.goto(base + '/app?view=book&package=P02', { waitUntil: 'networkidle' });
+      await c.getByLabel('Center').selectOption('BKK01'); await c.getByLabel('Date').fill(day1); await c.getByLabel('Date').dispatchEvent('change');
+      await c.getByRole('button', { name: /^09:00/ }).click(); await shot(c, 'book-1440');
+      await c.getByRole('button', { name: 'Send appointment request' }).click(); await c.waitForURL(/view=bookings/);
+      await c.getByText('Awaiting confirmation').first().waitFor(); bookingRef = (await c.locator('.record-meta span').filter({ hasText: 'Ref ' }).first().innerText()).replace('Ref ', '');
+      await c.reload({ waitUntil: 'networkidle' }); await c.getByText('Awaiting confirmation').first().waitFor();
+    });
+    await check('UI-07', 'Chat: proposal does not book; sending request creates exactly one more request', async () => {
+      await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.locator('#message').fill('UI_TEST_BOOK'); await c.getByRole('button', { name: 'Send message' }).click();
+      await c.getByRole('button', { name: 'Send appointment request' }).waitFor(); let w = await (await c.request.get(base + '/api/business/workspace')).json(); assert(w.bookings.length === 1, 'premature booking');
+      await shot(c, 'chat-preview-1440'); await c.getByRole('button', { name: 'Send appointment request' }).click(); await c.locator('#notice').filter({ hasText: 'Appointment request sent' }).waitFor();
+      await c.getByRole('button', { name: 'Send appointment request' }).click(); await wait(500); // idempotent second click
+      w = await (await c.request.get(base + '/api/business/workspace')).json(); assert(w.bookings.length === 2, 'expected exactly two bookings, got ' + w.bookings.length);
+    });
+    await check('UI-08', 'Chat: failed reply is marked, retry answers without duplicating the message; sources render', async () => {
+      await c.locator('#message').fill('UI_TEST_FAIL_ONCE'); await c.getByRole('button', { name: 'Send message' }).click();
+      await c.getByRole('button', { name: 'Retry', exact: true }).waitFor(); await c.getByRole('button', { name: 'Retry', exact: true }).click();
+      await c.getByText('Offline UI test double: your question was received.').last().waitFor();
+      const w = await (await c.request.get(base + '/api/business/workspace')).json(); assert(w.conversation.messages.filter(m => m.content === 'UI_TEST_FAIL_ONCE').length === 1, 'duplicated');
+      await c.locator('#message').fill('UI_TEST_SOURCES'); await c.getByRole('button', { name: 'Send message' }).click();
+      await c.getByRole('link', { name: 'How to understand your lab results' }).waitFor(); await c.getByRole('button', { name: 'What does a reference range mean?' }).waitFor();
+    });
+    await check('UI-09', 'Reports: upload (OCR double), source image, edit, explicit confirmation, context chip, reload', async () => {
+      await c.locator('#report-file').setInputFiles(path.join(root, 'examples/thai_lab_reference_v3/png/04_B_Glucose_Urine.png'));
+      await c.getByRole('heading', { name: 'Review report fields' }).waitFor(); await c.locator('.report-preview').evaluate(img => img.decode());
+      assert(await c.locator('.report-preview').evaluate(img => img.naturalWidth > 0), 'no image');
+      await c.getByLabel('value for row 1', { exact: true }).fill('101'); await shot(c, 'report-review-1440');
+      await c.getByRole('button', { name: 'Confirm and use report' }).click(); assert(await c.locator('#modal').isVisible(), 'confirmed without checkbox');
+      await c.locator('#modal input[type=checkbox]').check(); await c.getByRole('button', { name: 'Confirm and use report' }).click(); await c.locator('#modal').waitFor({ state: 'hidden' });
+      await c.locator('#context-chips').getByText(/Report:/).waitFor(); await c.reload({ waitUntil: 'networkidle' }); await c.locator('#context-report').filter({ hasText: 'Report in use' }).waitFor();
+    });
+    await check('UI-10', 'Organization page: inquiry form validation and submission for the signed-in account', async () => {
+      await c.goto(base + '/organizations', { waitUntil: 'networkidle' }); await c.locator('[data-inquiry-auth]').filter({ hasText: 'Signed in as' }).waitFor();
+      await c.getByRole('button', { name: 'Send request' }).click(); await c.locator('[data-form-error]').filter({ hasText: 'complete' }).waitFor();
+      await c.getByLabel('Organization name').fill('Example Logistics (synthetic)'); await c.getByLabel('Your name').fill('Test Coordinator');
+      await c.getByLabel('Number of people').fill('40'); await c.getByLabel('At our workplace (travel fee quoted)').check(); await c.getByLabel('Corporate Workday').check();
+      await c.getByRole('button', { name: 'Send request' }).click(); await c.locator('[data-inquiry-done]').waitFor(); await shot(c, 'organization-done-1440');
+    });
+
+    const sctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true }); const s = await sctx.newPage(); watch(s, 'staff');
+    await check('UI-11', 'Staff: separate session sign-in, inbox shows organization request with details', async () => {
+      await s.goto(base + '/staff', { waitUntil: 'networkidle' }); await s.getByLabel('Email address').fill('staff@example.invalid'); await s.getByLabel('Password', { exact: true }).fill('ui-test-only-password');
+      await s.locator('#modal').getByRole('button', { name: 'Sign in', exact: true }).click(); await s.locator('#modal').waitFor({ state: 'hidden' });
+      await s.getByRole('button', { name: /Organization inquiry: Example Logistics/ }).click(); await s.getByText('Organization request').waitFor(); await s.getByText('Onsite at their workplace').waitFor();
+    });
+    await check('UI-12', 'Staff: take over, issue quotation v1 then revision v2', async () => {
+      await Promise.all([s.waitForResponse(r => r.url().endsWith('/state')), s.getByRole('button', { name: 'Take over' }).click()]);
+      await s.getByRole('button', { name: 'Prepare quotation' }).click(); await s.getByLabel('Venue').fill('Synthetic office, Bangkok'); await s.getByLabel('Service date').fill(nextOpenDay(10));
+      await s.getByLabel('Travel fee (THB)').fill('1500'); await s.getByRole('button', { name: 'Issue quotation' }).click(); await s.locator('#modal').waitFor({ state: 'hidden' });
+      await s.getByText('v1', { exact: true }).waitFor();
+      await s.getByRole('button', { name: 'Revise quotation (new version)' }).click(); await s.getByLabel('Number of people').fill('45'); await s.getByLabel('Note to customer').fill('Revised headcount');
+      await s.getByRole('button', { name: 'Issue quotation' }).click(); await s.locator('#modal').waitFor({ state: 'hidden' }); await s.getByText('v2', { exact: true }).waitFor(); await shot(s, 'staff-quote-1440');
+    });
+    await check('UI-13', 'Staff: confirm one request, decline another with a reason', async () => {
+      await s.locator('[data-view=operations]').click(); await s.getByRole('button', { name: /Awaiting confirmation \(2\)/ }).waitFor();
+      await s.getByRole('button', { name: 'Confirm appointment' }).first().click(); await s.locator('#notice').filter({ hasText: 'Confirmed' }).waitFor();
+      await s.getByRole('button', { name: 'Decline', exact: true }).first().click(); await s.getByLabel('Reason shown to the customer').fill('No technician available at that time (test).');
+      await s.getByRole('button', { name: 'Decline request' }).click(); await s.getByRole('button', { name: /Awaiting confirmation \(0\)/ }).waitFor(); await shot(s, 'staff-appointments-1440');
+    });
+    await check('UI-14', 'Customer: notifications from events, calendar file, quotation versions and PDF, accept latest', async () => {
+      await c.goto(base + '/app?view=bookings', { waitUntil: 'networkidle' }); assert(Number(await c.locator('#bell-count').innerText()) >= 3, 'bell count');
+      await c.getByText('Confirmed', { exact: true }).first().waitFor(); await c.getByText('No technician available at that time (test).').waitFor();
+      const ics = await c.request.get(base + await c.getByRole('link', { name: 'Add to calendar (.ics)' }).getAttribute('href'));
+      assert(ics.ok() && (await ics.text()).includes('BEGIN:VEVENT'), 'ics');
+      await c.getByText('Superseded by a newer version').waitFor(); const pdfHref = await c.getByRole('link', { name: 'Download quotation (PDF)' }).first().getAttribute('href');
+      const pdf = await c.request.get(base + pdfHref); assert(pdf.ok() && (await pdf.body()).subarray(0, 5).toString() === '%PDF-', 'pdf');
+      await c.getByRole('button', { name: 'Review and accept' }).click(); await c.getByRole('button', { name: 'Accept quotation' }).click(); await c.getByText('Accepted', { exact: true }).waitFor();
+      await c.locator('#bell').click(); await c.getByRole('heading', { name: 'Notifications' }).first().waitFor(); await c.getByText('Appointment confirmed').waitFor();
+      await c.getByRole('button', { name: 'Mark all as read' }).click(); await c.locator('#bell-count').waitFor({ state: 'hidden' }); await shot(c, 'notifications-1440');
+    });
+    await check('UI-15', 'Payment simulator: PromptPay test payment, signed success, paid state persists', async () => {
+      await c.goto(base + '/app?view=bookings', { waitUntil: 'networkidle' }); await c.getByRole('button', { name: 'Pay with test PromptPay' }).click(); await c.waitForURL(/\/pay\/sim\//);
+      await c.getByText('SIMULATED QR — cannot be scanned or paid').waitFor(); await shot(c, 'payment-simulator-1440');
+      await c.getByRole('button', { name: 'Simulate successful payment' }).click(); await c.getByText('Paid (simulation)').first().waitFor();
+      await c.getByRole('link', { name: 'Back to My appointments' }).click(); await c.getByText('Paid (simulation)').first().waitFor();
+      const other = await (await browser.newContext()).newPage(); await other.goto(base + '/pay/sim/paysim_unknown', { waitUntil: 'networkidle' });
+      await other.getByText('This test payment cannot be shown').waitFor();
+    });
+    await check('UI-16', 'Website handoff: customer asks for team, staff takes over, reply reaches customer, assistant paused', async () => {
+      await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.locator('#staff-request').click(); await c.getByLabel('How can our team help?').fill('UI UAT live help request');
+      await c.getByRole('button', { name: 'Send to our team' }).click(); await c.locator('#handoff-state').filter({ hasText: 'queued' }).waitFor();
+      await s.locator('[data-view=staff]').click(); await s.getByRole('button', { name: /UI UAT live help request|Organization inquiry/ }).first().click();
+      await s.getByRole('heading', { name: /Organization inquiry|UI UAT live help request/ }).waitFor();
+      const btnTake = s.getByRole('button', { name: 'Take over' }); if (await btnTake.count()) await Promise.all([s.waitForResponse(r => r.url().endsWith('/state')), btnTake.click()]);
+      await s.getByLabel('Staff reply').fill('A staff member is reviewing your request.');
+      await Promise.all([s.waitForResponse(r => r.url().endsWith('/messages') && r.request().method() === 'POST'), s.getByRole('button', { name: 'Send reply' }).click()]);
+      await c.getByText('A staff member is reviewing your request.').waitFor({ timeout: 12000 }); await c.locator('#handoff-state').filter({ hasText: 'paused' }).waitFor();
+      await shot(s, 'staff-inbox-1440');
+    });
+    await check('UI-17', 'Manager: price edit persists and reaches the public catalog; branch staff cannot see manager tools', async () => {
+      await s.locator('[data-view=catalog-admin]').click(); await s.getByLabel('Essential Check price in THB').fill('1250');
+      await s.getByRole('row', { name: /Essential Check/ }).getByRole('button', { name: 'Save package' }).click(); await s.getByText(/Saved · now ฿1,250/).waitFor();
+      await c.goto(base + '/packages/P01', { waitUntil: 'networkidle' }); assert((await c.locator('.buy-box .pkg-price strong').innerText()).includes('1,250'), 'price not propagated');
+      const x = await (await browser.newContext()).newPage(); await x.goto(base + '/staff', { waitUntil: 'networkidle' });
+      await x.getByLabel('Email address').fill('cnx-staff@example.invalid'); await x.getByLabel('Password', { exact: true }).fill('ui-test-only-password');
+      await x.locator('#modal').getByRole('button', { name: 'Sign in', exact: true }).click(); await x.locator('#modal').waitFor({ state: 'hidden' });
+      assert(await x.locator('[data-view=catalog-admin]').isHidden(), 'manager nav visible to staff');
+      const r = await x.request.put(base + '/api/business/staff/catalog/P01', { data: { price_thb: 1, active: true }, headers: { 'X-Business-CSRF': 'x' } }); assert(r.status() === 403, 'branch staff edit not refused');
+    });
+    await check('UI-18', 'Channels: LINE simulator event through adapter, worker run, simulated delivery recorded', async () => {
+      await s.locator('[data-view=channels]').click(); await s.getByText('LINE channel simulator').waitFor(); await s.getByLabel('Message').fill('Hello from the LINE simulator');
+      await s.getByRole('button', { name: 'Send as LINE user' }).click(); await s.locator('#notice').filter({ hasText: 'Queued event' }).waitFor();
+      await s.getByRole('button', { name: 'Run worker once' }).click(); await s.locator('#notice').waitFor();
+      await s.getByText(/line_job/).first().waitFor(); await shot(s, 'channels-1440', true);
+    });
+    await check('UI-19', 'Permission: customer cannot use staff APIs; staff views ask to sign in', async () => {
+      const r = await c.request.get(base + '/api/business/staff/inbox'); assert(r.status() === 403, 'customer read staff inbox');
+      await c.goto(base + '/staff', { waitUntil: 'networkidle' }); await c.getByText('Staff sign-in required').waitFor();
+    });
+    await check('UI-20', 'Keyboard and dialogs: visible focus, Escape closes dialog', async () => {
+      await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.keyboard.press('Tab'); assert(await c.evaluate(() => document.activeElement && document.activeElement !== document.body), 'no focus');
+      await c.locator('#account-open').click(); await c.locator('#modal').waitFor(); await c.keyboard.press('Escape'); await c.locator('#modal').waitFor({ state: 'hidden' });
+      assert(await noOverflow(c), 'desktop overflow');
+    });
+    for (const [w, h, label] of [[768, 1024, 'tablet'], [390, 844, 'mobile']]) {
+      await check('UI-21-' + label, label + ': pages without horizontal overflow, navigation drawer, filters toggle, reduced motion', async () => {
+        const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' }); const m = await ctx.newPage(); watch(m, label);
+        for (const p of ['/', '/packages', '/packages/P02', '/organizations', '/centers', '/help', '/compare?ids=P01,P02']) { await m.goto(base + p, { waitUntil: 'networkidle' }); assert(await noOverflow(m), 'overflow on ' + p); }
+        await m.goto(base, { waitUntil: 'networkidle' }); await shot(m, 'home-' + w, true);
+        await m.locator('.nav-toggle').click(); await m.locator('#main-nav').getByRole('link', { name: 'For organizations' }).waitFor(); await m.keyboard.press('Escape'); assert(await m.locator('#main-nav').isHidden(), 'nav not closed');
+        if (w < 1080) { await m.goto(base + '/packages', { waitUntil: 'networkidle' }); await m.locator('.filters-open').click(); await m.locator('#filters').waitFor({ state: 'visible' }); await shot(m, 'catalog-filters-' + w); }
+        await m.goto(base + '/app', { waitUntil: 'networkidle' }); assert(await noOverflow(m), 'app overflow');
+        if (w <= 800) { assert(await m.locator('#sidebar').evaluate(e => e.inert), 'drawer should be inert'); await m.locator('#menu-toggle').click(); await m.locator('[data-view=book]').click(); await m.getByLabel('Center').waitFor(); }
+        assert(await m.locator('#send').evaluate(e => e.getBoundingClientRect().right <= innerWidth) || w > 800, 'send clipped');
+        await shot(m, 'app-' + w); await ctx.close();
+      });
+    }
+    await check('UI-22', 'No uncaught browser JavaScript errors', async () => assert(!errors.length, JSON.stringify(errors.slice(0, 5))));
+  } catch (e) { console.error(e.message); process.exitCode = 1; } finally {
+    const failed = records.filter(r => r.status !== 'PASS').length; if (failed) process.exitCode = 1;
+    fs.writeFileSync(path.join(out, 'browser-uat.json'), JSON.stringify({ date: new Date().toISOString(), candidate_sha: sha, working_tree_dirty: dirty, mode: 'MOCKED_TEST_ONLY for LLM and OCR; real UI/API/storage/permissions. Not model or OCR quality evidence.', passed: records.length - failed, failed, records, errors, screenshots: shots }, null, 2));
+    console.log(records.map(r => `${r.status} ${r.id} ${r.name}${r.error ? ' — ' + r.error : ''}`).join('\n'));
+    if (browser) await browser.close(); server.kill(); fs.rmSync(tmp, { recursive: true, force: true });
+  }
 })();

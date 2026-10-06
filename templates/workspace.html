@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }}</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/static/img/favicon.svg">
+<link rel="stylesheet" href="/static/css/rs.css">
+<link rel="stylesheet" href="/static/css/workspace.css">
+</head>
+<body class="workspace" data-staff="{{ 'true' if staff_mode else 'false' }}">
+<a class="skip" href="#workspace-main">Skip to content</a>
+<aside class="sidebar" id="sidebar" aria-label="Workspace navigation">
+  <a href="/" class="brand"><span class="brand-mark" aria-hidden="true">r</span><span>ResultScope</span></a>
+  <p class="side-label">{{ 'Service desk' if staff_mode else 'Your workspace' }}</p>
+  {% if not staff_mode %}
+  <button id="new-chat" class="btn block" type="button">New conversation</button>
+  {% endif %}
+  <nav class="side-nav" aria-label="Workspace">
+    {% if staff_mode %}
+    <button class="nav-item" data-view="staff" type="button">Inbox</button>
+    <button class="nav-item" data-view="operations" type="button">Appointments</button>
+    <button class="nav-item" data-view="catalog-admin" type="button" data-manager-only hidden>Catalog</button>
+    <button class="nav-item" data-view="channels" type="button" data-manager-only hidden>Channels and budget</button>
+    <button class="nav-item" data-view="notifications" type="button">Notifications</button>
+    {% else %}
+    <button class="nav-item" data-view="chat" type="button">Conversation</button>
+    <button class="nav-item" data-view="packages" type="button">Health checks</button>
+    <button class="nav-item" data-view="book" type="button">Request an appointment</button>
+    <button class="nav-item" data-view="bookings" type="button">My appointments</button>
+    <button class="nav-item" data-view="reports" type="button">My reports</button>
+    <button class="nav-item" data-view="history" type="button">Past conversations</button>
+    <button class="nav-item" data-view="notifications" type="button">Notifications</button>
+    <button class="nav-item" data-view="staff" id="staff-nav" type="button" hidden>Staff inbox</button>
+    {% endif %}
+  </nav>
+  <div class="sidebar-bottom">
+    <button id="account-open" class="account-button" type="button"><span class="avatar" aria-hidden="true">R</span><span class="account-text"><strong id="account-label">Guest</strong><small id="account-sub">Sign in to keep your history</small></span></button>
+    <a href="/help" class="small">Help and policies</a>
+    <span class="badge sim">Simulation</span>
+  </div>
+</aside>
+<div class="workspace-body">
+  <header class="workspace-header">
+    <button id="menu-toggle" class="icon-btn mobile-menu" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <h1 id="view-title">{{ 'Inbox' if staff_mode else 'Conversation' }}</h1>
+    <div class="header-actions">
+      <button id="connection-state" class="status-pill" type="button">Checking assistant…</button>
+      <button id="bell" class="icon-btn" type="button" aria-label="Notifications"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="count" id="bell-count" hidden>0</span></button>
+      {% if not staff_mode %}<button id="staff-request" class="btn sm" type="button">Talk to our team</button>{% endif %}
+    </div>
+  </header>
+  <main id="workspace-main" tabindex="-1">
+    {% if not staff_mode %}
+    <section id="chat-view" class="view chat-layout" aria-label="Conversation">
+      <div class="conversation-column">
+        <div id="messages" class="messages" aria-live="polite" aria-relevant="additions">
+          <div class="welcome">
+            <h2>What would you like to do?</h2>
+            <p class="muted">Ask about health checks, prices and centers, a lab report, or a team booking. Write in any language.</p>
+            <div class="starter-grid">
+              <button type="button" data-prompt="Help me choose a health check within my budget.">Choose a health check for my budget</button>
+              <button type="button" data-prompt="I would like help understanding a laboratory report.">Understand a lab report</button>
+              <button type="button" data-prompt="I want to book a health check. What do you need from me?">Book a visit</button>
+              <button type="button" data-prompt="Help me arrange health checks for my organization.">Plan for my team</button>
+            </div>
+          </div>
+        </div>
+        <div class="composer-area">
+          <div id="chat-status" class="chat-status" role="status"></div>
+          <div id="context-chips" class="context-chips" aria-label="Conversation context"></div>
+          <form id="chat-form">
+            <label class="sr-only" for="message">Message ResultScope</label>
+            <textarea id="message" rows="2" maxlength="8000" placeholder="Ask about a health check, a report or an appointment…" required></textarea>
+            <div class="composer-tools">
+              <button type="button" class="btn ghost sm" id="add-report">Add a report</button>
+              <button type="button" class="btn ghost sm" id="demo-open">Try a sample report</button>
+              <span class="spacer"></span>
+              <button type="button" id="stop" class="btn sm" hidden>Stop</button>
+              <button type="submit" id="send" class="btn primary sm" aria-label="Send message">Send</button>
+            </div>
+          </form>
+          <p class="composer-note tiny muted">AI assistance with sources. Not a diagnosis. Actions need your confirmation. <span id="handoff-state"></span></p>
+        </div>
+      </div>
+      <aside class="context-panel" aria-label="Your context">
+        <h2 class="h3">Your context</h2>
+        <div id="context-report" class="context-data">No report selected</div>
+        <div id="context-next" class="stack-sm"></div>
+        <hr>
+        <h3 class="h4">A person when you need one</h3>
+        <p class="small muted">Our team handles bookings, organization requests and anything that needs review.</p>
+        <button class="btn sm" type="button" id="context-staff">Contact our team</button>
+        <p class="tiny muted">Mon–Sat · 07:00–16:00 Bangkok time</p>
+        <a href="/lab" class="small">Laboratory reference workspace</a>
+      </aside>
+    </section>
+    {% endif %}
+    <section id="content-view" class="view content-view" {% if not staff_mode %}hidden{% endif %}><div id="content"></div></section>
+  </main>
+  <div id="notice" role="status" class="toast" hidden></div>
+</div>
+<dialog id="modal" class="rs-dialog" aria-labelledby="modal-title"><div class="dialog-head"><h2 id="modal-title">Details</h2><button class="icon-btn" id="modal-close" type="button" aria-label="Close dialog">×</button></div><div class="dialog-body" id="modal-content"></div></dialog>
+<input type="file" id="report-file" accept=".pdf,.png,.jpg,.jpeg" hidden>
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/purify.min.js"></script>
+<script src="/static/js/workspace.js" defer></script>
+</body>
+</html>

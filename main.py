@@ -16,6 +16,7 @@ from routers.admin import router as admin_router
 from routers.conversation import router as conversation_router
 from routers.business import router as business_router
 from routers.business_ops import router as business_ops_router
+from routers.site import router as site_router
 from services.conversation_transport import ConversationError
 from fastapi.responses import JSONResponse
 
@@ -54,6 +55,7 @@ app.include_router(admin_router)
 app.include_router(conversation_router)
 app.include_router(business_router)
 app.include_router(business_ops_router)
+app.include_router(site_router)
 
 @app.exception_handler(ConversationError)
 async def business_error(request: Request, exc: ConversationError):
@@ -84,23 +86,12 @@ async def request_boundary(request: Request, call_next):
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     if request.url.path.startswith(("/api/v2", "/api/business")):
         response.headers["Cache-Control"] = "no-store"
-    if request.url.path in {"/", "/app", "/staff"} or request.url.path.startswith("/api/business"):
+    # Coursework simulation: never ask search engines to index simulated clinics or prices.
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    html_page = not request.url.path.startswith(("/static", "/api", "/lab", "/admin", "/settings", "/docs", "/redoc", "/openapi.json"))
+    if html_page or request.url.path.startswith("/api/business"):
         response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self' https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     return response
-
-
-@app.get("/")
-async def index(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "business_home.html",
-        {
-            "app_name": settings.APP_NAME,
-            "tagline": settings.APP_TAGLINE,
-            "owner_name": settings.OWNER_NAME,
-            "demo_notice": None,
-        },
-    )
 
 
 @app.get("/settings")
@@ -119,11 +110,11 @@ async def health():
 
 @app.get("/app")
 async def business_app(request: Request):
-    return templates.TemplateResponse(request, "business_app.html", {"staff_mode": False})
+    return templates.TemplateResponse(request, "workspace.html", {"staff_mode": False, "title": "Your workspace — ResultScope"})
 
 @app.get("/staff")
 async def business_staff(request: Request):
-    return templates.TemplateResponse(request, "business_app.html", {"staff_mode": True})
+    return templates.TemplateResponse(request, "workspace.html", {"staff_mode": True, "title": "Service desk — ResultScope"})
 
 @app.get("/lab")
 async def lab_workspace(request: Request):

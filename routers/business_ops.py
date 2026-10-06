@@ -55,6 +55,19 @@ async def integration_modes():
     return {"modes": ops.modes(), "is_demo": True}
 
 
+@router.get("/staff/budget")
+async def budget_status(request: Request):
+    from config import settings
+    from services import cost_ledger
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required.", 403)
+    return {"cost": cost_ledger.status(), "network_enabled": settings.PROVIDER_NETWORK_ENABLED,
+            "call_cycle": settings.PROVIDER_BUDGET_CYCLE_ID or None,
+            "call_limits": {"llm": settings.PROVIDER_BUDGET_LLM_LIMIT, "ocr": settings.PROVIDER_BUDGET_OCR_LIMIT}}
+
+
 # ------------------------------------------------------------ notifications
 
 class ReadNotices(Strict):

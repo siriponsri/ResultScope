@@ -1,0 +1,126 @@
+{% extends "site/base.html" %}
+{% from "site/_macros.html" import package_card, money %}
+{% block body_class %} home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <h1>Find the right health check, and ask anything along the way.</h1>
+      <p class="lead">Compare packages by what they include and cost, understand a lab report with its sources beside you, and request a time at one of our centers. Our team confirms every appointment.</p>
+      <div class="entry" data-tabs>
+        <div class="entry-tabs" role="tablist" aria-label="How to start">
+          <button role="tab" id="tab-ask" aria-controls="panel-ask" aria-selected="true" type="button">Ask the assistant</button>
+          <button role="tab" id="tab-search" aria-controls="panel-search" aria-selected="false" tabindex="-1" type="button">Search packages</button>
+        </div>
+        <form id="panel-ask" role="tabpanel" aria-labelledby="tab-ask" class="entry-panel" action="/app" method="get">
+          <label class="sr-only" for="ask-q">Your question</label>
+          <textarea class="input" id="ask-q" name="q" rows="2" maxlength="2000" required placeholder="For example: I have about ฿2,000 and want to check blood sugar and cholesterol."></textarea>
+          <div class="entry-foot">
+            <span class="small muted">Thai, English or your own language. Not a diagnosis.</span>
+            <button class="btn primary" type="submit">Start conversation</button>
+          </div>
+        </form>
+        <form id="panel-search" role="tabpanel" aria-labelledby="tab-search" class="entry-panel" action="/packages" method="get" hidden>
+          <label class="sr-only" for="hero-search">Search tests or packages</label>
+          <div class="entry-search">
+            <input class="input" id="hero-search" name="q" type="search" maxlength="80" placeholder="Test name, e.g. HbA1c, thyroid, kidney">
+            <button class="btn primary" type="submit">Search</button>
+          </div>
+          <span class="small muted">{{ counts.core + counts.follow + counts.org }} packages and follow-up tests across {{ branches|length }} centers.</span>
+        </form>
+        <div class="prompt-row" aria-label="Example questions">
+          <a class="chip" href="/app?q={{ 'Which health check fits a ฿1,500 budget?'|urlencode }}">Which check fits ฿1,500?</a>
+          <a class="chip" href="/app?view=reports">Explain my lab report</a>
+          <a class="chip" href="/organizations">Quote for my team</a>
+        </div>
+      </div>
+    </div>
+    <figure class="hero-photo">
+      <img src="/static/img/health/laboratory-hero.jpg" alt="Pipette above rows of sample tubes in a laboratory" width="1800" height="1200" fetchpriority="high">
+      <figcaption class="small">Photography supplied by the project owner. Illustrative, not a ResultScope facility.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap section" aria-labelledby="browse-title">
+  <div class="section-head"><h2 id="browse-title">Browse by need</h2><a href="/packages">All health checks</a></div>
+  <div class="need-grid">
+    {% for s in segments %}
+    <a class="need" href="/packages?{{ s.query }}">
+      <strong>{{ s.label }}</strong>
+      <span class="small muted">{{ s.blurb }}</span>
+      <span class="small need-count">{{ counts[s.id] }} option{{ 's' if counts[s.id] != 1 }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap section" aria-labelledby="core-title">
+  <div class="section-head"><h2 id="core-title">Core health checks</h2><a href="/packages?segment=individual&review=excluded">See all core checks</a></div>
+  <div class="pkg-grid">{% for p in core %}{{ package_card(p) }}{% endfor %}</div>
+  <p class="tiny muted catalog-note">Prices are simulated for coursework (catalog {{ catalog_version }}). Packages are illustrative, not a universal screening recommendation.</p>
+</section>
+
+<section class="steps-band" aria-labelledby="steps-title">
+  <div class="wrap">
+    <h2 id="steps-title">From question to appointment</h2>
+    <ol class="steps">
+      <li><strong>Ask or browse</strong><span>Describe your goals and budget, or filter packages yourself. The assistant cites where its information comes from.</span></li>
+      <li><strong>Request a time</strong><span>Choose a center and a half-hour slot. Your request holds the slot while our team reviews it.</span></li>
+      <li><strong>Our team confirms</strong><span>You get a notification, a calendar file, and the choice to pay at the center or with a test payment.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="wrap section split" aria-labelledby="report-title">
+  <img class="split-photo" src="/static/img/health/sample-analysis.jpg" alt="Labelled sample tubes on a laboratory mixer" loading="lazy" width="1200" height="1800">
+  <div class="stack">
+    <h2 id="report-title">Bring a lab report you already have</h2>
+    <p class="muted">Upload a photo or PDF. You check every value we read before it is used, and explanations show the public sources behind them.</p>
+    <ul class="ticks">
+      <li>Your confirmed values and the ranges printed on your report come first</li>
+      <li>Out of range does not mean illness; we explain what a result can and cannot tell you</li>
+      <li>Reports stay private to your account and can be deleted</li>
+    </ul>
+    <div class="row"><a class="btn primary" href="/app?view=reports">Add a report</a><a class="btn ghost" href="/sources">See our sources</a></div>
+  </div>
+</section>
+
+<section class="wrap section" aria-labelledby="centers-title">
+  <div class="section-head"><h2 id="centers-title">Centers</h2><a href="/centers">Hours and capacity</a></div>
+  <div class="center-grid">
+    {% for b in branches %}
+    <article class="card center-card">
+      <h3>{{ b.name }}</h3>
+      <p class="small muted">{{ b.area }}</p>
+      <p class="small">{{ b.hours }} · up to {{ b.capacity_per_slot }} visits per half hour</p>
+      <a class="small" href="/app?view=book&branch={{ b.id }}">Request a time here</a>
+    </article>
+    {% endfor %}
+  </div>
+  <p class="tiny muted">Area markers for a simulated business. No clinic operates at these locations.</p>
+</section>
+
+<section class="wrap section">
+  <div class="org-band">
+    <div class="stack">
+      <h2>Health checks for your team</h2>
+      <p>For 20 or more people, at a center or at your workplace. Tell us your headcount and dates; a coordinator prepares a versioned quotation you can download and accept.</p>
+      <p class="small">Each employee's results stay private to that employee.</p>
+    </div>
+    <a class="btn" href="/organizations">Request a quotation</a>
+  </div>
+</section>
+
+<section class="wrap section faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Common questions</h2>
+  <div class="faq-list">
+    <details><summary>Can I ask in Thai or another language?</summary><p>Yes. The assistant replies in the language you write in. The website itself is in English.</p></details>
+    <details><summary>Can the assistant diagnose a condition?</summary><p>No. It explains what tests measure and what your confirmed values show against the printed range, with sources. Decisions about diagnosis and treatment belong with a clinician.</p></details>
+    <details><summary>Is my appointment booked straight away?</summary><p>Your request holds the slot. A team member confirms or declines it, and you are notified either way. {{ policies.cancellation_policy }}</p></details>
+    <details><summary>How do payments work here?</summary><p>This is a simulation. You can choose pay at the center, or a test PromptPay/card payment that moves no real money. {{ policies.payment_policy }}</p></details>
+    <details><summary>When can I talk to a person?</summary><p>Any time you ask in the chat or use “Talk to our team”. {{ policies.handoff_policy }}</p></details>
+  </div>
+  <a href="/help">More help and policies</a>
+</section>
+{% endblock %}

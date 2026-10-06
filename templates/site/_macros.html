@@ -1,0 +1,22 @@
+{% macro money(n) %}฿{{ "{:,}".format(n) }}{% endmacro %}
+
+{% macro package_card(p, branches=None) %}
+<article class="pkg" data-package="{{ p.id }}">
+  <div class="pkg-head">
+    <h3><a href="/packages/{{ p.id }}">{{ p.name }}</a></h3>
+    {% if p.segment == 'organization' %}<span class="badge neutral">Organizations</span>
+    {% elif p.staff_review_required %}<span class="badge warn">Staff review</span>
+    {% else %}<span class="badge">Book directly</span>{% endif %}
+  </div>
+  <ul class="pkg-tests" aria-label="Included tests">
+    {% for s in p.services[:6] %}<li>{{ s }}</li>{% endfor %}
+    {% if p.services|length > 6 %}<li>+{{ p.services|length - 6 }} more</li>{% endif %}
+  </ul>
+  <p class="small muted">{{ p.services|length }} test{{ 's' if p.services|length != 1 }} · {{ p.branch_ids|length }} center{{ 's' if p.branch_ids|length != 1 }}</p>
+  <div class="pkg-price"><strong>{{ money(p.price_thb) }}</strong><span>{{ p.price_unit }}</span></div>
+  <div class="pkg-foot">
+    <a class="btn sm primary" href="/packages/{{ p.id }}">View details</a>
+    <label class="compare-toggle"><input type="checkbox" data-compare="{{ p.id }}" data-name="{{ p.name }}"> Compare</label>
+  </div>
+</article>
+{% endmacro %}

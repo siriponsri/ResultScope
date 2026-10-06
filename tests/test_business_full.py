@@ -305,3 +305,48 @@ def test_modes_are_server_owned():
     assert modes["business_data"]["mode"] == "SIMULATED_BUSINESS_DATA"
     assert modes["assistant"]["mode"] == "UNAVAILABLE"
     assert modes["email"]["mode"] == "NOT_CONNECTED"
+
+
+# ------------------------------------------------------------ chat retry
+
+def test_failed_turn_is_marked_and_retry_does_not_duplicate(monkeypatch):
+    from services.conversation_transport import ConversationError
+    calls = []
+
+    async def flaky(message, context):  # MOCKED_TEST_ONLY
+        calls.append(message)
+        if len(calls) == 1:
+            raise ConversationError("service_unavailable", "Temporary failure.", 502)
+        return {"reply": "Recovered answer.", "sources": [], "action": None}
+    monkeypatch.setattr(business.business_agent, "run", flaky)
+    c = client()
+    assert c.post(API + "/chat", json={"message": "What does a lipid profile include?"}).status_code == 502
+    messages = c.get(API + "/workspace").json()["conversation"]["messages"]
+    assert len(messages) == 1 and messages[0]["failed"] and messages[0]["retryable"]
+    r = c.post(API + "/chat/retry", json={"message_id": messages[0]["id"]})
+    assert r.status_code == 200 and r.json()["reply"] == "Recovered answer."
+    messages = c.get(API + "/workspace").json()["conversation"]["messages"]
+    assert [m["role"] for m in messages] == ["user", "assistant"] and not messages[0].get("failed")
+    assert calls == ["What does a lipid profile include?"] * 2
+    assert c.post(API + "/chat/retry", json={"message_id": messages[0]["id"]}).status_code == 409
+
+
+def test_safety_block_is_not_retryable(monkeypatch):
+    from services.conversation_transport import ConversationError
+
+    async def blocked(message, context):  # MOCKED_TEST_ONLY
+        raise ConversationError("safety_blocked", "Blocked.", 422)
+    monkeypatch.setattr(business.business_agent, "run", blocked)
+    c = client()
+    c.post(API + "/chat", json={"message": "unsafe request"})
+    m = c.get(API + "/workspace").json()["conversation"]["messages"][0]
+    assert m["failed"] and not m["retryable"]
+    assert c.post(API + "/chat/retry", json={"message_id": m["id"]}).status_code == 409
+
+
+def test_budget_status_is_manager_only():
+    c = client()
+    assert c.get(API + "/staff/budget").status_code == 403
+    m = client(); promote(m)
+    body = m.get(API + "/staff/budget").json()
+    assert body["cost"]["scope"] == "project_total" and body["cost"]["cap_thb"] == 300.0
