@@ -33,8 +33,10 @@ async function signUp(page, email) {
 
     await check('UI-01', 'Home: hero tabs keyboard, search routes to filtered catalog, no overflow', async () => {
       await c.goto(base, { waitUntil: 'networkidle' }); assert(await noOverflow(c), 'overflow'); await shot(c, 'home-1440', true);
-      await c.getByRole('tab', { name: 'Ask the assistant' }).focus(); await c.keyboard.press('ArrowRight');
-      assert(await c.getByRole('tab', { name: 'Search packages' }).getAttribute('aria-selected') === 'true', 'tab not selected');
+      await c.getByRole('tab', { name: 'Search packages' }).focus(); await c.keyboard.press('ArrowRight');
+      assert(await c.getByRole('tab', { name: 'Ask the assistant' }).getAttribute('aria-selected') === 'true', 'tab not selected');
+      await c.getByRole('tab', { name: 'Search packages' }).click();
+      await c.getByRole('tab', { name: /For organizations/ }).click(); await c.locator('#need-org').waitFor({ state: 'visible' }); assert(await c.locator('#need-core').isHidden(), 'need tab panel');
       await c.locator('#hero-search').fill('lipid'); await c.locator('#panel-search button[type=submit]').click();
       await c.waitForURL(/\/packages\?q=lipid/); assert(Number(await c.locator('[data-count]').innerText()) >= 3, 'lipid results');
     });
@@ -119,7 +121,8 @@ async function signUp(page, email) {
     await check('UI-11', 'Staff: separate session sign-in, inbox shows organization request with details', async () => {
       await s.goto(base + '/staff', { waitUntil: 'networkidle' }); await s.getByLabel('Email address').fill('staff@example.invalid'); await s.getByLabel('Password', { exact: true }).fill('ui-test-only-password');
       await s.locator('#modal').getByRole('button', { name: 'Sign in', exact: true }).click(); await s.locator('#modal').waitFor({ state: 'hidden' });
-      await s.getByRole('button', { name: /Organization inquiry: Example Logistics/ }).click(); await s.getByText('Organization request').waitFor(); await s.getByText('Onsite at their workplace').waitFor();
+      await s.locator('.kpi').first().waitFor(); await shot(s, 'staff-overview-1440');
+      await s.locator('[data-view=staff]').click(); await s.getByRole('button', { name: /Organization inquiry: Example Logistics/ }).click(); await s.getByText('Organization request').waitFor(); await s.getByText('Onsite at their workplace').waitFor();
     });
     await check('UI-12', 'Staff: take over, issue quotation v1 then revision v2', async () => {
       await Promise.all([s.waitForResponse(r => r.url().endsWith('/state')), s.getByRole('button', { name: 'Take over' }).click()]);
@@ -181,9 +184,31 @@ async function signUp(page, email) {
       await s.getByRole('button', { name: 'Run worker once' }).click(); await s.locator('#notice').waitFor();
       await s.getByText(/line_job/).first().waitFor(); await shot(s, 'channels-1440', true);
     });
+    await check('UI-23', 'Staff dashboard: numbers from records, capacity table, centers edit, roles pause/resume, audit log', async () => {
+      await s.locator('[data-view=overview]').click(); await s.locator('.kpi-value').first().waitFor();
+      const d = await (await s.request.get(base + '/api/business/staff/dashboard')).json();
+      assert((await s.locator('.kpi').filter({ hasText: 'Awaiting confirmation' }).locator('.kpi-value').innerText()) === String(d.bookings.by_state.requested), 'kpi mismatch');
+      assert(await s.locator('table.heat tr').count() === 4, 'heat rows');
+      await s.locator('[data-view=centers]').click(); await s.getByLabel('Khon Kaen City Demo Center visits per slot').fill('2');
+      await s.getByRole('row', { name: /Khon Kaen/ }).getByRole('button', { name: 'Save' }).click(); await s.getByText(/Saved · 2 per slot/).waitFor();
+      const slots = await (await c.request.get(base + '/api/business/slots?branch_id=KKC01&date=' + nextOpenDay(5))).json(); assert(slots.slots.every(x => x.capacity === 2), 'capacity not applied');
+      await s.locator('[data-view=roles]').click(); await s.getByRole('button', { name: 'Pause this role' }).last().click(); await s.getByText('Paused').waitFor();
+      assert(!(await (await c.request.get(base + '/api/business/dots')).json()).dots.find(x => x.id === 'explainer').enabled, 'role not paused');
+      await s.getByRole('button', { name: 'Turn on' }).click(); await s.getByText('Paused').waitFor({ state: 'detached' });
+      await s.locator('[data-view=audit]').click(); await s.getByRole('cell', { name: 'branch.capacity' }).first().waitFor(); await shot(s, 'staff-audit-1440');
+    });
+    await check('UI-24', 'Assistant dock on public pages: page-aware, role label, shortcut goes straight to the booking form', async () => {
+      await c.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await c.locator('.dock-launch').click();
+      await c.locator('.dock').getByText(/Knows you are viewing Workday Check/).waitFor();
+      await c.locator('.dock textarea').fill('UI_TEST_DOCK'); await c.locator('.dock').getByRole('button', { name: 'Send' }).click();
+      await c.locator('.dock').getByText('Health-check Advisor · AI').last().waitFor(); await shot(c, 'dock-1440');
+      await c.locator('.dock').getByRole('link', { name: 'Book Workday Check' }).click(); await c.waitForURL(/view=book&package=P02&branch=BKK01/);
+      await c.getByLabel('Center').waitFor(); assert(await c.getByLabel('Center').inputValue() === 'BKK01', 'branch not prefilled');
+      await c.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await c.locator('.dock-launch').click(); await c.keyboard.press('Escape'); assert(await c.locator('.dock').isHidden(), 'dock not closed');
+    });
     await check('UI-19', 'Permission: customer cannot use staff APIs; staff views ask to sign in', async () => {
       const r = await c.request.get(base + '/api/business/staff/inbox'); assert(r.status() === 403, 'customer read staff inbox');
-      await c.goto(base + '/staff', { waitUntil: 'networkidle' }); await c.getByText('Staff sign-in required').waitFor();
+      await c.goto(base + '/staff?view=staff', { waitUntil: 'networkidle' }); await c.getByText('Staff sign-in required').waitFor();
     });
     await check('UI-20', 'Keyboard and dialogs: visible focus, Escape closes dialog', async () => {
       await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.keyboard.press('Tab'); assert(await c.evaluate(() => document.activeElement && document.activeElement !== document.body), 'no focus');

@@ -4,6 +4,7 @@ import logging
 import os
 from pathlib import Path
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -56,6 +57,15 @@ app.include_router(conversation_router)
 app.include_router(business_router)
 app.include_router(business_ops_router)
 app.include_router(site_router)
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error(request: Request, exc: StarletteHTTPException):
+    # Website visitors get a page with a way back; API callers keep the JSON error contract.
+    accepts_html = "text/html" in request.headers.get("accept", "")
+    if exc.status_code == 404 and accepts_html and not request.url.path.startswith(("/api/", "/static/")):
+        return templates.TemplateResponse(request, "site/not_found.html", {"title": "Page not found | ResultScope", "description": "This page does not exist.", "path": request.url.path, "what": "page"}, status_code=404)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=getattr(exc, "headers", None))
+
 
 @app.exception_handler(ConversationError)
 async def business_error(request: Request, exc: ConversationError):
@@ -110,7 +120,8 @@ async def health():
 
 @app.get("/app")
 async def business_app(request: Request):
-    return templates.TemplateResponse(request, "workspace.html", {"staff_mode": False, "title": "Your workspace — ResultScope"})
+    from services import business_dots
+    return templates.TemplateResponse(request, "workspace.html", {"staff_mode": False, "title": "Your workspace — ResultScope", "dots": business_dots.public_roster()})
 
 @app.get("/staff")
 async def business_staff(request: Request):

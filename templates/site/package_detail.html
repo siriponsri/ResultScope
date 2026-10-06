@@ -58,7 +58,7 @@
 {% if related %}
 <section class="wrap section" aria-labelledby="related-title">
   <div class="section-head"><h2 id="related-title">Similar options</h2><a href="/packages?segment={{ p.segment }}">See all</a></div>
-  <div class="pkg-grid">{% for r in related %}{{ package_card(r) }}{% endfor %}</div>
+  <div class="pkg-list">{% for r in related %}{{ package_card(r) }}{% endfor %}</div>
 </section>
 {% endif %}
 {% endblock %}

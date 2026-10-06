@@ -42,7 +42,12 @@ async def agent(message, context):
         return {"reply": "Offline UI test double with a source link.", "sources": [
             {"id": "nlm-reading-results", "title": "How to understand your lab results", "url": "https://medlineplus.gov/lab-tests/how-to-understand-your-lab-results/", "publisher": "MedlinePlus", "data_class": "public_education"}],
             "action": None, "followups": ["What does a reference range mean?"]}
-    return {"reply": "Offline UI test double: your question was received.", "sources": [], "action": None}
+    if message == "UI_TEST_DOCK":
+        return {"reply": "Offline UI test double: here is a shortcut.", "sources": [], "action": None,
+                "dot": {"id": "advisor", "name": "Health-check Advisor"},
+                "ui": [{"type": "prefill_booking", "args": {"package_id": "P02", "name": "Workday Check", "branch_id": "BKK01"}}]}
+    return {"reply": "Offline UI test double: your question was received.", "sources": [], "action": None,
+            "dot": {"id": "advisor", "name": "Health-check Advisor"}}
 
 
 b.business_agent.run = agent

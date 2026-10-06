@@ -7,68 +7,48 @@
 <meta name="description" content="{{ description }}">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/static/img/favicon.svg">
+<link rel="preload" href="/static/fonts/source-serif-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/css/rs.css">
 <link rel="stylesheet" href="/static/css/site.css">
 </head>
 <body class="site{% block body_class %}{% endblock %}" {% block body_attrs %}{% endblock %}>
 <a class="skip" href="#main">Skip to content</a>
-<div class="sim-strip" role="note"><div class="wrap"><span class="badge sim">Simulation</span><span>Coursework business: packages, prices and centers are simulated. No real payments or clinical services.</span><a href="/help#simulation">What this means</a></div></div>
+<div class="sim-note" role="note"><div class="wrap"><span>Coursework simulation: packages, prices and centers are simulated, and no real payment or clinical service takes place.</span><a href="/help#simulation">What is simulated</a></div></div>
 <header class="site-header">
   <div class="wrap header-row">
-    <a class="brand" href="/" aria-label="ResultScope home"><span class="brand-mark" aria-hidden="true">r</span><span>ResultScope</span></a>
-    <form class="header-search" action="/packages" method="get" role="search">
-      <label class="sr-only" for="site-search">Search health checks</label>
-      <input class="input" id="site-search" name="q" type="search" placeholder="Search tests or packages, e.g. lipid, HbA1c" maxlength="80" value="{{ request.query_params.get('q','') if path == '/packages' else '' }}">
-      <button class="btn primary sm" type="submit">Search</button>
-    </form>
+    <a class="brand" href="/" aria-label="ResultScope home">ResultScope</a>
     <nav class="main-nav" id="main-nav" aria-label="Main">
       <a href="/packages" {% if path.startswith('/packages') or path == '/compare' %}aria-current="page"{% endif %}>Health checks</a>
-      <a href="/organizations" {% if path == '/organizations' %}aria-current="page"{% endif %}>For organizations</a>
+      <a href="/organizations" {% if path == '/organizations' %}aria-current="page"{% endif %}>Organizations</a>
       <a href="/centers" {% if path == '/centers' %}aria-current="page"{% endif %}>Centers</a>
       <a href="/help" {% if path == '/help' %}aria-current="page"{% endif %}>Help</a>
-      <a class="nav-account" href="/app" data-account-link>My workspace</a>
+      <a href="/app?view=bookings">My appointments</a>
     </nav>
-    <a class="btn primary sm header-cta" href="/app" data-open-dock>Ask ResultScope</a>
-    <button class="icon-btn nav-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu">☰</button>
+    <a class="account-link" href="/app" aria-label="Your workspace and account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 19.5c1.4-3.2 4-4.8 7-4.8s5.6 1.6 7 4.8" stroke-linecap="round"/></svg></a>
+    <button class="icon-btn nav-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg></button>
   </div>
 </header>
 <main id="main">
 {% block content %}{% endblock %}
 </main>
 <footer class="site-footer">
-  <div class="wrap footer-grid">
-    <div class="stack-sm">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">r</span><span>ResultScope</span></a>
-      <p class="small">Health-check packages, report explanations with sources, and a team you can reach. A coursework business simulation.</p>
+  <div class="wrap footer-row">
+    <div class="footer-id">
+      <a class="brand" href="/">ResultScope</a>
+      <p class="small muted">Health checks you can compare, reports explained with their sources, and a team that confirms every appointment. A coursework business simulation.</p>
     </div>
-    <nav aria-label="Services" class="stack-sm small">
-      <strong>Services</strong>
-      <a href="/packages">All health checks</a>
-      <a href="/compare">Compare packages</a>
-      <a href="/organizations">Organization quotations</a>
-      <a href="/centers">Centers and hours</a>
-    </nav>
-    <nav aria-label="Account" class="stack-sm small">
-      <strong>Your workspace</strong>
-      <a href="/app">Conversation</a>
-      <a href="/app?view=bookings">My appointments</a>
-      <a href="/app?view=reports">My reports</a>
-      <a href="/staff">Staff sign-in</a>
-    </nav>
-    <nav aria-label="Information" class="stack-sm small">
-      <strong>Information</strong>
-      <a href="/help">Help and policies</a>
-      <a href="/privacy">Privacy</a>
-      <a href="/sources">Medical sources</a>
-      <a href="/lab">Laboratory reference workspace</a>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="/packages">Health checks</a><a href="/compare">Compare</a><a href="/organizations">Organizations</a><a href="/centers">Centers</a>
+      <a href="/help">Help and policies</a><a href="/privacy">Privacy</a><a href="/sources">Medical sources</a><a href="/staff">Staff sign-in</a>
     </nav>
   </div>
-  <div class="wrap footer-note tiny muted">Academic business simulation. Explanations are educational and cite public references; they are not a diagnosis. Sample laboratory documents are synthetic test artifacts.</div>
+  <p class="wrap tiny muted footer-note">Explanations are educational and cite public references. They are not a diagnosis. Sample laboratory documents are synthetic test artifacts.</p>
 </footer>
 <script src="/static/vendor/marked.min.js" defer></script>
 <script src="/static/vendor/purify.min.js" defer></script>
 <script src="/static/js/rs-api.js" defer></script>
 <script src="/static/js/site.js" defer></script>
+<script src="/static/js/turns.js" defer></script>
 <script src="/static/js/dock.js" defer></script>
 {% block scripts %}{% endblock %}
 </body>

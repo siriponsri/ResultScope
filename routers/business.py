@@ -214,7 +214,10 @@ async def turn(owner,message,retry_id='',page=None):
             if d['version']!=version or d['mode']!='bot' or d.get('turn_id')!=turn_id:return {'reply':None,'queued_for_staff':True}
             if result.get('action'):
                 aid='action_'+secrets.token_hex(16);tx.put(aid,'action',owner,{'action':result['action'],'expires':time.time()+600,'version':version},'pending');result['action_id']=aid
-            d['messages']=(d['messages']+[msg('assistant',result['reply'],sources=result['sources'],action=result.get('action'),action_id=result.get('action_id'),followups=result.get('followups',[]),dot=result.get('dot'),ui=result.get('ui',[]))])[-100:]
+            # Observations were matched exactly against the confirmed report by validate_answer; keep them with the turn.
+            rows={f.get('id'):f for f in ((context.get('report') or {}).get('fields') or [])}
+            observations=[{**o,'name':rows.get(o.get('field_id'),{}).get('name','')} for o in (result.get('observations') or [])]
+            d['messages']=(d['messages']+[msg('assistant',result['reply'],sources=result['sources'],observations=observations,action=result.get('action'),action_id=result.get('action_id'),followups=result.get('followups',[]),dot=result.get('dot'),ui=result.get('ui',[]),checks=result.get('checks'))])[-100:]
             d['busy_until']=0;tx.put(c['id'],'conversation',owner,d)
         return result
     except ConversationError as exc:
@@ -454,7 +457,7 @@ async def settle(id:str,request:Request):
         if b['data']['payment_method']!='center' or b['state']!='confirmed':raise ConversationError('invalid_state','This order cannot be settled at the center.',409)
         if b['data']['payment_status']=='paid':return {'ok':True,'receipt_id':b['data'].get('receipt_id','')}
         if b['data']['payment_status']!='pending':raise ConversationError('payment_state','Only a pending center payment can be settled.',409)
-        b['data']['payment_status']='paid';b['data']['receipt_id']='demo-receipt-'+secrets.token_hex(8);tx.put(id,'booking',b['owner'],b['data'],b['state'],b['branch']);tx.audit(u['id'],'payment.center_settled',id)
+        b['data']['payment_status']='paid';b['data']['paid_at']=time.time();b['data']['receipt_id']='demo-receipt-'+secrets.token_hex(8);tx.put(id,'booking',b['owner'],b['data'],b['state'],b['branch']);tx.audit(u['id'],'payment.center_settled',id)
         ops.notify(tx,b['owner'],'Payment recorded at the center','The center recorded your payment (simulation receipt).',id,'/app?view=bookings')
         return {'ok':True,'receipt_id':b['data']['receipt_id']}
 

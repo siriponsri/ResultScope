@@ -14,7 +14,7 @@
     panel.replaceChildren(head, amount, meta);
     if (t.state === 'pending') {
       const left = Math.max(0, Math.round(t.expires_at - Date.now() / 1000));
-      const qr = make('div', t.method === 'promptpay' ? 'SIMULATED QR — cannot be scanned or paid' : 'TEST CARD FORM — no card details are collected', 'qr-sim');
+      const qr = make('div', t.method === 'promptpay' ? 'Simulated QR code. It cannot be scanned or paid.' : 'Test card step. No card details are collected.', 'qr-sim');
       qr.setAttribute('role', 'img'); qr.setAttribute('aria-label', 'Placeholder for a simulated payment code; it cannot be used to pay');
       const clock = make('p', `Expires in ${Math.floor(left / 60)} min ${left % 60} s`, 'small');
       const actions = make('div', null, 'form-actions');

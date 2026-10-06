@@ -443,3 +443,116 @@ async def edit_branch(branch_id: str, body: BranchEdit, request: Request):
         tx.put("configuration_branches", "configuration", "system", config)
         tx.audit(user["id"], "branch.capacity", branch_id)
         return {"branch": b, "version": config["version"]}
+
+
+# ------------------------------------------------------------ staff: customers and payments
+
+def _customer_label(tx, owner: str) -> dict:
+    """Staff-facing identity: email for registered accounts, otherwise channel and a short reference."""
+    u = tx.get(owner)
+    d = u["data"] if u and u["kind"] == "user" else {}
+    if d.get("email"):
+        return {"id": owner, "label": d["email"], "channel": "Website account"}
+    if d.get("line_verified"):
+        return {"id": owner, "label": "LINE customer …" + owner[-6:], "channel": "LINE (simulated)"}
+    return {"id": owner, "label": "Guest …" + owner[-6:], "channel": "Website guest"}
+
+
+def _in_scope(record: dict, scope: set[str], user: dict) -> bool:
+    return record["branch"] in scope or (record["branch"] == "" and user["data"]["role"] == "manager")
+
+
+@router.get("/staff/customers")
+async def staff_customers(request: Request, branch: str = "", q: str = ""):
+    """Customers with at least one appointment, case, quotation or payment in the staff member's scope."""
+    q = q.strip().lower()[:80]
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        scope = _scope(tx, user, branch)
+        rows: dict[str, dict] = {}
+
+        def row(owner: str) -> dict:
+            if owner not in rows:
+                rows[owner] = _customer_label(tx, owner) | {"bookings": 0, "requested": 0, "confirmed": 0, "open_cases": 0,
+                                                             "quotes": 0, "paid_thb": 0, "last_activity": 0}
+            return rows[owner]
+        for b in tx.find("booking"):
+            if b["branch"] in scope:
+                r = row(b["owner"]); r["bookings"] += 1
+                r["requested"] += b["state"] == "requested"; r["confirmed"] += b["state"] == "confirmed"
+                if b["data"].get("payment_status") == "paid":
+                    r["paid_thb"] += b["data"]["total_thb"]
+                r["last_activity"] = max(r["last_activity"], b["data"].get("requested_at", b["created"]), b["created"])
+        for t in tx.find("ticket"):
+            if _in_scope(t, scope, user):
+                r = row(t["owner"]); r["open_cases"] += t["state"] != "closed"; r["last_activity"] = max(r["last_activity"], t["created"])
+        for x in tx.find("corporate_quote"):
+            if x["branch"] in scope:
+                r = row(x["owner"]); r["quotes"] += 1; r["last_activity"] = max(r["last_activity"], x["created"])
+        out = [r for r in rows.values() if not q or q in r["label"].lower()]
+        out.sort(key=lambda r: r["last_activity"], reverse=True)
+        return {"customers": out[:300], "total": len(out), "scope": sorted(scope)}
+
+
+@router.get("/staff/customers/{owner}")
+async def staff_customer(owner: str, request: Request):
+    """One customer's service history inside the staff scope. Report values and chat text are not included;
+    staff read a conversation only through its case."""
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        scope = _scope(tx, user, "")
+        bookings = [b for b in tx.find("booking", owner) if b["branch"] in scope]
+        tickets = [t for t in tx.find("ticket", owner) if _in_scope(t, scope, user)]
+        quotes = [x for x in tx.find("corporate_quote", owner) if x["branch"] in scope]
+        txns = [t for t in tx.find("payment_txn", owner) if t["branch"] in scope]
+        if not (bookings or tickets or quotes or txns):
+            raise ConversationError("not_found", "This customer has no records at your center.", 404)
+        reports = tx.find("report", owner)
+        tx.audit(user["id"], "customer.viewed", owner)
+        return {
+            "customer": _customer_label(tx, owner),
+            "bookings": [{"id": b["id"], "state": b["state"], "branch": b["branch"], **{k: b["data"].get(k) for k in (
+                "items", "date", "time", "total_thb", "payment_status", "payment_method", "organization", "decision_note")}} for b in bookings],
+            "tickets": [{"id": t["id"], "state": t["state"], "branch": t["branch"], "created": t["created"], "summary": t["data"].get("summary", ""),
+                         "topic": t["data"].get("topic", "")} for t in tickets],
+            "quotes": [{"id": x["id"], "state": x["state"], "version": x["data"].get("version", 1), "total_thb": x["data"]["total_thb"],
+                        "people": x["data"].get("people"), "date": x["data"].get("date")} for x in quotes],
+            "payments": [ops.sim_view(tx, t) for t in txns],
+            "reports": {"count": len(reports), "confirmed": sum(1 for r in reports if r["data"].get("confirmed"))},
+        }
+
+
+@router.get("/staff/payments")
+async def staff_payments(request: Request, branch: str = "", state: str = ""):
+    """Test-payment transactions and center receipts in scope. No real money moves in this release."""
+    if state not in ("", "pending", "succeeded", "failed", "expired", "cancelled", "refunded", "center"):
+        raise ConversationError("filter_invalid", "Unknown payment state.", 422)
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        scope = _scope(tx, user, branch)
+        items = []
+        bookings = {b["id"]: b for b in tx.find("booking") if b["branch"] in scope}
+        for t in tx.find("payment_txn"):
+            if t["branch"] not in scope:
+                continue
+            v = ops.sim_view(tx, t)
+            b = bookings.get(v["booking_id"])
+            last = v["events"][-1] if v["events"] else None
+            items.append({"id": v["id"], "kind": "test_payment", "state": v["state"], "method": v["method"], "amount_thb": v["amount_thb"],
+                          "reference": v["reference"], "booking_id": v["booking_id"], "branch": t["branch"], "created": t["created"],
+                          "items": [i["name"] for i in b["data"]["items"]] if b else [], "customer": _customer_label(tx, t["owner"])["label"],
+                          "last_event": last.get("type") if isinstance(last, dict) else None, "events": len(v["events"])})
+        for b in bookings.values():
+            d = b["data"]
+            if d.get("payment_method") == "center" and d.get("payment_status") in ("paid", "refunded", "refund_pending"):
+                items.append({"id": "center_" + b["id"][-10:], "kind": "center_receipt", "state": "center", "method": "center",
+                              "amount_thb": d["total_thb"], "reference": "Center receipt", "booking_id": b["id"], "branch": b["branch"],
+                              "created": d.get("paid_at", b["created"]), "items": [i["name"] for i in d["items"]],
+                              "customer": _customer_label(tx, b["owner"])["label"], "last_event": d.get("payment_status"), "events": 0})
+        totals = {s: sum(1 for i in items if i["state"] == s) for s in ("pending", "succeeded", "failed", "expired", "cancelled", "refunded", "center")}
+        money = {"succeeded_thb": sum(i["amount_thb"] for i in items if i["state"] == "succeeded"),
+                 "center_thb": sum(i["amount_thb"] for i in items if i["state"] == "center"),
+                 "refunded_thb": sum(i["amount_thb"] for i in items if i["state"] == "refunded")}
+        shown = [i for i in items if not state or i["state"] == state]
+        shown.sort(key=lambda i: i["created"], reverse=True)
+        return {"payments": shown[:300], "totals": totals, "money": money, "mode": "SIMULATED_INTEGRATION", "scope": sorted(scope)}

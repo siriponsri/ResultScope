@@ -7,11 +7,13 @@
   const STAFF_MODE = document.body.dataset.staff === 'true';
   const STAFF_ROLES = ['staff', 'manager', 'clinical'];
   let csrf = '', user = null, state = null, accessCode = '', busy = false, controller = null;
-  let view = STAFF_MODE ? 'staff' : 'chat', lastMessages = '', activeTicket = '', ticketFilter = 'open', opsFilter = 'requested';
+  let view = STAFF_MODE ? 'overview' : 'chat', lastMessages = '', activeTicket = '', ticketFilter = 'open', opsFilter = 'requested';
   let modes = null, catalogCache = null, branchCache = null;
 
   /* ------------------------------------------------------------ helpers */
   const money = n => '฿' + new Intl.NumberFormat('en-US').format(n);
+  const longDate = s => new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const ago = t => { const m = Math.max(0, Math.round((Date.now() / 1000 - t) / 60)); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
   const when = t => new Date(t * 1000).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
   const el = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined && text !== null) e.textContent = text; if (cls) e.className = cls; return e; };
   const isStaff = () => STAFF_ROLES.includes(user?.role);
@@ -81,7 +83,8 @@
   /* ------------------------------------------------------------ account */
   function updateUser(u) {
     user = u;
-    $('account-label').textContent = u.registered ? u.email : 'Guest';
+    $('account-label').textContent = u.registered ? u.email : (STAFF_MODE ? 'Not signed in' : 'Guest');
+    $('avatar').textContent = u.registered ? u.email[0].toUpperCase() : '?';
     $('account-sub').textContent = isStaff() ? u.role + (u.branch ? ' · ' + u.branch : '') : u.registered ? 'Your personal workspace' : 'Sign in to keep your history';
     if ($('staff-nav')) $('staff-nav').hidden = !isStaff();
     document.querySelectorAll('[data-manager-only]').forEach(n => { n.hidden = !isManager(); });
@@ -106,7 +109,7 @@
           const r = await post('/' + kind, { email: email.input.value, password: pass.input.value });
           csrf = r.csrf; updateUser(r.user); closeModal(); lastMessages = '';
           await refresh(); notice(kind === 'login' ? 'Signed in.' : 'Account created.');
-          await navigate(STAFF_MODE ? 'staff' : view, false); await checkLink();
+          await navigate(view, false); await checkLink();
         } catch (e) { err.textContent = e.message; err.hidden = false; }
       }
       const actions = el('div', null, 'form-actions');
@@ -155,31 +158,43 @@
     }
     return c;
   }
-  function messageNode(m, interactive = true) {
-    const a = el('article', null, 'chat-message ' + m.role + (m.failed ? ' failed' : ''));
-    if (m.role === 'user') {
-      a.append(document.createTextNode(m.content));
-      if (m.failed) {
-        const row = el('div', null, 'failed-row');
-        row.append(el('span', m.retryable ? 'Not answered. You can retry without retyping.' : 'Not answered. ' + (m.error === 'safety_blocked' ? 'This request was blocked by the safety check.' : 'Try rephrasing, or contact our team.')));
-        if (interactive && m.retryable) row.append(button('Retry', () => retry(m.id), 'btn sm'));
-        a.append(row);
-      }
-      return a;
-    }
-    a.append(el('div', m.role === 'staff' ? 'ResultScope team' : 'ResultScope assistant', 'message-label'), markdown(m.content));
-    if (m.sources?.length) {
-      const s = el('div', null, 'source-chips'); s.setAttribute('aria-label', 'Sources');
-      m.sources.forEach(x => { const href = safeHref(x.url); const l = el(href ? 'a' : 'span', x.title); if (href) { l.href = href; l.target = '_blank'; l.rel = 'noopener noreferrer'; } s.append(l); });
-      a.append(s);
-    }
-    if (interactive && m.action) a.append(actionCard(m));
-    if (interactive && m.followups?.length) {
-      const f = el('div', null, 'followups');
-      m.followups.slice(0, 3).forEach(q => { const b = el('button', q, 'chip'); b.type = 'button'; b.dataset.prompt = q; f.append(b); });
-      a.append(f);
-    }
-    return a;
+  function messageNode(m, interactive = true, last = false) {
+    return RSTurns.render(m, interactive ? { interactive: true, last, onRetry: retry, onShortcut: shortcut, onAction: actionCard, onStaff: () => requestStaff(), onFollowup: q => send(q) } : {});
+  }
+  function shortcut(cmd) {
+    // Whitelisted page shortcuts proposed by the assistant: navigate, prefill or show; never confirm.
+    const x = cmd.args || {}, act = RSTurns.act;
+    if (cmd.type === 'open_package') return act('Open ' + (x.name || x.package_id), 'open', null, '/packages/' + encodeURIComponent(x.package_id));
+    if (cmd.type === 'open_compare') return act('Compare packages', 'compare', () => openCompare(x.package_ids));
+    if (cmd.type === 'filter_catalog') return act('Show matching packages', 'open', () => navigate('packages', true, Object.fromEntries(['q', 'segment', 'max_price'].filter(k => x[k]).map(k => [k, x[k]]))));
+    if (cmd.type === 'prefill_booking') return act('Book ' + (x.name || 'a checkup') + (x.date ? ' on ' + x.date : ''), 'calendar', () => navigate('book', true, Object.fromEntries([['package', x.package_id], ['branch', x.branch_id], ['date', x.date]].filter(([, v]) => v))));
+    if (cmd.type === 'open_org_form') return act('Organization request form', 'open', null, '/organizations#inq-title');
+    if (cmd.type === 'highlight_report_field') return act('Show it on my report', 'value', async () => { const r = state?.conversation.report_id; if (r) reviewReport(await api('/reports/' + r), x.field_id); else notice('Select a confirmed report first.', 'bad'); });
+    if (cmd.type === 'open_view') return act({ packages: 'Browse packages', book: 'Request a time', bookings: 'My appointments', reports: 'My reports', notifications: 'Notifications' }[x.view] || 'Open', 'open', () => navigate(x.view));
+    return null;
+  }
+  async function openCompare(ids, focus) {
+    // Comparison panel beside the answer (dialog on narrow screens). The highlighted column is the
+    // package the user is looking at, never a "popular" pick.
+    const canvas = $('canvas'); if (!canvas) return;
+    canvas.hidden = false; canvas.replaceChildren(el('p', 'Loading comparison', 'loading'));
+    try {
+      const d = await api('/catalog/compare?ids=' + ids.map(encodeURIComponent).join(','));
+      const head = el('div', null, 'canvas-head'), close = el('button', '×', 'icon-btn'); close.type = 'button'; close.setAttribute('aria-label', 'Close comparison');
+      close.onclick = () => { canvas.hidden = true; $('chat-view').classList.remove('with-canvas'); };
+      const titles = el('div'); titles.append(el('h2', 'Package comparison'), el('p', 'Included tests and simulated prices from catalog ' + d.catalog_version + '.', 'small muted'));
+      head.append(titles, close);
+      const t = el('table', null, 'compare-grid'), hr = el('tr'); hr.append(el('th', 'Includes'));
+      const sel = focus || ids[0];
+      d.packages.forEach(p => { const th = el('th'); th.scope = 'col'; if (p.id === sel) th.className = 'sel'; th.append(el('strong', p.name), el('span', p.segment === 'organization' ? 'Organizations' : p.staff_review_required ? 'Reviewed first' : 'Book directly')); hr.append(th); });
+      t.append(hr);
+      d.services.forEach(s2 => { const tr = el('tr'), th = el('th', s2.name); th.scope = 'row'; tr.append(th); s2.included.forEach((inc, i) => { const td = el('td', inc ? '✓' : '–', inc ? 'yes' : 'no'); td.setAttribute('aria-label', inc ? 'Included' : 'Not included'); if (d.packages[i].id === sel) td.classList.add('sel'); tr.append(td); }); t.append(tr); });
+      const pr = el('tr', null, 'price-row'); pr.append(el('th', ''));
+      d.packages.forEach(p => { const td = el('td'); if (p.id === sel) td.className = 'sel'; const a = el('a', 'View details'); a.href = '/packages/' + p.id; td.append(el('strong', money(p.price_thb), 'num'), a); pr.append(td); });
+      t.append(pr);
+      canvas.replaceChildren(head, t);
+      $('chat-view').classList.add('with-canvas'); close.focus();
+    } catch (e) { canvas.replaceChildren(el('p', e.message, 'callout bad')); }
   }
   function renderMessages(c) {
     if (STAFF_MODE) return;
@@ -190,9 +205,11 @@
       if (!$('messages').querySelector('.welcome')) $('messages').replaceChildren(empty('A fresh conversation', 'Ask about a health check, a report or an appointment.'));
       return;
     }
-    $('messages').replaceChildren(...c.messages.map(m => messageNode(m)));
-    $('messages').scrollTop = $('messages').scrollHeight;
+    $('messages').replaceChildren(...c.messages.map((m, i) => messageNode(m, true, i === c.messages.length - 1)));
+    toBottom();
   }
+  // Layout settles after fonts and the view switch; scroll once more on the next frames.
+  const toBottom = () => { const m = $('messages'); if (!m) return; m.scrollTop = m.scrollHeight; requestAnimationFrame(() => { m.scrollTop = m.scrollHeight; setTimeout(() => { m.scrollTop = m.scrollHeight; }, 120); }); };
   function renderContext() {
     if (STAFF_MODE || !state) return;
     const mode = state.conversation.mode;
@@ -200,8 +217,11 @@
     const r = state.reports.find(x => x.id === state.conversation.report_id);
     $('context-report').textContent = r ? 'Report in use: ' + r.label + (r.date ? ' · ' + r.date : '') : 'No report selected';
     const next = $('context-next'); next.replaceChildren();
-    const open = state.bookings.filter(b => ['requested', 'confirmed'].includes(b.state));
-    if (open.length) { const b = open[open.length - 1]; next.append(el('p', 'Next appointment: ' + b.data.date + ' ' + b.data.time, 'small'), ...bookingBadges(b)); }
+    const today = bangkokDate(0), open = state.bookings.filter(b => ['requested', 'confirmed'].includes(b.state) && b.data.date >= today).sort((a, b) => (a.data.date + a.data.time).localeCompare(b.data.date + b.data.time));
+    if (open.length) {
+      const b = open[0], a = el('button', (b.state === 'requested' ? 'Requested: ' : 'Next visit: ') + new Date(b.data.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + b.data.time, 'link-btn');
+      a.type = 'button'; a.onclick = () => navigate('bookings'); next.append(a, bookingBadges(b)[0]);
+    } else next.append(el('span', mode === 'bot' ? 'Answers come with their sources. Our team confirms every appointment.' : 'Our team has this conversation.'));
     const chips = $('context-chips'); chips.replaceChildren();
     if (r) { const c = el('button', null, 'chip active'); c.type = 'button'; c.append(document.createTextNode('Report: ' + r.label + ' '), el('span', '×', 'x')); c.setAttribute('aria-label', 'Stop using report ' + r.label); c.onclick = async () => { await post('/reports/select', { report_id: '' }); await refresh(); notice('The report is no longer used in this conversation.'); }; chips.append(c); }
   }
@@ -217,8 +237,8 @@
     if (view !== 'chat') await navigate('chat');
     busy = true; $('send').disabled = true; $('stop').hidden = false;
     $('chat-status').textContent = state?.conversation.mode === 'bot' ? 'Checking your request, sources and safety before replying…' : 'Sending to our team…';
-    controller = new AbortController(); $('message').value = '';
-    try { await api('/chat', { method: 'POST', body: JSON.stringify({ message: text }), signal: controller.signal }); }
+    controller = new AbortController(); $('message').value = ''; window.rsGrow?.();
+    try { await api('/chat', { method: 'POST', body: JSON.stringify({ message: text, page: { path: '/app', view } }), signal: controller.signal }); }
     catch (e) { if (e.name !== 'AbortError') notice(e.message, 'bad'); }
     finally { busy = false; $('send').disabled = false; $('stop').hidden = true; $('chat-status').textContent = ''; controller = null; await refresh().catch(() => {}); $('message').focus(); }
   }
@@ -232,12 +252,22 @@
   if (!STAFF_MODE) {
     $('chat-form').addEventListener('submit', e => { e.preventDefault(); send($('message').value); });
     $('message').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('chat-form').requestSubmit(); } });
+    const grow = () => { const m = $('message'), n = m.value.length, c = $('char-count'); m.style.height = 'auto'; m.style.height = Math.min(m.scrollHeight, 200) + 'px'; c.hidden = n < 6000; c.textContent = new Intl.NumberFormat('en-US').format(n) + ' / 8,000'; c.classList.toggle('near', n > 7600); };
+    $('message').addEventListener('input', grow); window.rsGrow = grow;
     $('stop').onclick = async () => { controller?.abort(); try { await post('/stop'); notice('Stopped. A late answer will not be added.'); } catch (e) { notice(e.message, 'bad'); } };
     $('new-chat').onclick = async () => {
       try { await post('/new-chat'); lastMessages = ''; await refresh(); await navigate('chat'); notice('Previous conversation saved in Past conversations.'); }
       catch (e) { notice(e.message, 'bad'); }
     };
-    $('staff-request').onclick = requestStaff; $('context-staff').onclick = requestStaff;
+    $('staff-request').onclick = () => requestStaff();
+    document.querySelectorAll('[data-goto]').forEach(b => { b.onclick = () => navigate(b.dataset.goto); });
+    const attach = $('attach'), menu = $('attach-menu');
+    const setAttach = open => { menu.hidden = !open; attach.setAttribute('aria-expanded', String(open)); if (open) menu.querySelector('button').focus(); };
+    attach.onclick = () => setAttach(menu.hidden);
+    menu.addEventListener('keydown', e => { if (e.key === 'Escape') { setAttach(false); attach.focus(); } });
+    document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.attach-wrap')) setAttach(false); });
+    menu.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setAttach(false)));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('canvas').hidden) { $('canvas').hidden = true; $('chat-view').classList.remove('with-canvas'); } });
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-prompt]'); if (b) send(b.dataset.prompt); });
   function requestStaff(prefill = '') {
@@ -251,19 +281,20 @@
 
   /* ------------------------------------------------------------ health checks */
   function packageCard(p) {
-    const c = el('article', null, 'pkg');
-    const head = el('div', null, 'pkg-head'), h = el('h3'), a = el('a', p.name); a.href = '/packages/' + p.id; h.append(a);
-    head.append(h, p.segment === 'organization' ? badge('Organizations', 'neutral') : p.staff_review_required ? badge('Staff review', 'warn') : badge('Book directly'));
-    const ul = el('ul', null, 'pkg-tests'); p.services.forEach(s => ul.append(el('li', s)));
+    // Same row as the public catalog, so a package reads the same everywhere.
+    const c = el('article', null, 'pkg-row'), name = el('div'), h = el('h3'), a = el('a', p.name); a.href = '/packages/' + p.id; h.append(a);
+    name.append(h, el('p', p.segment === 'organization' ? 'For organizations of 20 or more' : p.staff_review_required ? 'Follow-up test, reviewed with our team before booking' : 'Book directly', 'kind'));
+    const ul = el('ul', null, 'pkg-tests'); ul.setAttribute('aria-label', 'Included tests'); p.services.forEach(x => ul.append(el('li', x)));
     const price = el('div', null, 'pkg-price'); price.append(el('strong', money(p.price_thb)), el('span', p.price_unit));
-    const foot = el('div', null, 'pkg-foot');
-    if (p.segment === 'organization') foot.append(link('Request a quotation', '/organizations?package=' + p.id, 'btn sm primary'));
-    else if (!p.staff_review_required) foot.append(button('Request appointment', () => navigate('book', true, { package: p.id }), 'btn sm primary'));
-    foot.append(button('Ask about it', () => send(`Tell me about ${p.name} (${p.id}). Is it suitable for my goals?`), 'btn sm'));
-    c.append(head, ul, price, foot); return c;
+    const foot = el('div', null, 'pkg-actions');
+    if (p.segment === 'organization') foot.append(link('Request a quotation', '/organizations?package=' + p.id, 'btn sm'));
+    else if (!p.staff_review_required) foot.append(button('Request a time', () => navigate('book', true, { package: p.id }), 'btn sm primary'));
+    foot.append(button('Ask', () => send(`Tell me about ${p.name} (${p.id}). Is it suitable for my goals?`), 'btn sm ghost'));
+    c.append(name, ul, price, foot); return c;
   }
-  async function packages() {
+  async function packages(params = {}) {
     const box = el('div'); box.append(intro('Health checks', 'Search and filter the same catalog the assistant uses. Simulated prices.'));
+    const initial = params;
     const bar = el('form', null, 'toolbar'); bar.setAttribute('role', 'search');
     const q = el('input', null, 'input'); q.type = 'search'; q.placeholder = 'Search tests, e.g. lipid'; q.setAttribute('aria-label', 'Search health checks'); q.maxLength = 80;
     const seg = el('select', null, 'input'); seg.setAttribute('aria-label', 'Who it is for');
@@ -273,10 +304,11 @@
     const reset = el('button', 'Reset', 'btn ghost sm'); reset.type = 'button';
     const count = el('p', '', 'small muted'); count.setAttribute('aria-live', 'polite');
     bar.append(q, seg, sort, reset);
-    const grid = el('div', null, 'pkg-grid');
+    const grid = el('div', null, 'pkg-list');
+    if (initial.q) q.value = initial.q; if (['individual', 'organization'].includes(initial.segment)) seg.value = initial.segment;
     async function load() {
       grid.setAttribute('aria-busy', 'true');
-      const p = new URLSearchParams({ q: q.value, segment: seg.value, sort: sort.value });
+      const p = new URLSearchParams({ q: q.value, segment: seg.value, sort: sort.value }); if (initial.max_price && !q.value) p.set('max_price', initial.max_price);
       try {
         const d = await api('/catalog/search?' + p);
         grid.replaceChildren(...d.packages.map(packageCard));
@@ -322,7 +354,7 @@
     await loadBusiness();
     const box = el('div'); box.append(intro('Request an appointment', 'Choose a package, center and time. Your request holds the slot until our team confirms it; payment opens after confirmation.'));
     const bookable = catalogCache.packages.filter(p => p.segment === 'individual' && !p.staff_review_required && p.active !== false);
-    const grid = el('div', null, 'book-grid'), form = el('form', null, 'card form-grid'), summary = el('aside', null, 'card summary');
+    const grid = el('div', null, 'book-grid'), form = el('form', null, 'form-grid'), summary = el('aside', null, 'summary');
     const pkg = field('Health check', 'select'); bookable.forEach(p => { const o = el('option', p.name + ' · ' + money(p.price_thb)); o.value = p.id; pkg.input.append(o); });
     if (params.package && bookable.some(p => p.id === params.package)) pkg.input.value = params.package;
     const branch = field('Center', 'select'); const date = field('Date', 'date', '', 'Monday to Saturday, up to 30 days ahead');
@@ -356,12 +388,13 @@
     function renderSummary() {
       const p = bookable.find(x => x.id === pkg.input.value);
       summary.replaceChildren(el('h3', 'Summary'));
-      const dl = el('dl'); const row = (k, v) => { const d = el('div'); d.append(el('dt', k), el('dd', v || '—')); dl.append(d); };
-      row('Package', p?.name); row('Center', branch.input.value ? branchName(branch.input.value) : ''); row('Date', date.input.value); row('Time', time ? time + ' Bangkok' : '');
-      summary.append(dl, el('p', p ? money(p.price_thb) : '—', 'total'), el('p', 'Simulated price from the current catalog. The server rechecks price and capacity when you send.', 'tiny muted'), submit);
+      const dl = el('dl'); const row = (k, v) => { const d = el('div'); d.append(el('dt', k), el('dd', v || 'Not chosen')); dl.append(d); };
+      row('Package', p?.name); row('Center', branch.input.value ? branchName(branch.input.value) : ''); row('Date', date.input.value ? new Date(date.input.value + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : ''); row('Time', time ? time + ' Bangkok time' : '');
+      summary.append(dl, el('p', p ? money(p.price_thb) : '', 'total'), el('p', 'Simulated price from the current catalog. The server rechecks price and capacity when you send.', 'tiny muted'), submit);
     }
     form.onsubmit = e => e.preventDefault();
-    form.append(pkg.wrap, branch.wrap, date.wrap, el('h3', 'Time', 'h4'), picker.wrap, err);
+    const two = el('div', null, 'form-grid two'); two.append(branch.wrap, date.wrap);
+    form.append(pkg.wrap, two, el('h3', 'Time'), picker.wrap, err);
     if (!bookable.length) form.replaceChildren(empty('No packages can be booked directly right now', 'Ask our team for help.', button('Talk to our team', requestStaff)));
     renderSummary(); grid.append(form, summary); box.append(grid);
     if (branch.input.value && params.date) { date.input.value = params.date; picker.load(); }
@@ -425,7 +458,7 @@
       const d = b.data, r = el('article', null, 'record'), h = el('div', null, 'record-head');
       h.append(el('h3', d.items.map(i => i.name).join(' + ')), ...bookingBadges(b));
       const meta = el('div', null, 'record-meta');
-      meta.append(el('span', d.date + ' · ' + d.time + ' Bangkok'), el('span', d.organization ? (d.venue || 'Organization service') : branchName(b.branch)), el('span', money(d.total_thb)), el('span', 'Ref ' + b.id.slice(-8)));
+      meta.append(el('span', longDate(d.date) + ', ' + d.time + ' Bangkok time'), el('span', d.organization ? (d.venue || 'Organization service') : branchName(b.branch)), el('span', money(d.total_thb)), el('span', 'Ref ' + b.id.slice(-8)));
       r.append(h, meta);
       if (b.state === 'declined' && d.decision_note) r.append(el('p', 'From our team: ' + d.decision_note, 'small'));
       const txn = (state.payments || []).find(t => t.booking_id === b.id && t.state === 'pending');
@@ -442,7 +475,7 @@
         if (!d.organization) act.append(link('Add to calendar (.ics)', '/api/business/bookings/' + encodeURIComponent(b.id) + '/calendar.ics', 'btn sm'));
         if (d.payment_status === 'pending') {
           if (txn) act.append(link('Continue test payment', '/pay/sim/' + encodeURIComponent(txn.id), 'btn sm primary'));
-          else if (!d.organization) act.append(button('Pay with test PromptPay', () => pay(b, 'promptpay'), 'btn sm primary'), button('Pay with test card', () => pay(b, 'card')), d.payment_method === 'center' ? badge('Paying at the center', 'neutral') : button('Pay at the center', () => pay(b, 'center')));
+          else if (!d.organization) { r.append(el('p', 'Pay at the center on the day, or now with a test payment that moves no real money.', 'small muted')); act.append(button('Pay with test PromptPay', () => pay(b, 'promptpay'), 'btn sm primary'), button('Pay with test card', () => pay(b, 'card'))); }
         }
         if (!d.organization) act.append(button('Change time', () => rescheduleDialog(b)));
         act.append(button(d.payment_status === 'paid' ? 'Request refund' : 'Cancel appointment', () => {
@@ -487,8 +520,8 @@
     });
     box.append(list); return box;
   }
-  function reviewReport(r) {
-    const d = r.data, form = el('form', null, 'form-grid'), label = field('Report label', 'text', d.label || 'My report'), date = field('Collection date if known', 'date', d.collected_date || '');
+  function reviewReport(r, highlight = '') {
+    const d = r.data, form = el('form', null, 'form-grid'), label = field('Report label', 'text', d.label && d.label !== 'Unconfirmed report' ? d.label : '', 'For example: Annual check, September 2026'), date = field('Collection date if known', 'date', d.collected_date || '');
     form.append(el('p', 'Compare every value with the source image. Leave missing values empty. Synthetic samples are not patient records.', 'small muted'), label.wrap, date.wrap);
     if (d.warnings?.length) form.append(el('p', d.warnings.join(' · '), 'callout warn small'));
     const preview = el('img', null, 'report-preview'); preview.src = '/api/business/reports/' + encodeURIComponent(r.id) + '/source'; preview.alt = 'Source report first page for comparison';
@@ -499,6 +532,7 @@
     d.fields.forEach((row, i) => {
       const tr = el('tr'), cells = {};
       ['name', 'value', 'unit', 'reference', 'printed_flag'].forEach(k => { const td = el('td'), input = el('input'); input.type = 'text'; input.value = row[k] || ''; input.setAttribute('aria-label', (k === 'printed_flag' ? 'flag' : k) + ' for row ' + (i + 1)); input.maxLength = k === 'name' ? 120 : 160; td.append(input); tr.append(td); cells[k] = input; });
+      if (highlight && row.id === highlight) { tr.className = 'highlight flash'; setTimeout(() => tr.scrollIntoView({ block: 'center' }), 50); }
       fields.push(cells); table.append(tr);
     });
     if (!d.fields.length) form.append(el('p', 'No values could be read. Delete this report or try a clearer image.', 'callout warn small'));
@@ -566,7 +600,7 @@
     d.notifications.forEach(n => {
       const item = el('article', null, 'notice-item' + (n.state === 'unread' ? ' unread' : ''));
       item.append(el('strong', n.title), el('span', n.body, 'small'), el('time', when(n.at)));
-      if (n.link) { const go = el('button', 'Open', 'link-btn small'); go.type = 'button'; go.onclick = async () => { await post(noticePath() + '/read', { ids: [n.id] }); const u = new URL(n.link, location.origin); if (u.pathname === location.pathname) navigate(u.searchParams.get('view') || (STAFF_MODE ? 'staff' : 'chat')); else location.href = u.href; }; item.append(go); }
+      if (n.link) { const go = el('button', 'Open', 'link-btn small'); go.type = 'button'; go.onclick = async () => { await post(noticePath() + '/read', { ids: [n.id] }); const u = new URL(n.link, location.origin); if (u.pathname === location.pathname) navigate(u.searchParams.get('view') || (STAFF_MODE ? 'overview' : 'chat')); else location.href = u.href; }; item.append(go); }
       list.append(item);
     });
     box.append(list); setBell(d.unread); return box;
@@ -586,6 +620,7 @@
   async function staffView() {
     const box = el('div'); box.append(intro('Inbox', 'Customer requests from the website and LINE. Take over a case before replying; the assistant pauses while you do.'));
     if (!isStaff()) return staffSignIn(box);
+    await loadBusiness();
     const [d, ops] = await Promise.all([api('/staff/inbox'), api('/staff/operations')]);
     const metrics = el('div', null, 'metric-grid');
     [['Open requests', d.metrics.open], ['Waiting for a person', d.tickets.filter(t => t.state === 'waiting').length], ['My cases', d.tickets.filter(t => t.data.assigned_to === user.id && t.state === 'staff').length], ['Appointments to confirm', ops.bookings.filter(b => b.state === 'requested').length]]
@@ -621,7 +656,7 @@
     thread.append(controls);
     if (inq.inquiry) {
       const i = inq.inquiry.data, box = el('section', null, 'card stack-sm'); box.append(el('h4', 'Organization request'));
-      const kv = el('dl', null, 'kv'); const row = (k, v) => kv.append(el('dt', k), el('dd', v || '—'));
+      const kv = el('dl', null, 'kv'); const row = (k, v) => kv.append(el('dt', k), el('dd', v || 'Not given'));
       row('Organization', i.organization); row('Contact', i.contact_name + ' · ' + i.email); row('People', String(i.headcount)); row('Where', i.service_mode === 'onsite' ? 'Onsite at their workplace' : 'At a center'); row('Center', branchName(i.branch_id)); row('Preferred date', i.preferred_date); row('Interested in', (i.package_ids || []).join(', ')); row('Notes', i.notes);
       box.append(kv); thread.append(box);
     }
@@ -638,7 +673,7 @@
     d.conversation.messages.forEach(m => messages.append(messageNode({ ...m, action: null }, false)));
     if (!d.conversation.messages.length) messages.append(el('p', 'No chat messages. This case came from a form or appointment change.', 'small muted'));
     messages.dataset.version = JSON.stringify(d.conversation.messages);
-    thread.append(messages);
+    thread.append(messages); messages.scrollTop = messages.scrollHeight;
     const form = el('form', null, 'form-grid'), text = el('textarea', null, 'input');
     text.setAttribute('aria-label', 'Staff reply'); text.required = true; text.maxLength = 4000; text.rows = 3;
     const canReply = t.state === 'staff' && mine; text.disabled = !canReply;
@@ -687,7 +722,8 @@
   function staffBookingRow(b, after) {
     const d = b.data, r = el('article', null, 'record'), h = el('div', null, 'record-head');
     h.append(el('h3', d.items.map(i => i.name).join(' + ')), ...bookingBadges(b));
-    const meta = el('div', null, 'record-meta'); meta.append(el('span', d.date + ' ' + d.time), el('span', branchName(b.branch)), el('span', money(d.total_thb)), el('span', d.organization ? 'Organization' : 'Pay: ' + (d.payment_method || 'center')), el('span', 'Ref ' + b.id.slice(-8)));
+    const meta = el('div', null, 'record-meta'); meta.append(el('span', new Date(d.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + d.time), el('span', branchName(b.branch)), el('span', money(d.total_thb)), el('span', d.organization ? 'Organization' : 'Pays ' + ({ center: 'at the center', promptpay: 'by test PromptPay', card: 'by test card' }[d.payment_method] || 'at the center')), el('span', 'Ref ' + b.id.slice(-8)));
+    if (b.state === 'requested' && d.requested_at) meta.append(el('span', 'Requested ' + ago(d.requested_at)));
     r.append(h, meta);
     const act = el('div', null, 'record-actions');
     if (b.state === 'requested') {
@@ -766,8 +802,8 @@
     if (budget.error) b.append(el('p', budget.error, 'small'));
     else {
       const c = budget.cost, kv = el('dl', null, 'kv'); const row = (k, v) => kv.append(el('dt', k), el('dd', v));
-      row('Cap', money(c.cap_thb) + ' for the whole project, not monthly'); row('Spent before this ledger', c.prior_spend_thb === null || c.prior_spend_thb === undefined ? 'Not set — paid AI calls are blocked' : money(c.prior_spend_thb));
-      row('Settled in ledger', c.available ? c.settled_thb.toFixed(4) + ' THB' : 'Unavailable'); row('Reserved now', c.available ? c.reserved_thb.toFixed(4) + ' THB' : '—'); row('Remaining', c.remaining_thb === null || c.remaining_thb === undefined ? 'Unknown' : c.remaining_thb.toFixed(2) + ' THB');
+      row('Cap', money(c.cap_thb) + ' for the whole project, not monthly'); row('Spent before this ledger', c.prior_spend_thb === null || c.prior_spend_thb === undefined ? 'Not set, so paid AI calls are blocked' : money(c.prior_spend_thb));
+      row('Settled in ledger', c.available ? c.settled_thb.toFixed(4) + ' THB' : 'Unavailable'); row('Reserved now', c.available ? c.reserved_thb.toFixed(4) + ' THB' : 'Unavailable'); row('Remaining', c.remaining_thb === null || c.remaining_thb === undefined ? 'Unknown' : c.remaining_thb.toFixed(2) + ' THB');
       row('Calls', String(c.calls ?? 0)); row('Priced models', (c.priced_models || []).join(', ') || 'None configured'); row('Provider network', budget.network_enabled ? 'Enabled' : 'Disabled');
       b.append(kv);
     }
@@ -780,7 +816,7 @@
       button('Run worker once', async () => { const r = await post('/staff/line-simulator/run'); notice(r.processed ? 'Processed one job.' : r.failed ? 'The job failed; see its error code below.' : 'No pending jobs.'); await navigate('channels', false); }, 'btn sm'));
     f.append(row); f.onsubmit = e => e.preventDefault(); sim.append(f);
     const jt = el('div', null, 'table-wrap'), jtable = el('table', null, 'data'); const jh = el('tr'); ['Job', 'State', 'Error', 'Created'].forEach(x => jh.append(el('th', x))); jtable.append(jh);
-    out.jobs.slice().reverse().forEach(j => { const tr = el('tr'); tr.append(el('td', j.kind + ' …' + j.id.slice(-6)), el('td', j.state), el('td', j.error_code || '—'), el('td', when(j.created))); jtable.append(tr); });
+    out.jobs.slice().reverse().forEach(j => { const tr = el('tr'); tr.append(el('td', j.kind + ' …' + j.id.slice(-6)), el('td', j.state), el('td', j.error_code || 'None'), el('td', when(j.created))); jtable.append(tr); });
     if (!out.jobs.length) { const tr = el('tr'); const td = el('td', 'No LINE jobs yet.'); td.colSpan = 4; tr.append(td); jtable.append(tr); }
     jt.append(jtable);
     const dl = el('div', null, 'record-list'); out.deliveries.slice().reverse().forEach(x => { const r = el('article', null, 'notice-item'); r.append(el('strong', 'To ' + x.to), el('span', x.text, 'small'), el('time', when(x.at))); dl.append(r); });
@@ -789,30 +825,230 @@
     box.append(t, b, sim); return box;
   }
 
+  /* ------------------------------------------------------------ staff: customers and payments */
+  let customerQuery = '', payState = '';
+  async function customersView() {
+    const box = el('div'); box.append(intro('Customers', 'People with an appointment, case, quotation or payment at your center' + (isManager() ? 's' : '') + '. Report values and chat text stay private; read a conversation through its case.'));
+    if (!isStaff()) return staffSignIn(box);
+    const bar = el('form', null, 'toolbar'); bar.setAttribute('role', 'search');
+    const q = el('input', null, 'input'); q.type = 'search'; q.placeholder = 'Search by email'; q.maxLength = 80; q.value = customerQuery; q.setAttribute('aria-label', 'Search customers');
+    const count = el('span', '', 'small muted'); count.setAttribute('aria-live', 'polite');
+    bar.append(q, button('Search', () => bar.requestSubmit(), 'btn sm'), count); box.append(bar);
+    const wrap = el('div', null, 'table-wrap'); box.append(wrap);
+    async function load() {
+      customerQuery = q.value; wrap.setAttribute('aria-busy', 'true');
+      try {
+        const d = await api('/staff/customers?' + new URLSearchParams({ q: q.value }));
+        count.textContent = d.total + (d.total === 1 ? ' customer' : ' customers');
+        if (!d.customers.length) { wrap.replaceChildren(empty(q.value ? 'No customer matches' : 'No customers yet', q.value ? 'Try part of the email address.' : 'Customers appear after their first request or case.')); return; }
+        const t = el('table', null, 'data'), h = el('tr');
+        [['Customer', ''], ['Appointments', 'n'], ['Awaiting', 'n'], ['Open cases', 'n'], ['Paid (simulated)', 'n'], ['Last activity', '']].forEach(([x, c]) => { const th = el('th', x, c); th.scope = 'col'; h.append(th); }); t.append(h);
+        d.customers.forEach(c => {
+          const tr = el('tr', null, 'clickable'), who = el('td'), open = el('button', c.label, 'link-btn'); open.type = 'button'; open.onclick = () => customerDetail(c.id);
+          who.append(open, el('span', c.channel, 'sub')); tr.onclick = e => { if (e.target !== open) customerDetail(c.id); };
+          const aw = el('td', null, 'n'); aw.append(c.requested ? badge(String(c.requested), 'warn') : document.createTextNode('0'));
+          tr.append(who, el('td', String(c.bookings), 'n'), aw, el('td', String(c.open_cases), 'n'), el('td', money(c.paid_thb), 'n'), el('td', c.last_activity ? ago(c.last_activity) : 'Not yet'));
+          t.append(tr);
+        });
+        wrap.replaceChildren(t);
+      } catch (e) { wrap.replaceChildren(empty('Customers could not be loaded', e.message, button('Try again', load))); }
+      finally { wrap.removeAttribute('aria-busy'); }
+    }
+    bar.onsubmit = e => { e.preventDefault(); load(); };
+    await load(); return box;
+  }
+  async function customerDetail(id) {
+    let d; try { d = await api('/staff/customers/' + encodeURIComponent(id)); } catch (e) { notice(e.message, 'bad'); return; }
+    const box = el('div', null, 'stack'), c = d.customer;
+    box.append(el('p', c.channel + ' · reference ' + c.id.slice(-8), 'small muted'));
+    const block = (title, rows, emptyText) => { const b = el('section', null, 'history-block'); b.append(el('h4', title)); if (!rows.length) b.append(el('p', emptyText, 'small muted')); rows.forEach(r => b.append(r)); box.append(b); };
+    block('Appointments', d.bookings.slice().reverse().map(b => { const r = el('div', null, 'history-row'); r.append(el('strong', (b.items || []).map(i => i.name).join(' + ')), el('span', longDate(b.date) + ', ' + b.time), el('span', branchName(b.branch)), el('span', money(b.total_thb)), ...bookingBadges({ state: b.state, data: { payment_status: b.payment_status } })); return r; }), 'No appointments.');
+    block('Cases', d.tickets.slice().reverse().map(t => { const r = el('div', null, 'history-row'); r.append(el('span', t.summary.slice(0, 80)), badge({ waiting: 'Waiting', staff: 'With staff', bot: 'With assistant', closed: 'Closed' }[t.state] || t.state, t.state === 'waiting' ? 'warn' : 'neutral'), button('Open case', async () => { closeModal(); activeTicket = t.id; ticketFilter = 'all'; await navigate('staff'); }, 'btn ghost sm')); return r; }), 'No cases.');
+    block('Quotations', d.quotes.map(q => { const r = el('div', null, 'history-row'); r.append(el('strong', 'Version ' + q.version), el('span', q.people + ' people, ' + q.date), el('span', money(q.total_thb)), badge(q.state, q.state === 'accepted' ? 'ok' : q.state === 'offered' ? 'warn' : 'neutral'), link('PDF', '/api/business/quotes/' + encodeURIComponent(q.id) + '/document.pdf', 'btn ghost sm')); return r; }), 'No quotations.');
+    block('Test payments', d.payments.slice().reverse().map(p => { const r = el('div', null, 'history-row'); r.append(el('span', p.reference), el('span', money(p.amount_thb)), el('span', { promptpay: 'Test PromptPay', card: 'Test card' }[p.method] || p.method), payBadge(p.state)); return r; }), 'No test payments.');
+    box.append(el('p', d.reports.count ? d.reports.count + (d.reports.count === 1 ? ' report uploaded' : ' reports uploaded') + ', ' + d.reports.confirmed + ' confirmed. Values stay private to the customer.' : 'No reports uploaded.', 'small muted'));
+    modal(c.label, box);
+  }
+  const PAY = { pending: ['Waiting for payment', 'warn'], succeeded: ['Succeeded', 'ok'], failed: ['Failed', 'bad'], expired: ['Expired', 'neutral'], cancelled: ['Cancelled', 'neutral'], refunded: ['Refunded', 'neutral'], center: ['Paid at center', 'ok'] };
+  const payBadge = st => badge(...(PAY[st] || [st, 'neutral']));
+  async function paymentsView() {
+    const box = el('div'); box.append(intro('Payments', 'Test payments from the simulator and receipts recorded at the center. No real money moves in this release.'));
+    if (!isStaff()) return staffSignIn(box);
+    const all = await api('/staff/payments'), d = payState ? await api('/staff/payments?state=' + payState) : all;
+    const ml = el('p', null, 'money-line');
+    [['Succeeded', all.money.succeeded_thb], ['Paid at center', all.money.center_thb], ['Refunded', all.money.refunded_thb]].forEach(([k, v]) => { const x = el('span'); x.append(document.createTextNode(k + ' '), el('strong', money(v), 'num')); ml.append(x); });
+    const bar = el('div', null, 'toolbar');
+    [['', 'All', all.payments.length], ...Object.entries(PAY).map(([k, [label]]) => [k, label, all.totals[k]])].filter(([k, , n]) => !k || n).forEach(([k, label, n]) => {
+      const c = el('button', label + ' (' + n + ')', 'chip'); c.type = 'button'; c.setAttribute('aria-pressed', String(payState === k)); c.onclick = () => { payState = k; navigate('payments', false); }; bar.append(c);
+    });
+    bar.append(button('Refresh', () => navigate('payments', false), 'btn ghost sm'));
+    box.append(ml, bar);
+    if (!d.payments.length) { box.append(empty('No payments here', payState ? 'Nothing in this group.' : 'Payments appear after a customer pays a confirmed appointment.')); return box; }
+    const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), h = el('tr');
+    [['Time', ''], ['Customer', ''], ['Appointment', ''], ['Method', ''], ['Amount', 'n'], ['State', ''], ['Reference', '']].forEach(([x, c]) => { const th = el('th', x, c); th.scope = 'col'; h.append(th); }); t.append(h);
+    d.payments.forEach(p => {
+      const tr = el('tr'), st = el('td'); st.append(payBadge(p.state));
+      const ref = el('td'); ref.append(el('span', p.reference), el('span', p.events ? p.events + (p.events === 1 ? ' signed event' : ' signed events') : 'Recorded by staff', 'sub'));
+      tr.append(el('td', when(p.created)), el('td', p.customer), el('td', p.items.join(' + ') || 'Ref ' + p.booking_id.slice(-8)), el('td', { promptpay: 'Test PromptPay', card: 'Test card', center: 'At the center' }[p.method] || p.method), el('td', money(p.amount_thb), 'n'), st, ref);
+      t.append(tr);
+    });
+    wrap.append(t); box.append(wrap); return box;
+  }
+  async function navCounts() {
+    if (!STAFF_MODE || !isStaff()) return;
+    try {
+      const d = await api('/staff/dashboard?days=1'), set = (id, n) => { const e = $(id); e.textContent = String(n); e.hidden = !n; };
+      set('nav-requested', d.bookings.by_state.requested); set('nav-waiting', d.tickets.waiting);
+    } catch { /* counts are a convenience */ }
+  }
+
+  /* ------------------------------------------------------------ staff: overview dashboard */
+  const RAMP = ['#f3eefb', '#dccbf6', '#b996ec', '#8a55d8', '#4b0082'];
+  const rampStep = u => u <= 0 ? 0 : u < .25 ? 1 : u < .5 ? 2 : u < .75 ? 3 : 4;
+  let dashBranch = '', dashDays = 7;
+  function tile(label, value, sub, onClick) {
+    const t = el(onClick ? 'button' : 'div', null, 'kpi'); if (onClick) { t.type = 'button'; t.onclick = onClick; }
+    t.append(el('span', label, 'kpi-label'), el('strong', value, 'kpi-value num')); if (sub) t.append(el('span', sub, 'kpi-sub'));
+    return t;
+  }
+  async function overview() {
+    const box = el('div');
+    if (!isStaff()) return staffSignIn(box);
+    await loadBusiness();
+    const [d, ops] = await Promise.all([api('/staff/dashboard?' + new URLSearchParams({ branch: dashBranch, days: dashDays })), api('/staff/operations')]);
+    const bar = el('div', null, 'toolbar');
+    if (isManager()) {
+      const sel = el('select', null, 'input'); sel.setAttribute('aria-label', 'Center');
+      [['', 'All centers'], ...branchCache.branches.map(b => [b.id, b.name])].forEach(([v, t]) => { const o = el('option', t); o.value = v; sel.append(o); });
+      sel.value = dashBranch; sel.onchange = () => { dashBranch = sel.value; navigate('overview', false); }; bar.append(sel);
+    } else bar.append(badge('Your center: ' + branchName(d.scope[0]), 'neutral'));
+    const days = el('select', null, 'input'); days.setAttribute('aria-label', 'Days ahead');
+    [[7, 'Next 7 open days'], [14, 'Next 14 open days']].forEach(([v, t]) => { const o = el('option', t); o.value = v; days.append(o); });
+    days.value = String(dashDays); days.onchange = () => { dashDays = Number(days.value); navigate('overview', false); };
+    bar.append(days, el('span', 'Updated ' + new Date(d.generated_at * 1000).toLocaleTimeString('en-GB'), 'small muted'), button('Refresh', () => navigate('overview', false), 'btn ghost sm'));
+    box.append(intro('Overview', 'Every number is computed from stored appointments, cases, quotations and payments. Money values are simulated.'), bar);
+    // Decision of the day: requests that only a person can confirm, oldest first, with the real actions inline.
+    const waiting = ops.bookings.filter(b => b.state === 'requested' && (!dashBranch || b.branch === dashBranch)).sort((a, b) => (a.data.requested_at || 0) - (b.data.requested_at || 0));
+    const decide = el('section', null, 'decide'), dh = el('div', null, 'decide-head');
+    dh.append(el('h3', waiting.length ? waiting.length + (waiting.length === 1 ? ' request waits for you' : ' requests wait for you') : 'No requests are waiting'), el('span', waiting.length ? 'Oldest first. The customer is notified of either decision.' : 'New appointment requests appear here first.', 'small muted'));
+    decide.append(dh);
+    if (waiting.length) {
+      const list = el('div', null, 'record-list'); waiting.slice(0, 4).forEach(b => list.append(staffBookingRow(b, () => navigate('overview', false)))); decide.append(list);
+      if (waiting.length > 4) { const more = el('p', null, 'small'); more.style.padding = '0 0 14px'; more.append(button('See all ' + waiting.length + ' requests', () => { opsFilter = 'requested'; navigate('operations'); }, 'link-btn')); decide.append(more); }
+    } else decide.style.paddingBottom = '18px';
+    box.append(decide);
+    const kpis = el('div', null, 'kpi-grid');
+    kpis.append(
+      tile('Awaiting confirmation', String(d.bookings.by_state.requested), d.bookings.by_state.requested ? (d.bookings.awaiting_oldest_minutes < 1 ? 'Oldest just now' : 'Oldest ' + d.bookings.awaiting_oldest_minutes + ' min') : 'Nothing waiting', () => { opsFilter = 'requested'; navigate('operations'); }),
+      tile('Upcoming confirmed', String(d.bookings.upcoming_confirmed), 'From today'),
+      tile('Open cases', String(d.tickets.open), d.tickets.waiting + ' waiting for a person', () => navigate('staff')),
+      tile('Median first reply', d.tickets.median_first_response_minutes === null ? 'None yet' : d.tickets.median_first_response_minutes + ' min', 'From case creation to a staff reply'),
+      tile('Paid (simulated)', money(d.money.paid_thb), 'Refunded ' + money(d.money.refunded_thb)),
+      tile('Confirmed, unpaid', money(d.money.unpaid_confirmed_thb), 'Pay at center or test payment'));
+    box.append(kpis);
+    const grid = el('div', null, 'dash-grid');
+    // Funnel: one series, magnitude -> horizontal bars with direct labels.
+    const funnel = el('section', null, 'card stack-sm'); funnel.append(el('h3', 'Individual appointments'), el('p', 'Requests that reached confirmation and payment.', 'small muted'));
+    const max = Math.max(1, d.funnel.requested);
+    [['Requested', d.funnel.requested], ['Confirmed', d.funnel.confirmed], ['Paid', d.funnel.paid]].forEach(([label, n]) => {
+      const row = el('div', null, 'bar-row'), track = el('div', null, 'bar-track'), fill = el('span', null, 'bar-fill');
+      fill.style.width = (n / max * 100) + '%'; fill.title = label + ': ' + n; track.append(fill);
+      row.append(el('span', label, 'small'), track, el('strong', String(n), 'num')); funnel.append(row);
+    });
+    // Capacity heat strip: sequential single hue, value printed in every cell, legend + caption.
+    const cap = el('section', null, 'card stack-sm'); cap.append(el('h3', 'Capacity used'), el('p', 'Requested and confirmed visits against slots (18 half-hours × visits per slot), Monday to Saturday.', 'small muted'));
+    const tableWrap = el('div', null, 'heat-wrap'), t = el('table', null, 'heat'); t.setAttribute('aria-label', 'Capacity used per center and day');
+    const hr = el('tr'); hr.append(el('th', 'Center')); (d.capacity[0]?.days || []).forEach(x => { const th = el('th', new Date(x.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' })); th.scope = 'col'; hr.append(th); }); hr.append(el('th', 'Used')); t.append(hr);
+    d.capacity.forEach(b => {
+      const tr = el('tr'), th = el('th', b.name.replace(' Demo Center', '')); th.scope = 'row'; tr.append(th);
+      b.days.forEach(x => { const u = x.capacity ? x.used / x.capacity : 0, step = rampStep(u), td = el('td', x.used + '/' + x.capacity, 'num'); td.style.background = RAMP[step]; td.style.color = step >= 3 ? '#fff' : 'var(--ink)'; td.title = `${b.name}, ${x.date}: ${x.used} of ${x.capacity} visits`; tr.append(td); });
+      tr.append(el('td', Math.round(b.utilization * 100) + '%', 'num strong')); t.append(tr);
+    });
+    tableWrap.append(t);
+    const legend = el('div', null, 'legend small'); legend.append(el('span', 'Less'));
+    RAMP.forEach(c => { const sw = el('span', null, 'swatch'); sw.style.background = c; legend.append(sw); }); legend.append(el('span', 'More used'));
+    cap.append(tableWrap, legend);
+    const pay = el('section', null, 'card stack-sm'); pay.append(el('h3', 'Test payments'), el('p', 'Simulator transactions by outcome. No real money.', 'small muted'));
+    const pt = el('table', null, 'data compact'); Object.entries(d.money.test_payments).forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', (PAY[k] || [k])[0]), el('td', String(v), 'n')); pt.append(tr); }); pay.append(pt, button('Open payments', () => navigate('payments'), 'btn sm'));
+    const q = el('section', null, 'card stack-sm'); q.append(el('h3', 'Organization quotations'));
+    const qt = el('table', null, 'data compact'); [['Offered', d.quotes.offered], ['Accepted', d.quotes.accepted], ['Superseded', d.quotes.superseded], ['Accepted value', money(d.quotes.accepted_thb)]].forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', k), el('td', String(v), 'n')); qt.append(tr); }); q.append(qt);
+    grid.append(funnel, cap, pay, q);
+    if (isManager()) {
+      const a = el('section', null, 'card stack-sm'); a.append(el('h3', 'Assistant'), el('p', 'Answers by role, and turns that could not be answered.', 'small muted'));
+      const at = el('table', null, 'data compact'); const entries = Object.entries(d.assistant);
+      if (!entries.length) a.append(el('p', 'No assistant answers yet.', 'small muted'));
+      entries.forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', k), el('td', String(v), 'n')); at.append(tr); }); if (entries.length) a.append(at);
+      a.append(button('Manage assistant roles', () => navigate('roles'), 'btn sm')); grid.append(a);
+    }
+    box.append(grid); return box;
+  }
+  async function centersAdmin() {
+    const box = el('div'); box.append(intro('Centers', 'Manager-only. Visits per half-hour slot apply to new requests immediately. Existing appointments are never cancelled by a change.'));
+    if (!isManager()) { box.append(empty('Manager access required', '')); return box; }
+    branchCache = await api('/branches');
+    const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), h = el('tr'); ['Center', 'Area', 'Hours', 'Visits per slot', ''].forEach(x => h.append(el('th', x))); t.append(h);
+    branchCache.branches.forEach(b => {
+      const tr = el('tr'), inp = el('input', null, 'input'); inp.type = 'number'; inp.min = 1; inp.max = 20; inp.value = b.capacity_per_slot; inp.setAttribute('aria-label', b.name + ' visits per slot'); inp.style.maxWidth = '110px';
+      const st = el('span', '', 'tiny muted'); st.setAttribute('aria-live', 'polite');
+      const save = button('Save', async () => { if (!inp.checkValidity()) { st.textContent = 'Use 1–20.'; return; } const r = await api('/staff/branches/' + b.id, { method: 'PUT', body: JSON.stringify({ capacity_per_slot: Number(inp.value) }) }); st.textContent = 'Saved · ' + r.branch.capacity_per_slot + ' per slot · ' + r.version; branchCache = null; });
+      const c1 = el('td'); c1.append(el('strong', b.name), el('div', b.id, 'tiny muted')); const c4 = el('td'); c4.append(inp); const c5 = el('td'); c5.append(save, st);
+      tr.append(c1, el('td', b.area), el('td', b.hours), c4, c5); t.append(tr);
+    });
+    wrap.append(t); box.append(wrap); return box;
+  }
+  async function rolesAdmin() {
+    const box = el('div'); box.append(intro('Assistant roles', 'Two AI roles are routed automatically inside one conversation. Customers never choose a role. Permissions below are enforced by the server, not by the prompt.'));
+    if (!isManager()) { box.append(empty('Manager access required', '')); return box; }
+    const d = await api('/dots');
+    const list = el('div', null, 'record-list');
+    const full = { advisor: { actions: 'Answer, compare, quote preview, appointment request preview, payment preview, organization request, team handoff', ui: 'Open package, compare, filter catalog, prefill booking, open organization form', reads: 'Catalog, centers, policies, public medical sources, your own appointments' }, explainer: { actions: 'Answer, clarify, urgent referral, team handoff', ui: 'Highlight a report value, open a view', reads: 'Confirmed report values, public medical sources, policies. No catalog or prices.' } };
+    d.dots.forEach(r => {
+      const card = el('article', null, 'record'), head = el('div', null, 'record-head'), mk = el('span', r.name[0], 'dot-mark ' + r.id);
+      head.append(mk, el('h3', r.name), badge(r.enabled ? 'On' : 'Paused', r.enabled ? 'ok' : 'warn'));
+      const kv = el('dl', null, 'kv'); const row = (k, v) => kv.append(el('dt', k), el('dd', v));
+      row('Role', r.role); row('Purpose', r.summary); if (full[r.id]) { row('Can propose', full[r.id].actions); row('Page shortcuts', full[r.id].ui); row('Can read', full[r.id].reads); }
+      const act = el('div', null, 'record-actions');
+      act.append(button(r.enabled ? 'Pause this role' : 'Turn on', async () => { await api('/staff/dots/' + r.id, { method: 'PUT', body: JSON.stringify({ enabled: !r.enabled }) }); notice(r.name + (r.enabled ? ' paused. Its questions go to the other role or our team.' : ' is on.')); await navigate('roles', false); }, r.enabled ? 'btn sm danger' : 'btn sm primary'));
+      card.append(head, kv, act); list.append(card);
+    });
+    box.append(list, el('p', 'Pausing every role pauses AI replies; browsing, booking, payments and the team inbox keep working.', 'small muted'));
+    return box;
+  }
+  async function auditView() {
+    const box = el('div'); box.append(intro('Audit log', 'Who did what and when. Message contents and health data are never stored here.'));
+    if (!isManager()) { box.append(empty('Manager access required', '')); return box; }
+    const d = await api('/staff/audit?limit=150');
+    if (!d.events.length) { box.append(empty('No events yet', '')); return box; }
+    const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), h = el('tr'); ['Time', 'Actor', 'Action', 'Record'].forEach(x => h.append(el('th', x))); t.append(h);
+    d.events.forEach(e => { const tr = el('tr'); tr.append(el('td', when(e.at)), el('td', e.actor_role + ' …' + e.actor), el('td', e.action), el('td', '…' + e.object)); t.append(tr); });
+    wrap.append(t); box.append(wrap); return box;
+  }
+
   /* ------------------------------------------------------------ navigation */
-  const TITLES = { chat: 'Conversation', packages: 'Health checks', book: 'Request an appointment', bookings: 'My appointments', reports: 'My reports', history: 'Past conversations', notifications: 'Notifications', staff: 'Inbox', operations: 'Appointments', 'catalog-admin': 'Catalog', channels: 'Channels and budget' };
-  const FACTORIES = { packages, book: bookView, bookings, reports, history: historyView, notifications, staff: staffView, operations: operationsView, 'catalog-admin': catalogAdmin, channels };
-  const mobile = matchMedia('(max-width:800px)');
+  const TITLES = { customers: 'Customers', payments: 'Payments', chat: 'Conversation', packages: 'Health checks', book: 'Request an appointment', bookings: 'My appointments', reports: 'My reports', history: 'Past conversations', notifications: 'Notifications', overview: 'Overview', staff: 'Inbox', operations: 'Appointments', 'catalog-admin': 'Catalog', centers: 'Centers', roles: 'Assistant roles', channels: 'Channels and budget', audit: 'Audit log' };
+  const FACTORIES = { customers: customersView, payments: paymentsView, packages, book: bookView, bookings, reports, history: historyView, notifications, overview, staff: staffView, operations: operationsView, 'catalog-admin': catalogAdmin, centers: centersAdmin, roles: rolesAdmin, channels, audit: auditView };
+  const STAFF_ONLY = ['customers', 'payments', 'overview', 'operations', 'catalog-admin', 'centers', 'roles', 'channels', 'audit'];
+  const mobile = matchMedia(STAFF_MODE ? '(max-width:860px)' : '(max-width:1100px)');
   function setMenu(open) { $('sidebar').classList.toggle('open', open); $('sidebar').inert = mobile.matches && !open; $('menu-toggle').setAttribute('aria-expanded', String(open)); $('menu-toggle').setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); }
   async function navigate(next, push = true, params = {}) {
-    if (!TITLES[next] || (STAFF_MODE && next === 'chat') || (!STAFF_MODE && ['operations', 'catalog-admin', 'channels'].includes(next))) next = STAFF_MODE ? 'staff' : 'chat';
-    view = next; $('view-title').textContent = TITLES[next]; document.title = TITLES[next] + ' — ResultScope';
+    if (!TITLES[next] || (STAFF_MODE && next === 'chat') || (!STAFF_MODE && STAFF_ONLY.includes(next))) next = STAFF_MODE ? 'overview' : 'chat';
+    view = next; $('view-title').textContent = TITLES[next]; document.title = TITLES[next] + ' | ResultScope';
     document.querySelectorAll('.nav-item').forEach(b => { const on = b.dataset.view === next; b.classList.toggle('active', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     setMenu(false);
-    if (push) { const u = new URL(location.href); u.search = ''; if (next !== (STAFF_MODE ? 'staff' : 'chat')) u.searchParams.set('view', next); Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v)); window.history.pushState({ view: next }, '', u); }
+    if (push) { const u = new URL(location.href); u.search = ''; if (next !== (STAFF_MODE ? 'overview' : 'chat')) u.searchParams.set('view', next); Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v)); window.history.pushState({ view: next }, '', u); }
     if ($('chat-view')) $('chat-view').hidden = next !== 'chat';
     $('content-view').hidden = next === 'chat';
-    if (next === 'chat') { $('message').focus({ preventScroll: true }); return; }
+    if (next === 'chat') { toBottom(); $('message').focus({ preventScroll: true }); return; }
     const content = $('content'); content.replaceChildren(el('div', null, 'skeleton')); content.setAttribute('aria-busy', 'true');
     try { content.replaceChildren(await FACTORIES[next](params)); }
     catch (e) { content.replaceChildren(empty('This view could not be loaded', e.message, button('Try again', () => navigate(next, false, params), 'btn sm'))); }
-    finally { content.removeAttribute('aria-busy'); }
+    finally { content.removeAttribute('aria-busy'); navCounts(); }
   }
   document.querySelectorAll('.nav-item[data-view]').forEach(b => { b.onclick = () => navigate(b.dataset.view); });
   $('menu-toggle').onclick = () => setMenu(!$('sidebar').classList.contains('open'));
   mobile.addEventListener('change', () => setMenu(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('sidebar').classList.contains('open')) { setMenu(false); $('menu-toggle').focus(); } });
-  window.addEventListener('popstate', () => { const p = new URLSearchParams(location.search); navigate(p.get('view') || (STAFF_MODE ? 'staff' : 'chat'), false, Object.fromEntries(p)); });
+  window.addEventListener('popstate', () => { const p = new URLSearchParams(location.search); navigate(p.get('view') || (STAFF_MODE ? 'overview' : 'chat'), false, Object.fromEntries(p)); });
 
   /* ------------------------------------------------------------ connection and linking */
   async function connection() {
@@ -856,6 +1092,7 @@
   }
   async function init() {
     setMenu(false);
+    if (!STAFF_MODE && matchMedia('(max-width:640px)').matches) $('message').placeholder = 'Ask a question';
     const p = new URLSearchParams(location.search);
     try {
       const s = await api('/session'); csrf = s.csrf; updateUser(s.user);

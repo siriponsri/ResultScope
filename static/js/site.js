@@ -100,19 +100,16 @@
     for (const [k, v] of data) if (v !== '' && !(k === 'sort' && v === 'featured')) p.set(k, v);
     return p;
   }
+  const KIND = p => p.segment === 'organization' ? 'For organizations of 20 or more' : p.staff_review_required ? 'Follow-up test, reviewed with our team before booking' : 'Book directly';
   function card(p) {
-    const a = el('article', null, 'pkg' + (p.segment === 'organization' ? ' org' : p.staff_review_required ? ' follow' : '')); a.dataset.package = p.id;
-    const head = el('div', null, 'pkg-head'), h = el('h3'), link = el('a', p.name); link.href = '/packages/' + encodeURIComponent(p.id); h.append(link);
-    const badge = p.segment === 'organization' ? el('span', 'Organizations', 'badge org') : p.staff_review_required ? el('span', 'Staff review first', 'badge follow') : el('span', 'Book directly', 'badge');
-    head.append(h, badge);
-    const ul = el('ul', null, 'pkg-tests'); ul.setAttribute('aria-label', 'Included tests');
-    p.services.slice(0, 6).forEach(s => ul.append(el('li', s))); if (p.services.length > 6) ul.append(el('li', '+' + (p.services.length - 6) + ' more'));
-    const meta = el('p', `${p.services.length} test${p.services.length !== 1 ? 's' : ''} · ${p.branch_ids.length} center${p.branch_ids.length !== 1 ? 's' : ''}`, 'small muted');
+    const a = el('article', null, 'pkg-row'); a.dataset.package = p.id;
+    const head = el('div'), h = el('h3'), link = el('a', p.name); link.href = '/packages/' + encodeURIComponent(p.id); h.append(link);
+    head.append(h, el('p', KIND(p), 'kind'));
+    const ul = el('ul', null, 'pkg-tests'); ul.setAttribute('aria-label', 'Included tests'); p.services.forEach(s => ul.append(el('li', s)));
     const price = el('div', null, 'pkg-price'); price.append(el('strong', money(p.price_thb)), el('span', p.price_unit));
-    const foot = el('div', null, 'pkg-foot'), view = el('a', 'View details', 'btn sm primary'); view.href = link.href;
-    const label = el('label', null, 'compare-toggle'), box = el('input'); box.type = 'checkbox'; box.dataset.compare = p.id; box.dataset.name = p.name;
-    label.append(box, document.createTextNode(' Compare')); foot.append(view, label);
-    a.append(head, ul, meta, price, foot); return a;
+    const actions = el('div', null, 'pkg-actions'), label = el('label', null, 'compare-toggle'), box = el('input'); box.type = 'checkbox'; box.dataset.compare = p.id; box.dataset.name = p.name;
+    label.append(box, document.createTextNode(' Compare')); actions.append(label);
+    a.append(head, ul, price, actions); return a;
   }
   function renderChips(p) {
     chips.replaceChildren();
