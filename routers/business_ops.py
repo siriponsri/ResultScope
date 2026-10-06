@@ -34,20 +34,17 @@ async def catalog_search(q: str = "", segment: str = "", branch_id: str = "", ma
                          min_price: int | None = None, review: str = "", sort: str = "featured"):
     if segment not in ("", "individual", "organization") or review not in ("", "excluded", "only"):
         raise ConversationError("filter_invalid", "Unknown filter value.", 422)
-    with db.transaction() as tx:
-        return ops.catalog_search(tx, q, segment, branch_id, max_price, min_price, review, sort)
+    return ops.catalog_search(None, q, segment, branch_id, max_price, min_price, review, sort)
 
 
 @router.get("/catalog/compare")
 async def catalog_compare(ids: str = ""):
-    with db.transaction() as tx:
-        return ops.compare(tx, [i.strip() for i in ids.split(",")])
+    return ops.compare(None, [i.strip() for i in ids.split(",")])
 
 
 @router.get("/catalog/{package_id}")
 async def catalog_detail(package_id: str):
-    with db.transaction() as tx:
-        return ops.package_detail(tx, package_id)
+    return ops.package_detail(None, package_id)
 
 
 @router.get("/modes")

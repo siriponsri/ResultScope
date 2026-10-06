@@ -47,7 +47,7 @@ def test_synthetic_mode_shows_demo_notice_on_product_surface(monkeypatch):
 
     assert response.status_code == 200
     assert "synthetic" in response.text.lower()
-    assert "/static/js/business_home.js" in response.text
+    assert "/static/js/site.js" in response.text and "Simulation" in response.text
 
 
 def test_unrelated_and_unsafe_requests_bypass_provider_in_sync_and_stream(monkeypatch):

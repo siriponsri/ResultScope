@@ -21,3 +21,6 @@ data/admin_settings.json.tmp
 node_modules/
 build/
 static/motion/introduction/.hyperframes/
+
+# Local business-data encryption key (generated at runtime; never commit)
+data/business.key

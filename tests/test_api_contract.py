@@ -18,7 +18,7 @@ def test_rulebook_endpoint_and_home_surface():
 
     home = client.get("/")
     assert home.status_code == 200
-    assert "Your health." in home.text
+    assert "Find the right health check" in home.text
     assert 'lang="en"' in home.text
     assert '/app' in home.text
     lab = client.get('/lab')

@@ -32,9 +32,10 @@ SEGMENTS = [
 ]
 
 
-def _business(tx=None) -> dict:
-    with db.transaction() as active:
-        return {"catalog": db.catalog(active), "branches": db.branches(active), "policies": db.policies(active)}
+def _business() -> dict:
+    # Without a transaction, configuration() falls back to the seed files on a hosted
+    # runtime that has no database yet, so public pages never fail with a storage error.
+    return {"catalog": db.catalog(), "branches": db.branches(), "policies": db.policies()}
 
 
 def page(request: Request, name: str, title: str, description: str, status: int = 200, **context) -> HTMLResponse:
@@ -70,9 +71,8 @@ async def packages(request: Request, q: str = "", segment: str = "", branch_id: 
         segment = ""
     if review not in ("", "excluded", "only"):
         review = ""
-    with db.transaction() as tx:
-        result = ops.catalog_search(tx, q, segment, branch_id, max_price, min_price, review, sort)
-        branches = db.branches(tx)["branches"]
+    result = ops.catalog_search(None, q, segment, branch_id, max_price, min_price, review, sort)
+    branches = db.branches()["branches"]
     return page(request, "site/packages.html", "Health checks — ResultScope",
                 "Search, filter, sort and compare simulated health-check packages.",
                 result=result, branches=branches, page_json=_package_json({"result": result, "branches": branches}))
@@ -81,10 +81,9 @@ async def packages(request: Request, q: str = "", segment: str = "", branch_id: 
 @router.get("/packages/{package_id}", response_class=HTMLResponse)
 async def package_detail(request: Request, package_id: str):
     try:
-        with db.transaction() as tx:
-            detail = ops.package_detail(tx, package_id)
-            related = [p for p in db.catalog(tx)["packages"] if p.get("active", True) and p["id"] != package_id
-                       and p["segment"] == detail["package"]["segment"]][:3]
+        detail = ops.package_detail(None, package_id)
+        related = [p for p in db.catalog()["packages"] if p.get("active", True) and p["id"] != package_id
+                   and p["segment"] == detail["package"]["segment"]][:3]
     except ConversationError:
         return page(request, "site/not_found.html", "Health check not found — ResultScope",
                     "This health check is unavailable.", status=404, what="health check")
@@ -98,8 +97,7 @@ async def compare(request: Request, ids: str = ""):
     error = ""
     comparison = None
     try:
-        with db.transaction() as tx:
-            comparison = ops.compare(tx, [i.strip() for i in ids.split(",")])
+        comparison = ops.compare(None, [i.strip() for i in ids.split(",")])
     except ConversationError as exc:
         error = exc.message
     return page(request, "site/compare.html", "Compare health checks — ResultScope",
