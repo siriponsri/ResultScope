@@ -136,7 +136,7 @@
     const titles = { book: 'Appointment request preview', quote: 'Package preview', pay: 'Payment preview', handoff: 'Continue with our team', link: 'Link your LINE conversation' };
     c.append(el('strong', titles[a.type] || 'Preview'));
     if (a.quote) c.append(el('p', a.quote.items.map(x => x.name).join(' + ') + ' · ' + money(a.quote.total_thb), 'small'));
-    if (a.type === 'book') c.append(el('p', branchName(a.branch_id) + ' · ' + a.date + ' · ' + a.time + ' (Bangkok time)', 'small'));
+    if (a.type === 'book') c.append(el('p', branchName(a.branch_id) + ', ' + longDate(a.date) + ', ' + a.time + ' Bangkok time', 'small'));
     if (a.summary) c.append(el('p', a.summary, 'small muted'));
     if (a.type === 'book') c.append(el('p', 'Sending this creates a request. Our team confirms it before payment opens.', 'tiny muted'));
     if (a.type === 'link') c.append(el('p', 'Open the invitation from your LINE chat while signed in here to link accounts.', 'tiny muted'));
@@ -223,7 +223,7 @@
       a.type = 'button'; a.onclick = () => navigate('bookings'); next.append(a, bookingBadges(b)[0]);
     } else next.append(el('span', mode === 'bot' ? 'Answers come with their sources. Our team confirms every appointment.' : 'Our team has this conversation.'));
     const chips = $('context-chips'); chips.replaceChildren();
-    if (r) { const c = el('button', null, 'chip active'); c.type = 'button'; c.append(document.createTextNode('Report: ' + r.label + ' '), el('span', '×', 'x')); c.setAttribute('aria-label', 'Stop using report ' + r.label); c.onclick = async () => { await post('/reports/select', { report_id: '' }); await refresh(); notice('The report is no longer used in this conversation.'); }; chips.append(c); }
+    if (r) { const c = el('button', null, 'chip active'); c.type = 'button'; c.append(document.createTextNode('Report: ' + (r.label || 'My report') + ' '), el('span', '×', 'x')); c.setAttribute('aria-label', 'Stop using report ' + (r.label || 'My report')); c.onclick = async () => { await post('/reports/select', { report_id: '' }); await refresh(); notice('The report is no longer used in this conversation.'); }; chips.append(c); }
   }
   async function refresh() {
     state = await api('/workspace');
@@ -541,7 +541,7 @@
     check.append(cb, document.createTextNode('I checked the extracted values and confirm this report belongs to the person being discussed.'));
     form.append(wrap, check, button('Confirm and use report', async () => {
       if (!form.reportValidity()) return;
-      await post('/reports/confirm', { report_id: r.id, fields: fields.map(c => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, v.value]))), label: label.input.value, collected_date: date.input.value, same_person_confirmed: cb.checked });
+      await post('/reports/confirm', { report_id: r.id, fields: fields.map(c => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, v.value]))), label: label.input.value.trim() || 'My report', collected_date: date.input.value, same_person_confirmed: cb.checked });
       closeModal(); await refresh(); await navigate('chat'); notice('Report confirmed. You can ask about it now.');
     }, 'btn primary'));
     form.onsubmit = e => e.preventDefault();
@@ -903,7 +903,7 @@
   }
 
   /* ------------------------------------------------------------ staff: overview dashboard */
-  const RAMP = ['#f3eefb', '#dccbf6', '#b996ec', '#8a55d8', '#4b0082'];
+  const RAMP = [0, 1, 2, 3, 4]; // steps of the sequential capacity ramp; colours are theme tokens (.heat-N)
   const rampStep = u => u <= 0 ? 0 : u < .25 ? 1 : u < .5 ? 2 : u < .75 ? 3 : 4;
   let dashBranch = '', dashDays = 7;
   function tile(label, value, sub, onClick) {
@@ -961,12 +961,12 @@
     const hr = el('tr'); hr.append(el('th', 'Center')); (d.capacity[0]?.days || []).forEach(x => { const th = el('th', new Date(x.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' })); th.scope = 'col'; hr.append(th); }); hr.append(el('th', 'Used')); t.append(hr);
     d.capacity.forEach(b => {
       const tr = el('tr'), th = el('th', b.name.replace(' Demo Center', '')); th.scope = 'row'; tr.append(th);
-      b.days.forEach(x => { const u = x.capacity ? x.used / x.capacity : 0, step = rampStep(u), td = el('td', x.used + '/' + x.capacity, 'num'); td.style.background = RAMP[step]; td.style.color = step >= 3 ? '#fff' : 'var(--ink)'; td.title = `${b.name}, ${x.date}: ${x.used} of ${x.capacity} visits`; tr.append(td); });
+      b.days.forEach(x => { const u = x.capacity ? x.used / x.capacity : 0, step = rampStep(u), td = el('td', x.used + '/' + x.capacity, 'num heat-' + step); td.title = `${b.name}, ${x.date}: ${x.used} of ${x.capacity} visits`; tr.append(td); });
       tr.append(el('td', Math.round(b.utilization * 100) + '%', 'num strong')); t.append(tr);
     });
     tableWrap.append(t);
     const legend = el('div', null, 'legend small'); legend.append(el('span', 'Less'));
-    RAMP.forEach(c => { const sw = el('span', null, 'swatch'); sw.style.background = c; legend.append(sw); }); legend.append(el('span', 'More used'));
+    RAMP.forEach(n => { const sw = el('span', null, 'swatch heat-' + n); sw.setAttribute('aria-hidden', 'true'); legend.append(sw); }); legend.append(el('span', 'More used'));
     cap.append(tableWrap, legend);
     const pay = el('section', null, 'card stack-sm'); pay.append(el('h3', 'Test payments'), el('p', 'Simulator transactions by outcome. No real money.', 'small muted'));
     const pt = el('table', null, 'data compact'); Object.entries(d.money.test_payments).forEach(([k, v]) => { const tr = el('tr'); tr.append(el('td', (PAY[k] || [k])[0]), el('td', String(v), 'n')); pt.append(tr); }); pay.append(pt, button('Open payments', () => navigate('payments'), 'btn sm'));
@@ -1096,7 +1096,7 @@
     const p = new URLSearchParams(location.search);
     try {
       const s = await api('/session'); csrf = s.csrf; updateUser(s.user);
-      if (!STAFF_MODE) await refresh(); else setBell(0);
+      if (!STAFF_MODE) { await loadBusiness().catch(() => {}); await refresh(); } else setBell(0);
       await navigate(p.get('view') || view, false, Object.fromEntries(p));
       await checkLink(); await applyDeepLinks(p);
       if (STAFF_MODE && !isStaff()) account();

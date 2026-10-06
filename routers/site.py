@@ -60,11 +60,22 @@ async def home(request: Request):
     }
     counts = {k: len(v) for k, v in groups.items()}
     featured = next((p for p in groups["core"] if p["id"] == "P02"), groups["core"][0] if groups["core"] else None)
+    sources = json.loads((ROOT / "knowledge/evidence/catalog.json").read_text(encoding="utf-8"))["records"]
+    publishers: dict[str, int] = {}
+    for r in sources:
+        name = (r.get("publisher") or "").split(" · ")[0].split(",")[0].strip().removeprefix("Faculty of Medicine ")
+        if name:
+            publishers[name] = publishers.get(name, 0) + 1
+    branches = data["branches"]["branches"]
     return page(request, "site/home.html", "ResultScope | Health checks, explained and booked",
                 "Compare health-check packages, ask questions in your own language and request an appointment. Coursework simulation.",
-                groups=groups, segments=SEGMENTS, counts=counts, featured=featured, branches=data["branches"]["branches"],
+                groups=groups, segments=SEGMENTS, counts=counts, featured=featured, branches=branches,
                 policies=data["policies"], catalog_version=data["catalog"]["version"], dots=business_dots.public_roster(),
-                total=len(packages), source_count=len(json.loads((ROOT / "knowledge/evidence/catalog.json").read_text(encoding="utf-8"))["records"]))
+                total=len(packages), source_count=len(sources),
+                publishers=sorted(publishers.items(), key=lambda x: -x[1]),
+                matrices=[{"id": "individual", "label": "Individuals", "unit": "per person", "packages": groups["core"][:3]},
+                          {"id": "organization", "label": "Organizations", "unit": "per person, 20 or more", "packages": groups["org"][:3]}],
+                capacity=sum(b["capacity_per_slot"] for b in branches))
 
 
 @router.get("/packages", response_class=HTMLResponse)

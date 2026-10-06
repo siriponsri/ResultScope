@@ -1,0 +1,472 @@
+{
+  "generated_at": "2026-10-06T07:06:17.187Z",
+  "label": "MOCKED_TEST_ONLY: real UI and server; scripted assistant/OCR text",
+  "theme": "light",
+  "shots": [
+    {
+      "id": "01-home",
+      "file": "01-home.png",
+      "title": "Home",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "02-catalog",
+      "file": "02-catalog.png",
+      "title": "Health checks catalog",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "04-package",
+      "file": "04-package.png",
+      "title": "Package detail",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "05-compare",
+      "file": "05-compare.png",
+      "title": "Compare three packages",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "06-centers",
+      "file": "06-centers.png",
+      "title": "Centers",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "07-organizations",
+      "file": "07-organizations.png",
+      "title": "Organizations and quotation request",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "08-help",
+      "file": "08-help.png",
+      "title": "Help and policies",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "09-sources",
+      "file": "09-sources.png",
+      "title": "Medical sources the assistant may cite",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "10-privacy",
+      "file": "10-privacy.png",
+      "title": "Privacy",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "11-not-found",
+      "file": "11-not-found.png",
+      "title": "Page not found",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "03-catalog-empty",
+      "file": "03-catalog-empty.png",
+      "title": "Catalog: no results state",
+      "note": "Search with no match keeps filters and offers reset and the assistant.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "02b-compare-tray",
+      "file": "02b-compare-tray.png",
+      "title": "Catalog: compare tray after choosing two packages",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "12-dock-answer",
+      "file": "12-dock-answer.png",
+      "title": "Assistant dock on a package page",
+      "note": "Answer cites catalog records; shortcuts open compare or prefill a booking. Scripted reply.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "20-app-welcome",
+      "file": "20-app-welcome.png",
+      "title": "Conversation: first visit",
+      "note": "Guest session; suggestions are real prompts; links skip the chat entirely.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "21-account-dialog",
+      "file": "21-account-dialog.png",
+      "title": "Sign in or create an account",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "22-chat-advisor",
+      "file": "22-chat-advisor.png",
+      "title": "Answer with sources, shortcuts and the verification receipt",
+      "note": "Receipt lists the checks that ran before the answer was shown. Scripted reply.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "23-chat-compare",
+      "file": "23-chat-compare.png",
+      "title": "Comparison panel opened from the answer",
+      "note": "Highlighted column is the package the user asked about, not a popularity badge.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "24-chat-explainer",
+      "file": "24-chat-explainer.png",
+      "title": "Report Explainer answer with numbered references",
+      "note": "Inline numbers match the source list. Scripted reply.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "25-reports-empty",
+      "file": "25-reports-empty.png",
+      "title": "My reports: empty state",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "26-sample-picker",
+      "file": "26-sample-picker.png",
+      "title": "Synthetic sample reports",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "27-report-review",
+      "file": "27-report-review.png",
+      "title": "Review every extracted value before use",
+      "note": "OCR values here come from a scripted double.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "28-chat-report-values",
+      "file": "28-chat-report-values.png",
+      "title": "Report values drawn on the range printed on the user's own report",
+      "note": "Thai reply; values were matched exactly to the confirmed report. Scripted reply.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "29-attach-menu",
+      "file": "29-attach-menu.png",
+      "title": "Add a report from the composer",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "30-book",
+      "file": "30-book.png",
+      "title": "Request a time",
+      "note": "Live capacity per half-hour; the server rechecks price and capacity on submit.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "31-bookings-requested",
+      "file": "31-bookings-requested.png",
+      "title": "My appointments: three requests awaiting confirmation",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "40-staff-signin",
+      "file": "40-staff-signin.png",
+      "title": "Staff sign-in",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "41-staff-overview",
+      "file": "41-staff-overview.png",
+      "title": "Overview: requests that wait for a person come first",
+      "note": "Confirm and decline are the real actions; numbers are computed from stored records.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "42-staff-decline",
+      "file": "42-staff-decline.png",
+      "title": "Declining a request asks for a reason the customer will see",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "32-bookings-confirmed",
+      "file": "32-bookings-confirmed.png",
+      "title": "My appointments after staff decisions",
+      "note": "Confirmed, declined with the reason, and payment options that open only after confirmation.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "33-pay-sim",
+      "file": "33-pay-sim.png",
+      "title": "Payment simulator (signed test events, no real money)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "34-pay-sim-done",
+      "file": "34-pay-sim-done.png",
+      "title": "Payment simulator after a successful signed event",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "35-handoff-dialog",
+      "file": "35-handoff-dialog.png",
+      "title": "Talk to our team",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "43-staff-inbox",
+      "file": "43-staff-inbox.png",
+      "title": "Inbox: a case taken over by staff, the assistant paused for this customer",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "44-staff-quote",
+      "file": "44-staff-quote.png",
+      "title": "Preparing a versioned quotation for an organization",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "36-chat-staff-reply",
+      "file": "36-chat-staff-reply.png",
+      "title": "The staff reply in the customer conversation",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "37-notifications",
+      "file": "37-notifications.png",
+      "title": "Notifications created by real events",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "38-app-packages",
+      "file": "38-app-packages.png",
+      "title": "Health checks inside the workspace",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "45-staff-overview-after",
+      "file": "45-staff-overview-after.png",
+      "title": "Overview after the day's decisions",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "46-staff-appointments",
+      "file": "46-staff-appointments.png",
+      "title": "Appointments",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "47-staff-customers",
+      "file": "47-staff-customers.png",
+      "title": "Customers",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "48-staff-customer",
+      "file": "48-staff-customer.png",
+      "title": "Customer history",
+      "note": "Report values and chat text are not shown here.",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "49-staff-payments",
+      "file": "49-staff-payments.png",
+      "title": "Payments",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "50-staff-catalog",
+      "file": "50-staff-catalog.png",
+      "title": "Catalog and prices (manager)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "51-staff-centers",
+      "file": "51-staff-centers.png",
+      "title": "Centers and capacity (manager)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "52-staff-roles",
+      "file": "52-staff-roles.png",
+      "title": "Assistant roles (manager)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "53-staff-channels",
+      "file": "53-staff-channels.png",
+      "title": "Channels, LINE simulator and AI budget (manager)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "54-staff-audit",
+      "file": "54-staff-audit.png",
+      "title": "Audit log (manager)",
+      "note": "",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "id": "60-m-home",
+      "file": "60-m-home.png",
+      "title": "Phone: Home",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "61-m-catalog",
+      "file": "61-m-catalog.png",
+      "title": "Phone: Catalog",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "62-m-package",
+      "file": "62-m-package.png",
+      "title": "Phone: Package detail",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "63-m-menu",
+      "file": "63-m-menu.png",
+      "title": "Phone: menu",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "64-m-dock",
+      "file": "64-m-dock.png",
+      "title": "Phone: assistant dock",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "65-m-chat",
+      "file": "65-m-chat.png",
+      "title": "Phone: conversation",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "66-m-compare",
+      "file": "66-m-compare.png",
+      "title": "Phone: comparison panel",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "67-m-retry",
+      "file": "67-m-retry.png",
+      "title": "Phone: a failed turn keeps the message and offers Retry",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "68-m-book",
+      "file": "68-m-book.png",
+      "title": "Phone: request a time",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "69-m-staff-overview",
+      "file": "69-m-staff-overview.png",
+      "title": "Phone: staff overview",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "id": "70-m-staff-menu",
+      "file": "70-m-staff-menu.png",
+      "title": "Phone: staff navigation",
+      "note": "",
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "problems": []
+}

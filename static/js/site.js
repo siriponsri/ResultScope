@@ -10,7 +10,8 @@
   /* ---------- mobile navigation ---------- */
   const toggle = $('.nav-toggle'), nav = $('#main-nav');
   if (toggle && nav) {
-    const set = open => { nav.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); toggle.textContent = open ? '×' : '☰'; };
+    const set = open => { nav.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); };
+    document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav-pill')) set(false); });
     toggle.addEventListener('click', () => set(!nav.classList.contains('open')));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); toggle.focus(); } });
   }

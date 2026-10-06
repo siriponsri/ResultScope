@@ -2,23 +2,129 @@
 {% from "site/_macros.html" import package_card, money %}
 {% block body_class %} home{% endblock %}
 {% block content %}
-<section class="masthead">
-  <div class="wrap masthead-grid">
-    <div class="masthead-copy">
-      <h1>Know what a health check tests before you book it.</h1>
-      <p class="lead">Compare {{ total }} packages by the tests inside and the price, bring a lab report and read what each value means with the source beside it, then request a time. A person on our team confirms every appointment.</p>
+{% set core = groups.core %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-grid">
+    <h1 id="hero-title">Know every test before you book.</h1>
+    <div class="hero-side">
+      <p class="lead">Compare {{ total }} health-check packages by what they test and what they cost, ask about a lab report with the source behind every answer, and request a time. A person on our team confirms each appointment.</p>
+      <div class="row hero-ctas">
+        <a class="btn primary lg" href="/app?view=book">Request a time</a>
+        <button class="btn lg" type="button" data-open-dock>Ask a question</button>
+      </div>
       <form class="search" action="/packages" method="get" role="search">
         <label class="sr-only" for="hero-search">Search by test or package</label>
-        <input class="input" id="hero-search" name="q" type="search" maxlength="80" placeholder="Search a test, for example HbA1c or lipid profile">
-        <button class="btn primary" type="submit">Search packages</button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+        <input id="hero-search" name="q" type="search" maxlength="80" placeholder="Search a test, for example HbA1c">
+        <button class="btn sm" type="submit">Search packages</button>
       </form>
-      <p class="small muted">Prefer to ask? <button class="link-btn" type="button" data-open-dock>Ask ResultScope a question</button> in Thai, English or your own language.</p>
     </div>
-    <figure class="masthead-photo">
-      <img src="/static/img/health/laboratory-care.jpg" alt="Gloved hands placing a drop of sample on a dish" width="1335" height="2000" fetchpriority="high">
-      <figcaption class="tiny muted">Photograph supplied by the project owner. Illustrative, not a ResultScope facility.</figcaption>
+  </div>
+
+  <div class="wrap showcase" aria-label="What the product looks like">
+    {% if core|length >= 2 %}
+    <figure class="panel">
+      <figcaption class="panel-label">Example answer</figcaption>
+      <div class="mini-turn">
+        <p class="mini-head"><span class="speaker-dot" aria-hidden="true"></span><strong>ResultScope</strong><span>Health-check Advisor, AI</span></p>
+        <p>{{ core[0].name }} is {{ money(core[0].price_thb) }} and covers {{ core[0].services|length }} tests<span class="cite">1</span>. {{ core[1].name }} is {{ money(core[1].price_thb) }} and adds {{ (core[1].services|reject('in', core[0].services)|list)[:2]|join(' and ') }}<span class="cite">2</span>.</p>
+        <ul class="mini-receipt">
+          <li>Safety check on the question</li>
+          <li>Each claim matched to 2 cited sources</li>
+          <li>Second review before it is shown</li>
+        </ul>
+      </div>
+    </figure>
+    {% endif %}
+    <figure class="panel">
+      <figcaption class="panel-label">Example appointment</figcaption>
+      <div class="mini-booking">
+        <div class="row between"><strong>{{ featured.name if featured else 'Health check' }}</strong><span class="badge ok">Confirmed</span></div>
+        <p class="small muted">{{ branches[0].name if branches else 'Center' }} · Sat, 10:00</p>
+        <ol class="steps-line" aria-label="Appointment states">
+          <li class="done">Requested</li>
+          <li class="done">Confirmed by our team</li>
+          <li>Paid</li>
+        </ol>
+        <p class="tiny muted">Payment opens once our team confirms. Test payments move no real money.</p>
+      </div>
+    </figure>
+    <figure class="panel">
+      <figcaption class="panel-label">Synthetic report value</figcaption>
+      <div class="ruler-demo">
+        <div class="ruler-head"><span class="name">Fasting glucose</span><span class="num value">101 mg/dL</span></div>
+        <div class="ruler" role="img" aria-label="101 is above the range 70 to 99 printed on this report">
+          <span class="ruler-band" style="--from:18%;--to:66%"></span>
+          <span class="ruler-mark" style="--at:74%"></span>
+          <span class="ruler-tick" style="--at:18%">70</span><span class="ruler-tick" style="--at:66%">99</span>
+        </div>
+        <p class="small"><span class="badge warn">Above the printed range</span></p>
+        <p class="tiny muted">A single value is not a diagnosis. Source: How to understand your lab results, MedlinePlus.</p>
+      </div>
     </figure>
   </div>
+</section>
+
+<section class="proof" aria-labelledby="proof-title">
+  <div class="wrap proof-row">
+    <p id="proof-title" class="small muted">Answers cite {{ source_count }} reviewed public records from</p>
+    <ul class="publishers">
+      {% for name, n in publishers[:6] %}<li>{{ name }} <span class="num muted">{{ n }}</span></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="wrap section" aria-labelledby="features-title">
+  <div class="section-head split">
+    <h2 id="features-title">From a question to a confirmed visit</h2>
+    <p class="muted">Every step below is a real part of the product: the same catalog, capacity, review and payment states you will use.</p>
+  </div>
+  <div class="bento">
+    <article class="tile wide">
+      <div class="tile-copy"><h3>Compare by what is tested</h3><p class="muted small">Prices and tests come from one catalog that the website, the assistant and our team all use.</p></div>
+      {% set m = matrices[0] %}
+      {% set tests = [] %}{% for p in m.packages %}{% for s in p.services %}{% if s not in tests %}{% set _ = tests.append(s) %}{% endif %}{% endfor %}{% endfor %}
+      <div class="mini-matrix" role="table" aria-label="Core packages compared">
+        <div role="row" class="mm-row head"><span role="columnheader">Test</span>{% for p in m.packages %}<span role="columnheader">{{ p.name }}</span>{% endfor %}</div>
+        {% for t in tests[:5] %}<div role="row" class="mm-row"><span role="rowheader">{{ t }}</span>{% for p in m.packages %}<span role="cell" class="{{ 'yes' if t in p.services else 'no' }}">{{ 'Included' if t in p.services else 'Not included' }}</span>{% endfor %}</div>{% endfor %}
+        <div role="row" class="mm-row price"><span role="rowheader">Price</span>{% for p in m.packages %}<span role="cell" class="num">{{ money(p.price_thb) }}</span>{% endfor %}</div>
+      </div>
+    </article>
+    <article class="tile">
+      <div class="tile-copy"><h3>Pick an open half hour</h3><p class="muted small">{{ branches|length }} centers, Monday to Saturday. Capacity is checked again when you send.</p></div>
+      <div class="mini-slots" aria-hidden="true"><span>07:00</span><span>07:30</span><span class="sel">08:00</span><span>08:30</span><span class="full">09:00</span><span>09:30</span></div>
+      <p class="tiny muted">Illustration of the time picker.</p>
+    </article>
+    <article class="tile">
+      <div class="tile-copy"><h3>A person confirms</h3><p class="muted small">Your request holds the slot. Our team confirms or declines it, and you are notified either way.</p></div>
+      <div class="mini-states"><span class="badge warn">Awaiting confirmation</span><span class="arrow" aria-hidden="true"></span><span class="badge ok">Confirmed</span></div>
+    </article>
+    <article class="tile">
+      <div class="tile-copy"><h3>Your value, on your range</h3><p class="muted small">Values are drawn on the range printed on your own report, after you check what was read.</p></div>
+      <div class="ruler small-ruler" role="img" aria-label="Example: 162 is above the printed limit of 130">
+        <span class="ruler-band" style="--from:4%;--to:62%"></span><span class="ruler-mark" style="--at:80%"></span><span class="ruler-tick" style="--at:62%">130</span>
+      </div>
+    </article>
+    <article class="tile">
+      <div class="tile-copy"><h3>Test payments only</h3><p class="muted small">Payment opens after confirmation. Signed test events move the state; no real money moves.</p></div>
+      <div class="mini-states wrapping"><span class="badge warn">Waiting for payment</span><span class="badge ok">Succeeded</span><span class="badge bad">Failed</span><span class="badge neutral">Refunded</span></div>
+    </article>
+    <article class="tile full">
+      <div class="tile-copy"><h3>Teams of {{ policies.organization_min_people }} or more</h3><p class="muted small">Send headcount and dates. A coordinator issues a quotation; each revision becomes a new version you can download as a PDF.</p></div>
+      <div class="mini-quotes" aria-label="Example quotation versions">
+        <div class="row between"><span><strong>Version 2</strong> <span class="muted small">45 people, onsite</span></span><span class="badge warn">Ready to review</span></div>
+        <div class="row between muted"><span><strong>Version 1</strong> <span class="small">45 people, at a center</span></span><span class="badge neutral">Superseded</span></div>
+        <a class="small" href="/organizations">Request a quotation</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="wrap stats" aria-label="The service in numbers">
+  <div><strong class="num">{{ total }}</strong><span>health-check packages</span></div>
+  <div><strong class="num">{{ branches|length }}</strong><span>centers, Monday to Saturday</span></div>
+  <div><strong class="num">{{ source_count }}</strong><span>cited public records</span></div>
+  <div><strong class="num">{{ dots|length }}</strong><span>assistant roles, routed for you</span></div>
 </section>
 
 <section class="wrap section" aria-labelledby="needs-title">
@@ -27,7 +133,7 @@
     <a href="/packages">All {{ total }} health checks</a>
   </div>
   <div class="needs" data-tabs>
-    <div class="need-tabs" role="tablist" aria-label="Needs">
+    <div class="seg-tabs" role="tablist" aria-label="Needs">
       {% for s in segments %}
       <button role="tab" id="need-tab-{{ s.id }}" aria-controls="need-{{ s.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" {% if not loop.first %}tabindex="-1"{% endif %} type="button">{{ s.label }} <span class="num">{{ counts[s.id] }}</span></button>
       {% endfor %}
@@ -43,60 +149,67 @@
   </div>
 </section>
 
-<section class="wrap section report-section" aria-labelledby="report-title">
-  <div class="report-copy">
-    <h2 id="report-title">A lab report, read with you</h2>
-    <p>Upload a photo or a PDF of a report you already have. You check every value we read before it is used. The Report Explainer then compares each value with the range printed on your own report and shows the public reference behind each sentence.</p>
-    <p>It does not sell. Packages come up only when you ask the Health-check Advisor about them.</p>
-    <p><a class="btn" href="/app?view=reports">Add a report</a> <a class="text-link" href="/sources">See the {{ source_count }} sources it may cite</a></p>
+<section class="wrap section" aria-labelledby="matrix-title">
+  <div class="section-head split">
+    <h2 id="matrix-title">Packages side by side</h2>
+    <p class="muted">Simulated prices from catalog {{ catalog_version }}. More tests is not automatically better; ask the assistant what each one measures.</p>
   </div>
-  <figure class="ruler-demo" aria-labelledby="ruler-cap">
-    <div class="ruler-head"><span class="name">Fasting glucose</span><span class="num value">101 mg/dL</span></div>
-    <div class="ruler" role="img" aria-label="101 is above the range 70 to 99 printed on this report">
-      <span class="ruler-band" style="--from:18%;--to:66%"></span>
-      <span class="ruler-mark" style="--at:74%"></span>
-      <span class="ruler-tick" style="--at:18%">70</span><span class="ruler-tick" style="--at:66%">99</span>
+  <div class="matrix" data-tabs>
+    <div class="seg-tabs compact" role="tablist" aria-label="Who it is for">
+      {% for m in matrices %}<button role="tab" id="matrix-tab-{{ m.id }}" aria-controls="matrix-{{ m.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" {% if not loop.first %}tabindex="-1"{% endif %} type="button">{{ m.label }}</button>{% endfor %}
     </div>
-    <p class="small">Above the range printed on this report. A single value is not a diagnosis.</p>
-    <p class="tiny muted"><span class="cite">1</span>How to understand your lab results, MedlinePlus</p>
-    <figcaption id="ruler-cap" class="tiny muted">Example from a synthetic test report, not a patient record.</figcaption>
-  </figure>
-</section>
-
-<section class="wrap section" aria-labelledby="states-title">
-  <h2 id="states-title">What happens after you request a time</h2>
-  <ol class="states">
-    <li><span class="badge warn">Requested</span><p>The half-hour slot is held for you at the center you chose.</p></li>
-    <li><span class="badge ok">Confirmed</span><p>A person on our team confirms or declines it, and you get a notification either way.</p></li>
-    <li><span class="badge ok">Paid</span><p>Pay at the center, or with a test payment that moves no real money. Nothing is charged before confirmation.</p></li>
-    <li><span class="badge neutral">In your calendar</span><p>Download the appointment as an .ics file once it is confirmed.</p></li>
-  </ol>
-  <p class="small muted">Booking and payment are separate states, and you see both on every appointment. <a href="/help#booking">Changes and cancellations</a></p>
-</section>
-
-<section class="wrap section split-org" aria-labelledby="org-title">
-  <div>
-    <h2 id="org-title">For a team of {{ policies.organization_min_people }} or more</h2>
-    <p class="muted">Tell us your headcount, dates and whether you want us at your workplace. A coordinator sends a quotation you can download as a PDF; every revision becomes a new version. Each employee's results stay private to that employee.</p>
-    <p><a class="btn primary" href="/organizations">Request a quotation</a></p>
-  </div>
-  <div>
-    <h3 class="h4">Centers</h3>
-    <ul class="center-lines">
-      {% for b in branches %}<li><a href="/centers#{{ b.id }}">{{ b.name }}</a><span class="small muted">{{ b.area }}, {{ b.hours }}</span></li>{% endfor %}
-    </ul>
-    <p class="tiny muted">Area markers for a simulated business. No clinic operates at these locations.</p>
+    {% for m in matrices %}
+    {% set tests = [] %}{% for p in m.packages %}{% for s in p.services %}{% if s not in tests %}{% set _ = tests.append(s) %}{% endif %}{% endfor %}{% endfor %}
+    <div class="table-wrap matrix-panel" role="tabpanel" id="matrix-{{ m.id }}" aria-labelledby="matrix-tab-{{ m.id }}" {% if not loop.first %}hidden{% endif %}>
+      <table class="data matrix-table">
+        <caption class="sr-only">{{ m.label }} packages: included tests and simulated prices</caption>
+        <thead><tr><th scope="col"><span class="sr-only">Test</span></th>{% for p in m.packages %}<th scope="col">
+          <a class="mt-name" href="/packages/{{ p.id }}">{{ p.name }}</a>
+          <span class="mt-price num">{{ money(p.price_thb) }}</span><span class="mt-unit">{{ m.unit }}</span>
+          {% if p.segment == 'organization' %}<a class="btn sm" href="/organizations?package={{ p.id }}">Request a quotation</a>{% else %}<a class="btn sm {{ 'primary' if p == featured }}" href="/app?view=book&package={{ p.id }}">Request a time</a>{% endif %}
+        </th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for t in tests %}<tr><th scope="row">{{ t }}</th>{% for p in m.packages %}<td class="{{ 'yes' if t in p.services else 'no' }}">{{ 'Included' if t in p.services else 'Not included' }}</td>{% endfor %}</tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
   </div>
 </section>
 
 <section class="wrap section faq" aria-labelledby="faq-title">
-  <h2 id="faq-title">Questions people ask first</h2>
-  <div class="faq-list">
-    <details><summary>Who answers my questions, an AI or a person?</summary><p>Two AI roles answer straight away: the Health-check Advisor for packages and booking, and the Report Explainer for your report. Each answer shows which one replied. A person on our team confirms appointments and quotations, and takes over whenever you ask.</p></details>
-    <details><summary>Can I ask in Thai?</summary><p>Yes. Answers follow the language you write in. The website itself is in English.</p></details>
-    <details><summary>Can it tell me whether I am ill?</summary><p>No. It explains what a test measures and how your confirmed value compares with the range printed on your report, with sources. Diagnosis and treatment belong with a clinician.</p></details>
-    <details><summary>Is my appointment booked straight away?</summary><p>Your request holds the slot until a team member confirms or declines it. {{ policies.cancellation_policy }}</p></details>
-    <details><summary>How do payments work here?</summary><p>{{ policies.payment_policy }}</p></details>
+  <div class="section-head split">
+    <h2 id="faq-title">Questions people ask first</h2>
+    <p class="muted">More detail on <a href="/help">Help and policies</a>.</p>
+  </div>
+  <div data-tabs>
+    <div class="seg-tabs compact" role="tablist" aria-label="Question topics">
+      <button role="tab" id="faq-tab-general" aria-controls="faq-general" aria-selected="true" type="button">General</button>
+      <button role="tab" id="faq-tab-booking" aria-controls="faq-booking" aria-selected="false" tabindex="-1" type="button">Booking and payment</button>
+      <button role="tab" id="faq-tab-reports" aria-controls="faq-reports" aria-selected="false" tabindex="-1" type="button">Reports</button>
+    </div>
+    <div class="faq-list" role="tabpanel" id="faq-general" aria-labelledby="faq-tab-general">
+      <details><summary>Who answers my questions, an AI or a person?</summary><p>Two AI roles answer straight away: the Health-check Advisor for packages and booking, and the Report Explainer for your report. Each answer shows which one replied. A person on our team confirms appointments and quotations, and takes over whenever you ask.</p></details>
+      <details><summary>Can I ask in Thai?</summary><p>Yes. Answers follow the language you write in. The website itself is in English.</p></details>
+      <details><summary>Is this a real clinic?</summary><p>No. ResultScope is a coursework business simulation. Packages, prices and centers are simulated and no clinical service takes place.</p></details>
+    </div>
+    <div class="faq-list" role="tabpanel" id="faq-booking" aria-labelledby="faq-tab-booking" hidden>
+      <details><summary>Is my appointment booked straight away?</summary><p>Your request holds the slot until a team member confirms or declines it. {{ policies.cancellation_policy }}</p></details>
+      <details><summary>How do payments work here?</summary><p>{{ policies.payment_policy }}</p></details>
+    </div>
+    <div class="faq-list" role="tabpanel" id="faq-reports" aria-labelledby="faq-tab-reports" hidden>
+      <details><summary>Can it tell me whether I am ill?</summary><p>No. It explains what a test measures and how your confirmed value compares with the range printed on your report, with sources. Diagnosis and treatment belong with a clinician.</p></details>
+      <details><summary>Who can see my report?</summary><p>Only you. You check every value that was read before it is used, and deleting a report also clears conversation history that could contain its values.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="wrap closing" aria-labelledby="closing-title">
+  <h2 id="closing-title">Ask a question, or request a time.</h2>
+  <p class="muted">Start with what you know. Our team confirms every appointment before any payment.</p>
+  <div class="row">
+    <a class="btn primary lg" href="/app?view=book">Request a time</a>
+    <button class="btn lg" type="button" data-open-dock>Ask a question</button>
   </div>
 </section>
 {% endblock %}

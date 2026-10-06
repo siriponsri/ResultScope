@@ -10,7 +10,7 @@
     if (user && user.registered) { status.textContent = 'Signed in as ' + user.email + '. The quotation will appear in your workspace.'; authBox?.remove(); authBox = null; return; }
     status.textContent = 'Sign in or create a free account so you can follow and accept the quotation.';
     if (authBox) return;
-    authBox = make('div', null, 'card stack-sm'); authBox.setAttribute('aria-label', 'Account');
+    authBox = make('div', null, 'auth-box stack-sm'); authBox.setAttribute('aria-label', 'Account');
     const email = make('input', null, 'input'); email.type = 'email'; email.autocomplete = 'email'; email.required = true;
     const pass = make('input', null, 'input'); pass.type = 'password'; pass.minLength = 12; pass.required = true; pass.autocomplete = 'current-password';
     const l1 = make('label', 'Email address', 'field'); l1.append(email);

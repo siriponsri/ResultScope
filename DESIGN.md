@@ -1,49 +1,57 @@
-# ResultScope design (v3, owner direction 2026-10-06)
+# ResultScope design (v4, owner direction 2026-10-06)
 
-Direction source: the owner's reference image of the ResultScope chat page (light, editorial, serif, no chat bubbles), applied to the whole system at the owner's request. Fastwork `/selling` remains the structural reference for the marketplace pages (see `docs/design/FASTWORK_REFERENCE_AUDIT.md`). Filter: Anti-Slop (miqdadbadjuber/anti-slop @ 388cbe3, MIT), mode DURING, read as a manual reference, not installed.
+This file is the locked design system for every page. Page CSS reads tokens from `static/css/rs.css`; nothing else defines colours or fonts.
 
-Design Read: health-check booking and lab-report explanation service for individuals and HR coordinators in Thailand, in a light editorial (medical document) language, dial **ENERGY 1 / RHYTHM 2 / MOTION 2**.
+## Direction and sources
 
-- ENERGY 1: calm, the content (tests, values, prices, states) is the loudest thing on every screen.
-- RHYTHM 2: consistent reading column with deliberate breaks (a catalog table, a value ruler, a timeline of real states).
-- MOTION 2: short transitions only on state changes (panel opens, tab switches, a status changes). No scroll reveals, no loops, no fake thinking animation. Reduced motion removes all of it.
+- **Owner direction (2026-10-06):** follow the UX of the Vertex landing template (Ruixen UI on 21st.dev, live demo `vertex-one-lovat.vercel.app`) with a light and a dark theme, keep the ResultScope palette but do not let purple dominate, and stay minimal. Apply it to the whole system: website, customer workspace and staff desk.
+- **What was used from Vertex:** structure and UX patterns only, as observed in a text reading of the public demo and the 21st.dev listing (see `docs/design/VERTEX_REFERENCE.md`): pill navigation with two calls to action, a hero followed by real product components instead of illustrations, a bento of features shown as working UI, a numbers strip, a side-by-side comparison matrix with an audience toggle, a tabbed FAQ, a closing call to action, and light/dark themes on a near-black `#09090b`-class dark surface. The template is a paid product. No code, assets, copy, logos or testimonials were taken, and the page could not be loaded visually from the build environment.
+- **Filter:** Hallmark (`nutlope/hallmark` @ 13ac0ec, MIT, installed as a project skill in `.claude/skills/hallmark`), genre **modern-minimal**, verb **redesign** (multi-page, so this one system for every page). Earlier filters (Anti-Slop by miqdadbadjuber, frontend-design) remain consistent with it.
+- **Fastwork `/selling`** stays the reference for marketplace mechanics (search-first catalog, category switch, compare). See `docs/design/FASTWORK_REFERENCE_AUDIT.md`.
 
-## Tokens and one-line reasons (R-31)
+Inferred brief (stated because the owner asked us not to stop for every detail): audience = people in Thailand choosing a health check or reading a lab report, plus HR coordinators and clinic staff; use = compare, ask, request a time; tone = utilitarian, calm, technical.
 
-| Token | Value | Reason |
-|---|---|---|
-| Paper | `#FFFFFF` | Reports and explanations are read like documents; white keeps values legible. |
-| Ink | `#21172F` | Brand ink from the original system; 15:1 on paper for long reading. |
-| Muted | `#61586F` | Secondary text; 6.3:1 on paper. |
-| Line | `#ECE8F3` | Hairline dividers separate turns and rows instead of cards and shadows. |
-| Primary | `#4B0082` | Brand purple, used for the one primary action on a screen and for prices. |
-| Lavender | `#6A5ACD` | Brand lavender for speaker names and text actions; 5.3:1 on paper. |
-| Dot | `#9B87E0` | The identity motif: one small dot marks the ResultScope voice (wordmark and assistant turns). Non-text, 3:1. |
-| Wash | `#F4F0FC` | Selected column or row in comparisons; the selection is real (what the user asked about), never "popular". |
-| Status | ok `#1F6F4A`, warn `#7A4B00`, bad `#A4262C` on light tints | Real booking and payment states only, always with a text label. |
+## Tokens (OKLCH, light and dark)
 
-Palette = ink + purple + lavender, dot as the single accent (R-29). No gradients, no glow, no dark sections (R-01, R-13, R-21: the owner's direction is a light document surface; there is no theme toggle because no dark direction was supplied).
+| Token | Light | Dark | Reason |
+|---|---|---|---|
+| `--color-bg` | `oklch(99.3% 0.002 295)` | `oklch(14.5% 0.004 295)` | Near-white and near-black with a trace of the brand hue, so neutrals are not flat grey. |
+| `--color-surface` | `oklch(100% 0 0)` | `oklch(17.5% 0.006 295)` | Cards and panels lift by surface, not by shadow. |
+| `--color-border` | `oklch(91.5% 0.006 295)` | `oklch(26.5% 0.01 295)` | Visible thin borders (modern-minimal), not editorial hairlines. |
+| `--color-fg` / `-muted` / `-soft` | 20.5% / 48% / 56% | 96.5% / 71% / 60% | 17.6:1, 6.4:1 and 4.6:1 on the page in light; 17.9:1, 7.7:1 and 5.0:1 in dark. |
+| `--color-primary` | ink | near-white | The main action is monochrome (ink-filled pill in light, white pill in dark), as in the reference. |
+| `--color-accent` | `oklch(46% 0.17 297)` | `oklch(76% 0.12 295)` | ResultScope purple, kept for the brand dot, citations, focus rings, selected states and the value band. Never a fill for large areas. |
+| status ok / warn / bad | text 45–48% on 96% tints | text 76–82% on 26–27% tints | Real booking and payment states only, always with a text label (6.0:1 or better). |
+| heat 0–4 | 97% → 45% purple | 21% → 78% purple | One-hue sequential ramp for capacity; text colour switches per step to keep contrast. |
 
-Type: **Source Serif 4** (with **Noto Serif Thai**) for headings, conversation and reading text, because the product explains documents and the owner's reference uses a book serif. **IBM Plex Sans** (existing brand font, with Noto Sans Thai) for controls, forms, badges and dense staff tables, so interface chrome is visually separate from the content being read. Sentence case everywhere; no tracked uppercase labels (R-06).
+Theme selection: the site follows the system setting until the visitor presses the theme button; the choice is stored per browser (`static/js/theme.js`, loaded in `<head>` so there is no flash). Both themes are complete token sets; nothing is auto-inverted.
 
-Shape: radius 6 on inputs and buttons, 12 on floating panels (comparison, dialogs), 999 only on the composer and send button, the two things you touch most in a conversation (R-11). Shadow only on panels that float above the page (comparison panel, dialog, assistant dock) (R-12).
+## Type
 
-Icons: small inline SVGs only where a text action benefits from recognition in a dense row (source, compare, calendar, message, attach, send). No sparkles or AI glyphs (R-04).
+**Geist** (variable, OFL) for everything, with **Noto Sans Thai** for Thai script through `unicode-range`; **Geist Mono** only for references. Headings 600, tight tracking (`-0.02` to `-0.03em`), always upright. Sizes come from the `--text-*` scale; the display size is `clamp(2.5rem, 4.2vw + .6rem, 4.25rem)`.
 
-## Conflicts with the reference, resolved by the owner (R-37)
+## Shape, depth and motion
 
-| Element in the reference | Rule | Decision |
-|---|---|---|
-| "Popular" badge on a package column | R-09, R-17: no popularity data exists | Dropped. The column the user asked about is highlighted instead. |
-| Tracked uppercase tagline and "POSSIBLE NEXT STEPS" label | R-06 | Dropped. Sentence case. |
-| Suggesting a follow-up test right after an abnormal value | Owner brief: no add-on sales from abnormal results | Dropped. The Report Explainer has no sales tools; packages appear only when the user asks the Health-check Advisor. |
-| Em dashes in copy | R-02 | Dropped. |
-| HK$ prices | Business data | Prices come from the catalog in THB. |
+- Radius: 8 to 14 px on fields and cards, 20 px on large panels, pill on buttons, chips, tabs, the navigation and the composer.
+- Depth: borders and surface steps. A soft shadow only on things that float (navigation pill, dock, dialogs, compare tray, dropdowns); in dark mode floating things get a border ring instead.
+- Motion: 120 to 260 ms, `transform` and `opacity` only, three named easings, no bounce. Panels fade in, the dock and dialogs rise 6 to 10 px. `prefers-reduced-motion` removes all of it.
 
-## Surfaces
+## Structure (Hallmark stamps)
 
-- Public site: wordmark with dot, text navigation, search, catalog as a scannable table-list, package detail, compare, centers, organizations, help, privacy, sources. The assistant is a dock on every page.
-- Customer workspace `/app`: top navigation (no sidebar), centered conversation in the reference layout: speaker row with time, serif turns separated by hairlines, numbered lists only when the content is a sequence, a row of real actions under each answer, a comparison panel that opens beside the answer, a round composer with attach and send.
-- Staff `/staff`: light, dense operate mode with a left rail; the overview is built around the decision of the day (requests waiting for confirmation), then capacity and money.
+- Website: macrostructure **Feature Stack** (hero with live components, sources strip, bento, numbers, needs tabs, comparison matrix, FAQ tabs, closing call to action), nav **N5 floating pill**, footer **Ft1 mast-headed**.
+- Customer workspace: **Workbench**. Header with pill links, a centred conversation column, the composer as a pill, the comparison panel beside the answer.
+- Staff desk: **Workbench** with a quiet side rail; the overview starts with the requests that need a person.
 
-Superseded: v1 Bloom/Genomic home, v2 dark product board. Kept: owner photographs (provenance in `static/img/health/ASSET_PROVENANCE.json`), the `/lab` workspace and its Hyperframes notice.
+## Honest content rules (kept from v3)
+
+- Every number on a page is computed from the catalog, configuration or stored records. No invented metrics, logos, testimonials or ratings.
+- Example panels are labelled "Example" or "Synthetic". They never contain buttons that do nothing.
+- No add-on selling after an abnormal value: the Report Explainer has no sales tools; packages appear only when the Health-check Advisor is asked.
+- No em dashes, no tracked uppercase labels, no gradient text, no glow, no fake browser or phone frames.
+
+## Known deviations (recorded for the slop test)
+
+- Spacing values are mostly on the 4 px scale; a number of component paddings (7, 9, 18 px) predate the scale and are listed in `docs/design/HALLMARK_AUDIT.md`.
+- Hallmark asks for a root `tokens.css`; tokens live at the top of `static/css/rs.css` instead because the legacy `/lab` workspace already owns `static/css/tokens.css`.
+
+Superseded: v1 Bloom/Genomic home, v2 dark product board, v3 editorial serif (owner reference image). Kept: owner photographs (provenance in `static/img/health/ASSET_PROVENANCE.json`), the `/lab` workspace and its notice.

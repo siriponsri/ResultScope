@@ -7,7 +7,9 @@
 <meta name="description" content="{{ description }}">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/static/img/favicon.svg">
-<link rel="preload" href="/static/fonts/source-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="color-scheme" content="light dark">
+<link rel="preload" href="/static/fonts/geist-variable.woff2" as="font" type="font/woff2" crossorigin>
+<script src="/static/js/theme.js"></script>
 <link rel="stylesheet" href="/static/css/rs.css">
 <link rel="stylesheet" href="/static/css/site.css">
 </head>
@@ -15,34 +17,40 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="sim-note" role="note"><div class="wrap"><span>Coursework simulation: packages, prices and centers are simulated, and no real payment or clinical service takes place.</span><a href="/help#simulation">What is simulated</a></div></div>
 <header class="site-header">
-  <div class="wrap header-row">
+  <div class="nav-pill">
     <a class="brand" href="/" aria-label="ResultScope home">ResultScope</a>
     <nav class="main-nav" id="main-nav" aria-label="Main">
       <a href="/packages" {% if path.startswith('/packages') or path == '/compare' %}aria-current="page"{% endif %}>Health checks</a>
       <a href="/organizations" {% if path == '/organizations' %}aria-current="page"{% endif %}>Organizations</a>
       <a href="/centers" {% if path == '/centers' %}aria-current="page"{% endif %}>Centers</a>
       <a href="/help" {% if path == '/help' %}aria-current="page"{% endif %}>Help</a>
-      <a href="/app?view=bookings">My appointments</a>
+      <a class="nav-mobile-only" href="/app?view=bookings">My appointments</a>
     </nav>
-    <a class="account-link" href="/app" aria-label="Your workspace and account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 19.5c1.4-3.2 4-4.8 7-4.8s5.6 1.6 7 4.8" stroke-linecap="round"/></svg></a>
-    <button class="icon-btn nav-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg></button>
+    <div class="nav-actions">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+      <a class="btn ghost sm nav-signin" href="/app?view=bookings">My appointments</a>
+      <a class="btn primary sm nav-cta" href="/app?view=book">Request a time</a>
+      <button class="icon-btn nav-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke-linecap="round"/></svg></button>
+    </div>
   </div>
 </header>
 <main id="main">
 {% block content %}{% endblock %}
 </main>
 <footer class="site-footer">
-  <div class="wrap footer-row">
+  <div class="wrap footer-mast">
     <div class="footer-id">
       <a class="brand" href="/">ResultScope</a>
-      <p class="small muted">Health checks you can compare, reports explained with their sources, and a team that confirms every appointment. A coursework business simulation.</p>
+      <p class="small muted">Health checks you can compare, reports explained with their sources, and a team that confirms every appointment.</p>
     </div>
     <nav class="footer-links" aria-label="Footer">
-      <a href="/packages">Health checks</a><a href="/compare">Compare</a><a href="/organizations">Organizations</a><a href="/centers">Centers</a>
-      <a href="/help">Help and policies</a><a href="/privacy">Privacy</a><a href="/sources">Medical sources</a><a href="/staff">Staff sign-in</a>
+      <a href="/packages">Health checks</a><a href="/compare">Compare</a><a href="/organizations">Organizations</a><a href="/centers">Centers</a><a href="/help">Help and policies</a><a href="/privacy">Privacy</a><a href="/sources">Medical sources</a><a href="/staff">Staff sign-in</a>
     </nav>
   </div>
-  <p class="wrap tiny muted footer-note">Explanations are educational and cite public references. They are not a diagnosis. Sample laboratory documents are synthetic test artifacts.</p>
+  <div class="wrap footer-base tiny muted">
+    <span>A coursework business simulation. Explanations cite public references and are not a diagnosis.</span>
+    <span>Sample laboratory documents are synthetic test artifacts.</span>
+  </div>
 </footer>
 <script src="/static/vendor/marked.min.js" defer></script>
 <script src="/static/vendor/purify.min.js" defer></script>

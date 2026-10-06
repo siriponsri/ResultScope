@@ -10,11 +10,11 @@ const out = path.resolve(root, process.env.UAT_OUT || 'docs/evidence/cowork-2026
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'resultscope-uat-')); const port = Number(process.env.UI_TEST_PORT || 8098), base = 'http://127.0.0.1:' + port;
 const py = process.env.TEST_PYTHON || path.join(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 let sha = 'unknown', dirty = null; try { sha = execSync('git rev-parse HEAD', { cwd: root }).toString().trim(); dirty = execSync('git status --porcelain', { cwd: root }).toString().trim().length > 0; } catch { /* no git */ }
-const server = spawn(py, ['tests/browser/fixture_server.py'], { cwd: root, env: { ...process.env, UI_TEST_PORT: String(port), PROVIDER_NETWORK_ENABLED: 'false', BUSINESS_DB_PATH: path.join(tmp, 'db.sqlite'), BUSINESS_KEY_PATH: path.join(tmp, 'key'), BUSINESS_DATA_KEY: '', DATABASE_URL: '', VERCEL: '', RENDER: '', APP_ENV: 'test', BUSINESS_EXTERNAL_ENABLED: '', STRIPE_SECRET_KEY: '', LINE_CHANNEL_SECRET: '', LINE_CHANNEL_ACCESS_TOKEN: '' }, stdio: ['ignore', 'ignore', 'pipe'] });
+const server = (() => { try { require('child_process').execSync(`node -e "fetch('${'http://127.0.0.1:' + (process.env.UI_TEST_PORT || 8098)}/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"`, { stdio: 'ignore' }); console.error('Port in use: another server answers on the UAT port. Stop it first; results would come from its database.'); process.exit(2); } catch { /* port free */ } return null; })() || spawn(py, ['tests/browser/fixture_server.py'], { cwd: root, env: { ...process.env, UI_TEST_PORT: String(port), PROVIDER_NETWORK_ENABLED: 'false', BUSINESS_DB_PATH: path.join(tmp, 'db.sqlite'), BUSINESS_KEY_PATH: path.join(tmp, 'key'), BUSINESS_DATA_KEY: '', DATABASE_URL: '', VERCEL: '', RENDER: '', APP_ENV: 'test', BUSINESS_EXTERNAL_ENABLED: '', STRIPE_SECRET_KEY: '', LINE_CHANNEL_SECRET: '', LINE_CHANNEL_ACCESS_TOKEN: '' }, stdio: ['ignore', 'ignore', 'pipe'] });
 let log = ''; server.on('error', e => { log += 'Fixture process failed: ' + e.message; }); server.stderr.on('data', x => { log += x; });
 let browser; const records = [], errors = [], shots = []; const wait = ms => new Promise(r => setTimeout(r, ms));
 const assert = (c, m) => { if (!c) throw Error(m); };
-async function check(id, name, fn) { const start = Date.now(); try { await fn(); records.push({ id, name, status: 'PASS', ms: Date.now() - start }); } catch (e) { records.push({ id, name, status: 'FAIL', ms: Date.now() - start, error: e.message.split('\n')[0] }); } }
+async function check(id, name, fn) { const start = Date.now(); try { await fn(); records.push({ id, name, status: 'PASS', ms: Date.now() - start }); } catch (e) { records.push({ id, name, status: 'FAIL', ms: Date.now() - start, error: e.message.split('\n')[0] }); if (process.env.UAT_DEBUG && browser) { let n = 0; for (const ctx of browser.contexts()) for (const pg of ctx.pages()) await pg.screenshot({ path: path.join(out, 'fail-' + id + '-' + (n++) + '.png') }).catch(() => {}); } } }
 async function shot(page, name, full = false) { const file = name + '.png'; await page.screenshot({ path: path.join(out, file), fullPage: full }); shots.push(file); }
 const noOverflow = page => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
 function nextOpenDay(days) { const d = new Date(Date.now() + 7 * 3600e3 + days * 86400e3); while (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
@@ -31,13 +31,20 @@ async function signUp(page, email) {
     const cctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true }); const c = await cctx.newPage(); watch(c, 'customer');
     const day1 = nextOpenDay(3);
 
-    await check('UI-01', 'Home: hero tabs keyboard, search routes to filtered catalog, no overflow', async () => {
+    await check('UI-01', 'Home: segmented tabs keyboard, comparison audience toggle, theme toggle persists, search routes to filtered catalog, no overflow', async () => {
       await c.goto(base, { waitUntil: 'networkidle' }); assert(await noOverflow(c), 'overflow'); await shot(c, 'home-1440', true);
-      await c.getByRole('tab', { name: 'Search packages' }).focus(); await c.keyboard.press('ArrowRight');
-      assert(await c.getByRole('tab', { name: 'Ask the assistant' }).getAttribute('aria-selected') === 'true', 'tab not selected');
-      await c.getByRole('tab', { name: 'Search packages' }).click();
+      await c.getByRole('tab', { name: /Core health checks/ }).focus(); await c.keyboard.press('ArrowRight');
+      assert(await c.getByRole('tab', { name: /Follow-up tests/ }).getAttribute('aria-selected') === 'true', 'tab not selected by keyboard');
       await c.getByRole('tab', { name: /For organizations/ }).click(); await c.locator('#need-org').waitFor({ state: 'visible' }); assert(await c.locator('#need-core').isHidden(), 'need tab panel');
-      await c.locator('#hero-search').fill('lipid'); await c.locator('#panel-search button[type=submit]').click();
+      await c.getByRole('tab', { name: 'Organizations', exact: true }).click(); await c.locator('#matrix-organization').waitFor({ state: 'visible' });
+      assert(await c.locator('#matrix-organization').getByText('Corporate Workday').count() > 0, 'organization matrix');
+      const before = await c.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      await c.locator('[data-theme-toggle]').first().click();
+      const theme = await c.evaluate(() => document.documentElement.dataset.theme); const after = await c.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      assert(theme && before !== after, 'theme toggle did not change the page');
+      await c.reload({ waitUntil: 'networkidle' }); assert(await c.evaluate(() => document.documentElement.dataset.theme) === theme, 'theme not persisted');
+      await c.locator('[data-theme-toggle]').first().click(); // back to the starting theme for later screenshots
+      await c.locator('#hero-search').fill('lipid'); await c.locator('#hero-search').press('Enter');
       await c.waitForURL(/\/packages\?q=lipid/); assert(Number(await c.locator('[data-count]').innerText()) >= 3, 'lipid results');
     });
     await check('UI-02', 'Catalog: filter, URL state, chip removal, empty state, reset, sort, back/forward', async () => {
@@ -82,8 +89,8 @@ async function signUp(page, email) {
       await c.getByLabel('Center').selectOption('BKK01'); await c.getByLabel('Date').fill(day1); await c.getByLabel('Date').dispatchEvent('change');
       await c.getByRole('button', { name: /^09:00/ }).click(); await shot(c, 'book-1440');
       await c.getByRole('button', { name: 'Send appointment request' }).click(); await c.waitForURL(/view=bookings/);
-      await c.getByText('Awaiting confirmation').first().waitFor(); bookingRef = (await c.locator('.record-meta span').filter({ hasText: 'Ref ' }).first().innerText()).replace('Ref ', '');
-      await c.reload({ waitUntil: 'networkidle' }); await c.getByText('Awaiting confirmation').first().waitFor();
+      await c.locator('#content').getByText('Awaiting confirmation').first().waitFor(); bookingRef = (await c.locator('.record-meta span').filter({ hasText: 'Ref ' }).first().innerText()).replace('Ref ', '');
+      await c.reload({ waitUntil: 'networkidle' }); await c.locator('#content').getByText('Awaiting confirmation').first().waitFor();
     });
     await check('UI-07', 'Chat: proposal does not book; sending request creates exactly one more request', async () => {
       await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.locator('#message').fill('UI_TEST_BOOK'); await c.getByRole('button', { name: 'Send message' }).click();
@@ -98,7 +105,7 @@ async function signUp(page, email) {
       await c.getByText('Offline UI test double: your question was received.').last().waitFor();
       const w = await (await c.request.get(base + '/api/business/workspace')).json(); assert(w.conversation.messages.filter(m => m.content === 'UI_TEST_FAIL_ONCE').length === 1, 'duplicated');
       await c.locator('#message').fill('UI_TEST_SOURCES'); await c.getByRole('button', { name: 'Send message' }).click();
-      await c.getByRole('link', { name: 'How to understand your lab results' }).waitFor(); await c.getByRole('button', { name: 'What does a reference range mean?' }).waitFor();
+      await c.locator('#messages .act', { hasText: 'View source' }).last().click(); await c.getByRole('link', { name: /How to understand your lab results/ }).last().waitFor(); await c.getByRole('button', { name: 'What does a reference range mean?' }).waitFor();
     });
     await check('UI-09', 'Reports: upload (OCR double), source image, edit, explicit confirmation, context chip, reload', async () => {
       await c.locator('#report-file').setInputFiles(path.join(root, 'examples/thai_lab_reference_v3/png/04_B_Glucose_Urine.png'));
@@ -140,26 +147,26 @@ async function signUp(page, email) {
     });
     await check('UI-14', 'Customer: notifications from events, calendar file, quotation versions and PDF, accept latest', async () => {
       await c.goto(base + '/app?view=bookings', { waitUntil: 'networkidle' }); assert(Number(await c.locator('#bell-count').innerText()) >= 3, 'bell count');
-      await c.getByText('Confirmed', { exact: true }).first().waitFor(); await c.getByText('No technician available at that time (test).').waitFor();
+      await c.locator('#content').getByText('Confirmed', { exact: true }).first().waitFor(); await c.getByText('No technician available at that time (test).').waitFor();
       const ics = await c.request.get(base + await c.getByRole('link', { name: 'Add to calendar (.ics)' }).getAttribute('href'));
       assert(ics.ok() && (await ics.text()).includes('BEGIN:VEVENT'), 'ics');
       await c.getByText('Superseded by a newer version').waitFor(); const pdfHref = await c.getByRole('link', { name: 'Download quotation (PDF)' }).first().getAttribute('href');
       const pdf = await c.request.get(base + pdfHref); assert(pdf.ok() && (await pdf.body()).subarray(0, 5).toString() === '%PDF-', 'pdf');
-      await c.getByRole('button', { name: 'Review and accept' }).click(); await c.getByRole('button', { name: 'Accept quotation' }).click(); await c.getByText('Accepted', { exact: true }).waitFor();
+      await c.getByRole('button', { name: 'Review and accept' }).click(); await c.getByRole('button', { name: 'Accept quotation' }).click(); await c.locator('#content').getByText('Accepted', { exact: true }).waitFor();
       await c.locator('#bell').click(); await c.getByRole('heading', { name: 'Notifications' }).first().waitFor(); await c.getByText('Appointment confirmed').waitFor();
       await c.getByRole('button', { name: 'Mark all as read' }).click(); await c.locator('#bell-count').waitFor({ state: 'hidden' }); await shot(c, 'notifications-1440');
     });
     await check('UI-15', 'Payment simulator: PromptPay test payment, signed success, paid state persists', async () => {
-      await c.goto(base + '/app?view=bookings', { waitUntil: 'networkidle' }); await c.getByRole('button', { name: 'Pay with test PromptPay' }).click(); await c.waitForURL(/\/pay\/sim\//);
-      await c.getByText('SIMULATED QR — cannot be scanned or paid').waitFor(); await shot(c, 'payment-simulator-1440');
+      await c.goto(base + '/app?view=bookings', { waitUntil: 'networkidle' }); await c.getByRole('button', { name: 'Pay with test PromptPay' }).first().click(); await c.waitForURL(/\/pay\/sim\//);
+      await c.getByText('Simulated QR code. It cannot be scanned or paid.').waitFor(); await shot(c, 'payment-simulator-1440');
       await c.getByRole('button', { name: 'Simulate successful payment' }).click(); await c.getByText('Paid (simulation)').first().waitFor();
-      await c.getByRole('link', { name: 'Back to My appointments' }).click(); await c.getByText('Paid (simulation)').first().waitFor();
+      await c.getByRole('link', { name: 'Back to My appointments' }).click(); await c.locator('#content').getByText('Paid (simulation)').first().waitFor();
       const other = await (await browser.newContext()).newPage(); await other.goto(base + '/pay/sim/paysim_unknown', { waitUntil: 'networkidle' });
       await other.getByText('This test payment cannot be shown').waitFor();
     });
     await check('UI-16', 'Website handoff: customer asks for team, staff takes over, reply reaches customer, assistant paused', async () => {
       await c.goto(base + '/app', { waitUntil: 'networkidle' }); await c.locator('#staff-request').click(); await c.getByLabel('How can our team help?').fill('UI UAT live help request');
-      await c.getByRole('button', { name: 'Send to our team' }).click(); await c.locator('#handoff-state').filter({ hasText: 'queued' }).waitFor();
+      await c.getByRole('button', { name: 'Send to our team' }).click(); await c.locator('#handoff-state').filter({ hasText: /queued|replying/ }).waitFor(); // a case taken over in UI-12 already pauses the assistant
       await s.locator('[data-view=staff]').click(); await s.getByRole('button', { name: /UI UAT live help request|Organization inquiry/ }).first().click();
       await s.getByRole('heading', { name: /Organization inquiry|UI UAT live help request/ }).waitFor();
       const btnTake = s.getByRole('button', { name: 'Take over' }); if (await btnTake.count()) await Promise.all([s.waitForResponse(r => r.url().endsWith('/state')), btnTake.click()]);
@@ -192,19 +199,29 @@ async function signUp(page, email) {
       await s.locator('[data-view=centers]').click(); await s.getByLabel('Khon Kaen City Demo Center visits per slot').fill('2');
       await s.getByRole('row', { name: /Khon Kaen/ }).getByRole('button', { name: 'Save' }).click(); await s.getByText(/Saved · 2 per slot/).waitFor();
       const slots = await (await c.request.get(base + '/api/business/slots?branch_id=KKC01&date=' + nextOpenDay(5))).json(); assert(slots.slots.every(x => x.capacity === 2), 'capacity not applied');
-      await s.locator('[data-view=roles]').click(); await s.getByRole('button', { name: 'Pause this role' }).last().click(); await s.getByText('Paused').waitFor();
+      await s.locator('[data-view=roles]').click(); await s.getByRole('button', { name: 'Pause this role' }).last().click(); await s.locator('.record .badge', { hasText: 'Paused' }).waitFor();
       assert(!(await (await c.request.get(base + '/api/business/dots')).json()).dots.find(x => x.id === 'explainer').enabled, 'role not paused');
-      await s.getByRole('button', { name: 'Turn on' }).click(); await s.getByText('Paused').waitFor({ state: 'detached' });
+      await s.getByRole('button', { name: 'Turn on' }).click(); await s.locator('.record .badge', { hasText: 'Paused' }).waitFor({ state: 'detached' });
       await s.locator('[data-view=audit]').click(); await s.getByRole('cell', { name: 'branch.capacity' }).first().waitFor(); await shot(s, 'staff-audit-1440');
     });
+    await check('UI-25', 'Staff customers and payments: list from records, customer history dialog, payment state filter', async () => {
+      await s.locator('[data-view=customers]').click(); await s.locator('table.data .link-btn', { hasText: 'customer@example.invalid' }).click();
+      await s.locator('#modal .history-block h4', { hasText: 'Appointments' }).waitFor(); assert(await s.locator('#modal').getByText(/Values stay private|No reports uploaded/).count() > 0, 'privacy note');
+      await s.locator('#modal-close').click(); await shot(s, 'staff-customers-1440');
+      await s.locator('[data-view=payments]').click(); await s.getByRole('button', { name: /^Succeeded \(\d+\)$/ }).click();
+      await s.locator('table.data .badge', { hasText: 'Succeeded' }).first().waitFor(); assert(await s.locator('table.data .badge').filter({ hasNotText: 'Succeeded' }).count() === 0, 'filter leaked other states');
+      await shot(s, 'staff-payments-1440');
+    });
     await check('UI-24', 'Assistant dock on public pages: page-aware, role label, shortcut goes straight to the booking form', async () => {
-      await c.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await c.locator('.dock-launch').click();
-      await c.locator('.dock').getByText(/Knows you are viewing Workday Check/).waitFor();
-      await c.locator('.dock textarea').fill('UI_TEST_DOCK'); await c.locator('.dock').getByRole('button', { name: 'Send' }).click();
-      await c.locator('.dock').getByText('Health-check Advisor · AI').last().waitFor(); await shot(c, 'dock-1440');
-      await c.locator('.dock').getByRole('link', { name: 'Book Workday Check' }).click(); await c.waitForURL(/view=book&package=P02&branch=BKK01/);
-      await c.getByLabel('Center').waitFor(); assert(await c.getByLabel('Center').inputValue() === 'BKK01', 'branch not prefilled');
-      await c.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await c.locator('.dock-launch').click(); await c.keyboard.press('Escape'); assert(await c.locator('.dock').isHidden(), 'dock not closed');
+      // Fresh visitor: the signed-in customer's conversation is with staff after UI-16, so AI answers are paused there by design.
+      const g = await (await browser.newContext({ viewport: { width: 1440, height: 1000 } })).newPage(); watch(g, 'dock');
+      await g.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await g.locator('.dock-launch').click();
+      await g.locator('.dock').getByText(/Answers with Workday Check in mind/).waitFor();
+      await g.locator('.dock textarea').fill('UI_TEST_DOCK'); await g.locator('.dock').getByRole('button', { name: 'Send', exact: true }).click();
+      await g.locator('.dock').getByText('Health-check Advisor, AI').last().waitFor(); await shot(g, 'dock-1440');
+      await g.locator('.dock').getByRole('link', { name: 'Book Workday Check' }).click(); await g.waitForURL(/view=book&package=P02&branch=BKK01/);
+      await g.getByLabel('Center').waitFor(); assert(await g.getByLabel('Center').inputValue() === 'BKK01', 'branch not prefilled');
+      await g.goto(base + '/packages/P02', { waitUntil: 'networkidle' }); await g.locator('.dock-launch').click(); await g.keyboard.press('Escape'); assert(await g.locator('.dock').isHidden(), 'dock not closed');
     });
     await check('UI-19', 'Permission: customer cannot use staff APIs; staff views ask to sign in', async () => {
       const r = await c.request.get(base + '/api/business/staff/inbox'); assert(r.status() === 403, 'customer read staff inbox');
@@ -220,7 +237,7 @@ async function signUp(page, email) {
         const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' }); const m = await ctx.newPage(); watch(m, label);
         for (const p of ['/', '/packages', '/packages/P02', '/organizations', '/centers', '/help', '/compare?ids=P01,P02']) { await m.goto(base + p, { waitUntil: 'networkidle' }); assert(await noOverflow(m), 'overflow on ' + p); }
         await m.goto(base, { waitUntil: 'networkidle' }); await shot(m, 'home-' + w, true);
-        await m.locator('.nav-toggle').click(); await m.locator('#main-nav').getByRole('link', { name: 'For organizations' }).waitFor(); await m.keyboard.press('Escape'); assert(await m.locator('#main-nav').isHidden(), 'nav not closed');
+        await m.locator('.nav-toggle').click(); await m.locator('#main-nav').getByRole('link', { name: 'Organizations' }).waitFor(); await m.keyboard.press('Escape'); assert(await m.locator('#main-nav').isHidden(), 'nav not closed');
         if (w < 1080) { await m.goto(base + '/packages', { waitUntil: 'networkidle' }); await m.locator('.filters-open').click(); await m.locator('#filters').waitFor({ state: 'visible' }); await shot(m, 'catalog-filters-' + w); }
         await m.goto(base + '/app', { waitUntil: 'networkidle' }); assert(await noOverflow(m), 'app overflow');
         if (w <= 800) { assert(await m.locator('#sidebar').evaluate(e => e.inert), 'drawer should be inert'); await m.locator('#menu-toggle').click(); await m.locator('[data-view=book]').click(); await m.getByLabel('Center').waitFor(); }

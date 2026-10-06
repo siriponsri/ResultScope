@@ -7,7 +7,10 @@
       "repo": "https://github.com/anthropics/skills",
       "resolved_commit": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
       "commit_date": "2026-10-05T06:46:42-07:00",
-      "selected_paths": ["skills/frontend-design/SKILL.md", "skills/webapp-testing/SKILL.md"],
+      "selected_paths": [
+        "skills/frontend-design/SKILL.md",
+        "skills/webapp-testing/SKILL.md"
+      ],
       "license": "Apache-2.0 (LICENSE.txt in each selected skill)",
       "hooks_or_config_writes": "none",
       "status": "MANUAL_REFERENCE",
@@ -17,7 +20,12 @@
       "repo": "https://github.com/pbakaus/impeccable",
       "resolved_commit": "ca6ca49f6a74e2e23adb955fb3801f4aa6426f3d",
       "commit_date": "2026-10-05T18:10:31-07:00",
-      "selected_paths": [".agents/skills/impeccable/SKILL.md", ".agents/skills/impeccable/reference/audit.md", ".agents/skills/impeccable/reference/critique.md", ".agents/skills/impeccable/reference/craft-floor.md"],
+      "selected_paths": [
+        ".agents/skills/impeccable/SKILL.md",
+        ".agents/skills/impeccable/reference/audit.md",
+        ".agents/skills/impeccable/reference/critique.md",
+        ".agents/skills/impeccable/reference/craft-floor.md"
+      ],
       "license": "Apache-2.0",
       "hooks_or_config_writes": "The skill's `scripts/impeccable` launcher downloads a binary on first run and can install hooks; NOT run. Existing `.impeccable/design.json` left unchanged.",
       "status": "MANUAL_REFERENCE",
@@ -27,7 +35,10 @@
       "repo": "https://github.com/vercel-labs/agent-browser",
       "resolved_commit": "526157cfd4ec64f45939f9ba0f10d5936aa7ac33",
       "commit_date": "2026-10-03T03:28:26-03:00",
-      "selected_paths": ["skill-data/core/SKILL.md", "skill-data/dogfood/SKILL.md"],
+      "selected_paths": [
+        "skill-data/core/SKILL.md",
+        "skill-data/dogfood/SKILL.md"
+      ],
       "license": "Apache-2.0",
       "hooks_or_config_writes": "CLI not installed; Playwright (already present) used as the single browser path",
       "status": "MANUAL_REFERENCE",
@@ -37,7 +48,12 @@
       "repo": "https://github.com/anthropics/knowledge-work-plugins",
       "resolved_commit": "8444efcd48f7012f09797778a36a33e73d0861f4",
       "commit_date": "2026-10-01T14:59:31-07:00",
-      "selected_paths": ["marketing/skills/content-creation", "marketing/skills/brand-review", "marketing/skills/competitive-brief", "marketing/skills/draft-content"],
+      "selected_paths": [
+        "marketing/skills/content-creation",
+        "marketing/skills/brand-review",
+        "marketing/skills/competitive-brief",
+        "marketing/skills/draft-content"
+      ],
       "license": "Apache-2.0",
       "hooks_or_config_writes": "Plugin not installed; no connectors enabled",
       "status": "MANUAL_REFERENCE",
@@ -47,14 +63,59 @@
       "repo": "https://github.com/coreyhaines31/marketingskills",
       "resolved_commit": "dda3841f0b294e01e93b1541486beefbfab0915e",
       "commit_date": "2026-10-02T18:51:39-07:00",
-      "selected_paths": ["skills/product-marketing", "skills/copywriting", "skills/copy-editing", "skills/content-strategy", "skills/cro", "skills/seo-audit"],
+      "selected_paths": [
+        "skills/product-marketing",
+        "skills/copywriting",
+        "skills/copy-editing",
+        "skills/content-strategy",
+        "skills/cro",
+        "skills/seo-audit"
+      ],
       "license": "MIT",
       "hooks_or_config_writes": "none",
       "status": "MANUAL_REFERENCE",
       "use": "Copy, CRO review of catalog/booking flow, SEO metadata with noindex"
+    },
+    {
+      "repo": "https://github.com/nutlope/hallmark",
+      "resolved_commit": "13ac0ec",
+      "fetched_at": "2026-10-06",
+      "selected_paths": [
+        "skills/hallmark/ (SKILL.md and references/)",
+        "LICENSE"
+      ],
+      "license": "MIT",
+      "hooks_or_config_writes": "none (markdown only; no scripts in the skill folder)",
+      "status": "INSTALLED_PROJECT_SKILL",
+      "installed_to": ".claude/skills/hallmark/",
+      "use": "Locked design system rules (genre modern-minimal, verb redesign, multi-page), slop-test gates; audit in docs/design/HALLMARK_AUDIT.md"
+    },
+    {
+      "repo": "https://github.com/amaancoderx/npxskillui",
+      "package": "skillui@1.3.4 (npm)",
+      "resolved_commit": "bc913a8",
+      "fetched_at": "2026-10-06",
+      "license": "MIT",
+      "hooks_or_config_writes": "none; global npm install in the session sandbox only",
+      "status": "INSTALLED_CLI_SANDBOX",
+      "install_for_owner": "npm install -g skillui   (or: npx skillui --url <site>)",
+      "runs": [
+        {
+          "command": "skillui --url https://vertex-one-lovat.vercel.app",
+          "result": "BLOCKED_BY_NETWORK: extracted 0 colours and 0 fonts (egress proxy refuses the host)"
+        },
+        {
+          "command": "skillui --dir <ResultScope v4 CSS and templates>",
+          "result": "RAN: fonts, dark-mode toggle and spacing detected; OKLCH colour tokens not recognised by its extractor, so the generated design skill is low fidelity and is not used as a source of truth"
+        }
+      ],
+      "use": "Design-system extraction tool; to study the Vertex demo, run it on the owner's computer where the site is reachable"
     }
   ],
   "not_used": [
-    {"repo": "https://github.com/microsoft/playwright-mcp", "reason": "Playwright 1.56.1 with bundled Chromium is already available; MCP server not needed"}
+    {
+      "repo": "https://github.com/microsoft/playwright-mcp",
+      "reason": "Playwright 1.56.1 with bundled Chromium is already available; MCP server not needed"
+    }
   ]
 }

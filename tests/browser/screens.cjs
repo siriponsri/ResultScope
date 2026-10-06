@@ -59,8 +59,9 @@ async function view(page, v) { const nav = page.locator(`.nav-item[data-view="${
     for (let i = 0; i < 80; i++) { try { if ((await fetch(base + '/health')).ok) break; } catch { } await wait(250); if (i === 79) throw Error('server unavailable ' + log.slice(-800)); }
   }
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-  const desk = { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 };
-  const phone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+  const scheme = process.env.SCREENS_THEME === 'dark' ? 'dark' : 'light'; // the site follows the system theme until a visitor picks one
+  const desk = { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme: scheme };
+  const phone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: scheme };
   const C = await (await browser.newContext(desk)).newPage(); watch(C, 'customer');
   const S = await (await browser.newContext(desk)).newPage(); watch(S, 'staff');
   debugPages = [C, S];
@@ -218,7 +219,7 @@ async function view(page, v) { const nav = page.locator(`.nav-item[data-view="${
     await PS.locator('#menu-toggle').click(); await wait(300); await shot(PS, '70-m-staff-menu', 'Phone: staff navigation');
   });
 
-  fs.writeFileSync(path.join(out, 'screens.json'), JSON.stringify({ generated_at: new Date().toISOString(), label: 'MOCKED_TEST_ONLY: real UI and server; scripted assistant/OCR text', shots, problems }, null, 2));
+  fs.writeFileSync(path.join(out, 'screens.json'), JSON.stringify({ generated_at: new Date().toISOString(), label: 'MOCKED_TEST_ONLY: real UI and server; scripted assistant/OCR text', theme: scheme, shots, problems }, null, 2));
   console.log(JSON.stringify({ shots: shots.length, problems }, null, 2));
   await browser.close(); if (server) server.kill();
 })().catch(e => { console.error(e); if (server) server.kill(); process.exit(1); });

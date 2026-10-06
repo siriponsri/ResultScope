@@ -20,10 +20,15 @@ The earlier optional Hallmark installer and its run metadata are preserved in th
 historical archive. They are not required by the current application and are removed
 from the active tree by the explicit cleanup procedure. No Hallmark code is bundled.
 
+At the owner's request (2026-10-06) the Hallmark design skill (nutlope/hallmark @ 13ac0ec, MIT,
+license in `.claude/skills/hallmark/LICENSE`) is installed as a project skill for development
+assistants. It is Markdown guidance only, is not served by the application and is not part of the runtime.
+
 ## Current third-party assets
 
-The product refresh includes local copies of marked, DOMPurify, IBM Plex Sans and
-Noto Sans Thai. Their upstream notices and licenses accompany the files under
+The product refresh includes local copies of marked, DOMPurify, IBM Plex Sans, Noto Sans Thai,
+Geist and Geist Mono (Vercel, SIL OFL 1.1, `static/fonts/Geist-OFL.txt`), and the v3 serif files Source Serif 4 and
+Noto Serif Thai (SIL OFL 1.1), which v4 no longer loads. Their upstream notices and licenses accompany the files under
 static/vendor and static/fonts. The approved native-scroll transition and optional presentation composition include
 local GSAP copies with the original copyright header and license pointer. See
 [design attribution](docs/engineering/DESIGN_REFERENCES.md) and
