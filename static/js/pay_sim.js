@@ -10,7 +10,7 @@
     const [label, tone] = LABEL[t.state] || [t.state, 'neutral'];
     const head = make('div', null, 'row'); head.append(make('span', label, 'badge ' + tone), make('span', 'Simulated integration', 'badge sim'));
     const amount = make('p', money(t.amount_thb), 'amount');
-    const meta = make('p', `Reference ${t.reference} · ${t.method === 'promptpay' ? 'PromptPay test QR' : 'Test card'} · THB`, 'small muted');
+    const meta = make('p', `${t.order_kind === 'subscription' ? 'ResultScope Plus, 30 days · ' : ''}Reference ${t.reference} · ${t.method === 'promptpay' ? 'PromptPay test QR' : 'Test card'} · THB`, 'small muted');
     panel.replaceChildren(head, amount, meta);
     if (t.state === 'pending') {
       const left = Math.max(0, Math.round(t.expires_at - Date.now() / 1000));
@@ -23,8 +23,11 @@
       panel.append(qr, clock, actions);
       clearTimeout(timer); timer = setTimeout(load, 15000);
     } else {
-      const back = make('a', 'Back to My appointments', 'btn primary'); back.href = '/app?view=bookings';
-      const note = make('p', t.state === 'succeeded' ? 'The appointment is marked as paid. No real money moved.' : t.state === 'refunded' ? 'A manager approved a simulated refund.' : 'The appointment remains unpaid. You can start a new test payment or pay at the center.', 'small');
+      const plus = t.order_kind === 'subscription';
+      const back = make('a', plus ? 'Back to my plan' : 'Back to My appointments', 'btn primary'); back.href = plus ? '/app?view=plan' : '/app?view=bookings';
+      const note = make('p', plus
+        ? (t.state === 'succeeded' ? 'ResultScope Plus is active for 30 days. No real money moved.' : t.state === 'refunded' ? 'A simulated refund ended Plus.' : 'Your plan did not change. You can start a new test payment.')
+        : (t.state === 'succeeded' ? 'The appointment is marked as paid. No real money moved.' : t.state === 'refunded' ? 'A manager approved a simulated refund.' : 'The appointment remains unpaid. You can start a new test payment or pay at the center.'), 'small');
       panel.append(note, back);
     }
     const log = make('details'); log.append(make('summary', 'Signed events received (' + t.events.length + ')'));

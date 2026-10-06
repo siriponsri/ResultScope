@@ -6,11 +6,11 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter,Request,Response,UploadFile,File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel,ConfigDict,Field
-from services import business_store as db,business_agent,business_ops as ops
+from services import business_store as db,business_agent,business_ops as ops,business_plans as plans
 from services.conversation_transport import ConversationError
 from services.request_limits import request_rate_limiter
 from services.lab_fields_v2 import ReportField,normalize
-from services.report_reader_v2 import read_report,document_images
+from services.report_reader_v2 import read_report,document_images,all_images
 from routers.conversation import DEMOS,DEMO_ROOT,authorize as provider_authorize
 
 router=APIRouter(prefix='/api/business'); COOKIE='resultscope_business'; TZ=ZoneInfo('Asia/Bangkok')
@@ -178,10 +178,10 @@ async def logout(request:Request,response:Response):
 async def workspace(request:Request):
     with db.transaction() as tx:
         u,_=session_row(tx,request,False);owner=u['id'];c=conversation(tx,owner)
-        reports=[{'id':r['id'],'label':r['data'].get('label','Report'),'date':r['data'].get('collected_date',''),'confirmed':r['data'].get('confirmed',False)} for r in tx.find('report',owner)]
+        reports=[{'id':r['id'],'label':r['data'].get('label','Report'),'date':r['data'].get('collected_date',''),'confirmed':r['data'].get('confirmed',False),'pages':r['data'].get('pages',1),'sample':r['data'].get('sample',False)} for r in tx.find('report',owner)]
         payments=[ops.sim_view(tx,t) for t in tx.find('payment_txn',owner)]
         unread=sum(1 for _ in tx.find('notification',owner,'unread'))
-        return {'conversation':c['data'],'bookings':tx.find('booking',owner),'tickets':tx.find('ticket',owner),'quotes':tx.find('corporate_quote',owner),'reports':reports,'user':db.user_public(u),'payments':payments,'unread_notifications':unread,'inquiries':tx.find('org_inquiry',owner)}
+        return {'conversation':c['data'],'bookings':tx.find('booking',owner),'tickets':tx.find('ticket',owner),'quotes':tx.find('corporate_quote',owner),'reports':reports,'user':db.user_public(u),'payments':payments,'unread_notifications':unread,'inquiries':tx.find('org_inquiry',owner),'plan':plans.entitlement(tx,owner)}
 
 RETRYABLE={'service_unavailable','provider_response_invalid','review_failed','guard_invalid','provider_rejected','storage_unavailable'}
 async def turn(owner,message,retry_id='',page=None):
@@ -340,24 +340,65 @@ async def change_booking(id:str,body:BookingChange,request:Request):
 async def handoff(body:TicketInput,request:Request):
     with db.transaction() as tx:u,_=session_row(tx,request);return ticket_create(tx,u['id'],body.summary)
 
+# ------------------------------------------------------------ plans, Lab Report and lab dashboard
+class PlanCheckout(Strict):method:str=Field(pattern='^(card|promptpay)$')
+
+@router.get('/plans')
+async def get_plans():return plans.plans()
+
+@router.get('/subscription')
+async def get_subscription(request:Request):
+    with db.transaction() as tx:u,_=session_row(tx,request,False);return plans.entitlement(tx,u['id'])
+
+@router.post('/subscriptions/checkout')
+async def subscription_checkout(body:PlanCheckout,request:Request):
+    if ops.payment_mode()!='SIMULATED_INTEGRATION':
+        raise ConversationError('payment_unavailable','Plus payments run only in the payment simulator in this prototype.',409)
+    with db.transaction() as tx:
+        u,_=session_row(tx,request);sub=plans.start_checkout(tx,u['id'],body.method)
+        txn=ops.sim_create(tx,tx.get(sub['id']),body.method)
+        return {'simulator_url':'/pay/sim/'+txn['id'],'txn':ops.sim_view(tx,txn),'subscription':plans.view(tx.get(sub['id'])),'mode':'SIMULATED_INTEGRATION'}
+
+@router.get('/reports/trends')
+async def report_trends(request:Request):
+    with db.transaction() as tx:u,_=session_row(tx,request,False);return plans.trends(tx,u['id'])
+
+@router.get('/reports/{id}/lab-report')
+async def get_lab_report(id:str,request:Request):
+    with db.transaction() as tx:u,_=session_row(tx,request,False);return plans.lab_report(tx,u['id'],id)
+
 @router.get('/reports/{id}')
 async def get_report(id:str,request:Request):
     with db.transaction() as tx:
-        u,_=session_row(tx,request,False);r=tx.own(id,u['id'],'report');r['data'].pop('original',None);return r
+        u,_=session_row(tx,request,False);r=tx.own(id,u['id'],'report');r['data'].pop('original',None);r['data'].pop('extra_originals',None);return r
 
-async def save_read_report(owner,raw):
-    images=document_images(raw)
-    report=await read_report(raw)
-    report.update(original=base64.b64encode(raw).decode(),media_type='application/pdf' if raw.startswith(b'%PDF') else images[0][1],label='Unconfirmed report',same_person_confirmed=False)
+async def save_read_report(owner,raw,sample=False):
+    """Read one file, or up to three (Plus). A reading is reserved before any provider call and
+    returned if the reader fails. Synthetic samples are free and never count."""
+    raws=raw if isinstance(raw,list) else [raw]
+    images=all_images(raws)
     with db.transaction() as tx:
         if len(tx.find('report',owner))>=20:raise ConversationError('report_limit','Remove an old report before adding another.',409)
-        r=tx.put('report_'+secrets.token_hex(12),'report',owner,report,'draft');r['data'].pop('original',None);return r
+        if not sample:plans.require_read(tx,owner,len(images));plans.count_read(tx,owner)
+    try:report=await read_report(raws if len(raws)>1 else raws[0])
+    except BaseException:
+        if not sample:
+            with db.transaction() as tx:plans.uncount_read(tx,owner)
+        raise
+    report.update(original=base64.b64encode(raws[0]).decode(),extra_originals=[base64.b64encode(r).decode() for r in raws[1:]],pages=len(images),
+                  media_type='application/pdf' if raws[0].startswith(b'%PDF') else images[0][1],label='Unconfirmed report',same_person_confirmed=False,sample=sample)
+    with db.transaction() as tx:
+        r=tx.put('report_'+secrets.token_hex(12),'report',owner,report,'draft');tx.audit(owner,'report.read',r['id'])
+        r['data'].pop('original',None);r['data'].pop('extra_originals',None);r['entitlement']=plans.entitlement(tx,owner);return r
 
 @router.post('/reports/read')
-async def upload_report(request:Request,file:UploadFile=File(...)):
+async def upload_report(request:Request,file:UploadFile|None=File(None),files:list[UploadFile]|None=File(None)):
     provider_authorize(request)
+    uploads=([file] if file else [])+list(files or [])
+    if not 1<=len(uploads)<=3:raise ConversationError('file_count','Choose one to three files.',422)
     with db.transaction() as tx:u,_=session_row(tx,request)
-    raw=await file.read(3*1024*1024+1);return await save_read_report(u['id'],raw)
+    raws=[await f.read(3*1024*1024+1) for f in uploads]
+    return await save_read_report(u['id'],raws)
 
 @router.get('/demos')
 async def demos():return {'demos':[{'id':a,'title':b,'description':c} for a,b,c,_ in DEMOS]}
@@ -366,7 +407,7 @@ async def read_demo(id:str,request:Request):
     provider_authorize(request)
     if id not in {d[0] for d in DEMOS}:raise ConversationError('not_found','Unknown demo.',404)
     with db.transaction() as tx:u,_=session_row(tx,request)
-    return await save_read_report(u['id'],(DEMO_ROOT/'png'/f'{id}.png').read_bytes())
+    return await save_read_report(u['id'],(DEMO_ROOT/'png'/f'{id}.png').read_bytes(),sample=True)
 
 @router.post('/reports/confirm')
 async def confirm_report(body:ConfirmReport,request:Request):
@@ -550,12 +591,13 @@ async def worker_run(request:Request):
 
 
 @router.get('/reports/{id}/source')
-async def report_source(id:str,request:Request):
+async def report_source(id:str,request:Request,page:int=1):
     with db.transaction() as tx:
         u,_=session_row(tx,request,False);r=tx.own(id,u['id'],'report')
-        raw=base64.b64decode(r['data']['original'])
-        images=document_images(raw)
-        return Response(images[0][0],media_type=images[0][1],headers={'Cache-Control':'no-store'})
+        raws=[base64.b64decode(x) for x in [r['data']['original'],*r['data'].get('extra_originals',[])]]
+        images=[i for raw in raws for i in document_images(raw)]
+        if not 1<=page<=len(images):raise ConversationError('not_found','That page does not exist.',404)
+        return Response(images[page-1][0],media_type=images[page-1][1],headers={'Cache-Control':'no-store'})
 
 class CatalogEdit(Strict):
     price_thb:int=Field(ge=1,le=1000000)
@@ -658,3 +700,19 @@ async def refund_booking(id:str,body:RefundRequest,request:Request):
         b=tx.get(id);b['data'].update(payment_status='refunded' if result.get('status')=='succeeded' else 'refund_pending',refund_reference=result.get('id',''),refund_reason=body.reason)
         tx.put(id,'booking',b['owner'],b['data'],b['state'],b['branch']);tx.audit(u['id'],'payment.refund',id)
     return {'status':b['data']['payment_status']}
+
+@router.post('/staff/subscriptions/{id}/refund')
+async def refund_subscription(id:str,body:RefundRequest,request:Request):
+    """Manager-approved simulated refund of a Plus period. Plus ends immediately."""
+    with db.transaction() as tx:
+        u=staff(tx,request)
+        if u['data']['role']!='manager':raise ConversationError('forbidden','Manager approval is required.',403)
+        sub=tx.get(id)
+        if not sub or sub['kind']!='subscription':raise ConversationError('not_found','Subscription unavailable.',404)
+        if sub['data'].get('payment_status')=='refunded':return {'status':'refunded'}
+        txn=next((t for t in tx.find('payment_txn',sub['owner']) if t['data']['booking_id']==id and t['state']=='succeeded'),None)
+        if not txn:raise ConversationError('payment_state','Only a paid Plus period can be refunded.',409)
+    raw=ops.sim_event_payload(txn,'refund');ops.sim_apply(raw,ops.sim_sign(raw))
+    with db.transaction() as tx:
+        sub=tx.get(id);sub['data']['refund_reason']=body.reason;tx.put(id,'subscription',sub['owner'],sub['data'],sub['state']);tx.audit(u['id'],'subscription.refund',id)
+        return {'status':sub['data']['payment_status'],'state':sub['state']}

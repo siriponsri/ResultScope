@@ -103,15 +103,27 @@ async def semantic_ids(query: str) -> list[str]:
 
 
 async def search(query: str, limit: int = 6) -> tuple[list[dict], str]:
+    """BM25 always runs. LightRAG and MongoDB Atlas Vector Search, when enabled, add semantic
+    rankings that are fused with reciprocal rank fusion. Every ranker can only reorder
+    records that already exist in the verified local catalog."""
+    from services import vector_search
     local = lexical(query, limit=10)
+    rankings = [[r["id"] for r in local]]
     remote = await semantic_ids(query)
-    if not settings.LIGHTRAG_ENABLED:
-        return local[:limit], "lexical"
+    if settings.LIGHTRAG_ENABLED:
+        rankings.append(remote)
+    vectors = await vector_search.semantic_ids(query, {r["id"]: r["content_sha256"] for r in corpus()}) if settings.VECTOR_SEARCH_ENABLED else []
+    if vectors:
+        rankings.append(vectors)
+    if len(rankings) == 1:
+        return local[:limit], "lexical" if not (settings.LIGHTRAG_ENABLED or settings.VECTOR_SEARCH_ENABLED) else "lexical_no_semantic_match"
     # Reciprocal rank fusion preserves lexical exact-test matches.
     scores: dict[str, float] = {}
-    for ranking in ([r["id"] for r in local], remote):
+    for ranking in rankings:
         for rank, record_id in enumerate(ranking, 1):
             scores[record_id] = scores.get(record_id, 0) + 1 / (60 + rank)
     by_id = {r["id"]: r for r in corpus()}
     ranked = sorted(scores, key=lambda rid: (-scores[rid], rid))
-    return [by_id[rid] for rid in ranked[:limit]], "hybrid" if remote else "lexical_no_semantic_match"
+    semantic = bool(remote) or bool(vectors)
+    label = "hybrid_vector" if vectors else "hybrid"
+    return [by_id[rid] for rid in ranked[:limit]], label if semantic else "lexical_no_semantic_match"

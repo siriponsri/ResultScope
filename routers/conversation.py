@@ -115,7 +115,7 @@ async def configuration(response: Response):
     return {"version": "2.0.0", "mode": "connected" if not missing else "setup",
         "model": llm.model, "vision_model": vision.model, "vision": settings.VISION_ENABLED and vision.enabled and bool(vision.api_key),
         "guard": "service" if settings.GUARD_SERVICE_URL else "llama-guard",
-        "retrieval": "hybrid" if settings.LIGHTRAG_ENABLED else "lexical",
+        "retrieval": "hybrid_vector" if settings.VECTOR_SEARCH_ENABLED else "hybrid" if settings.LIGHTRAG_ENABLED else "lexical",
         "needs_access_code": bool(settings.DEMO_ACCESS_CODE), "missing": missing,
         "cloud": bool(os.getenv("VERCEL")), "references": len(evidence_search.corpus())}
 

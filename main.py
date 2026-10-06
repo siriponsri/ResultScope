@@ -78,17 +78,20 @@ async def request_boundary(request: Request, call_next):
     if os.getenv("VERCEL") and request.url.path.startswith("/api/v1"):
         return JSONResponse({"code": "legacy_disabled", "message": "Use the current conversation API."}, status_code=410)
     if request.url.path.startswith(("/api/v2", "/api/business")) and request.method in {"POST", "PUT", "PATCH"}:
-        limit = 4 * 1024 * 1024
+        # Report reading accepts up to three files of 3 MB each; everything else stays at 4 MB.
+        mb = 10 if request.url.path == "/api/business/reports/read" else 4
+        limit = mb * 1024 * 1024
+        too_large = JSONResponse({"message": f"The request exceeds the {mb} MB limit."}, status_code=413)
         try:
             if int(request.headers.get("content-length", "0")) > limit:
-                return JSONResponse({"message": "The request exceeds the 4 MB limit."}, status_code=413)
+                return too_large
         except ValueError:
             return JSONResponse({"message": "Invalid request size."}, status_code=400)
         body = bytearray()
         async for chunk in request.stream():
             body.extend(chunk)
             if len(body) > limit:
-                return JSONResponse({"message": "The request exceeds the 4 MB limit."}, status_code=413)
+                return too_large
         request._body = bytes(body)
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"

@@ -128,6 +128,17 @@ class Settings(BaseSettings):
     LIGHTRAG_ENABLED: bool = False
     # External retrieval may rank only records in our verified local manifest.
     RETRIEVAL_TIMEOUT_SECONDS: float = 12.0
+    # MongoDB Atlas Vector Search (Render + Atlas RAG pattern). Atlas ranks record IDs;
+    # evidence text still comes from the local verified catalog. Off by default.
+    VECTOR_SEARCH_ENABLED: bool = False
+    MONGODB_URI: str = ""
+    MONGODB_DB: str = "resultscope"
+    MONGODB_COLLECTION: str = "evidence_vectors"
+    MONGODB_VECTOR_INDEX: str = "evidence_vector_index"
+    EMBEDDING_BASE_URL: str = "https://api.openai.com/v1"
+    EMBEDDING_API_KEY: str = ""
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSIONS: int = 1536
 
     # Project-total THB cost ledger (owner decision 2026-10-06: 300 THB total until
     # coursework submission, not monthly). Fail-closed: unknown prior spend or an

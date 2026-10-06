@@ -65,7 +65,17 @@ def modes() -> dict:
         "calendar": {"mode": "SIMULATED_INTEGRATION", "label": "Center calendar and .ics export"},
         "email": {"mode": "NOT_CONNECTED", "label": "Email delivery is not connected; notifications appear in the app"},
         "maps": {"mode": "PROVIDER_SANDBOX" if os.getenv("GOOGLE_MAPS_EMBED_KEY") else "LINK_ONLY", "label": "Maps"},
+        "retrieval": {"mode": _retrieval_mode(settings), "label": "Evidence search (BM25, plus MongoDB Atlas Vector Search when connected)"},
+        "plans": {"mode": "SIMULATED_INTEGRATION", "label": "ResultScope Plus, 355 THB for 30 days (test payment only)"},
     }
+
+
+def _retrieval_mode(settings) -> str:
+    if not settings.VECTOR_SEARCH_ENABLED:
+        return "LOCAL_BM25"
+    if not (settings.MONGODB_URI and settings.EMBEDDING_API_KEY):
+        return "UNAVAILABLE"
+    return "ATLAS_VECTOR_HYBRID" if settings.PROVIDER_NETWORK_ENABLED else "UNAVAILABLE"
 
 # ---------------------------------------------------------------- catalog
 
@@ -227,21 +237,26 @@ def sim_verify(raw: bytes, signature: str) -> dict:
 
 
 def sim_create(tx, booking: dict, method: str) -> dict:
-    """Create (or return the active) simulated transaction for a confirmed booking."""
+    """Create (or return the active) simulated transaction for a confirmed booking or a Plus order.
+
+    The order id is kept under `booking_id` for compatibility with existing records;
+    `order_kind` says whether it points at a booking or a subscription."""
     d = booking["data"]
+    kind = booking["kind"]
     for txn in tx.find("payment_txn", booking["owner"]):
         if txn["data"]["booking_id"] == booking["id"] and txn["state"] == "pending":
             if txn["data"]["expires_at"] > time.time():
                 if txn["data"]["method"] != method:
-                    raise ConversationError("checkout_active", "Another test payment is already open for this appointment. Cancel it first.", 409)
+                    raise ConversationError("checkout_active", "Another test payment is already open for this order. Cancel it first.", 409)
                 return txn
             _apply(tx, txn, {"type": "payment.expired", "id": "simevt_" + secrets.token_hex(10)}, system=True)
+    amount = d["total_thb"] if kind == "booking" else d["price_thb"]
     txn = tx.put("paysim_" + secrets.token_hex(12), "payment_txn", booking["owner"], {
-        "booking_id": booking["id"], "amount_thb": d["total_thb"], "currency": "THB", "method": method,
+        "booking_id": booking["id"], "order_kind": kind, "amount_thb": amount, "currency": "THB", "method": method,
         "expires_at": time.time() + SIM_TXN_MINUTES * 60, "events": [], "mode": "SIMULATED_INTEGRATION",
-        "reference": "SIM-" + secrets.token_hex(4).upper()}, "pending", booking["branch"])
+        "reference": "SIM-" + secrets.token_hex(4).upper()}, "pending", booking.get("branch", ""))
     d.update(payment_provider="simulator", payment_method=method, active_txn=txn["id"])
-    tx.put(booking["id"], "booking", booking["owner"], d, booking["state"], booking["branch"])
+    tx.put(booking["id"], kind, booking["owner"], d, booking["state"], booking.get("branch", ""))
     tx.audit(booking["owner"], "payment.sim_created", txn["id"])
     return txn
 
@@ -271,11 +286,17 @@ def _apply(tx, txn: dict, event: dict, system: bool = False) -> dict:
     if txn["state"] not in allowed:
         raise ConversationError("payment_state", f"A {txn['state']} test payment cannot become {target}.", 409)
     booking = tx.get(txn["data"]["booking_id"])
-    if not booking or booking["kind"] != "booking":
+    if not booking or booking["kind"] != txn["data"].get("order_kind", "booking"):
         raise ConversationError("payment_mismatch", "Payment does not match an active order.", 409)
     bd = booking["data"]
     txn["data"]["events"] = (txn["data"]["events"] + [{"id": event["id"], "type": event["type"], "at": time.time()}])[-20:]
     tx.put(txn["id"], "payment_txn", txn["owner"], txn["data"], target, txn["branch"])
+    if booking["kind"] == "subscription":
+        from services import business_plans
+        business_plans.apply_payment(tx, booking, target, tx.get(txn["id"]))
+        tx.put("simevent_" + db.digest(event["id"]), "payment_event", "system", {"type": event["type"], "txn_id": txn["id"]}, "processed")
+        tx.audit("payment-simulator", event["type"], txn["id"])
+        return tx.get(txn["id"])
     if target == "succeeded":
         if booking["state"] == "cancelled" or bd.get("payment_status") in ("refunded", "refund_pending"):
             from routers.business import ticket_create
@@ -322,6 +343,6 @@ def sim_view(tx, txn: dict) -> dict:
     if txn["state"] == "pending" and txn["data"]["expires_at"] < time.time():
         txn = _apply(tx, txn, {"type": "payment.expired", "id": "simevt_" + secrets.token_hex(10)}, system=True)
     d = txn["data"]
-    return {"id": txn["id"], "state": txn["state"], "booking_id": d["booking_id"], "amount_thb": d["amount_thb"],
+    return {"id": txn["id"], "state": txn["state"], "booking_id": d["booking_id"], "order_kind": d.get("order_kind", "booking"), "amount_thb": d["amount_thb"],
             "currency": d["currency"], "method": d["method"], "expires_at": d["expires_at"], "reference": d["reference"],
             "mode": "SIMULATED_INTEGRATION", "events": d["events"]}

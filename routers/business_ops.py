@@ -393,6 +393,17 @@ async def dashboard(request: Request, branch: str = "", days: int = 7):
                         dots[m["dot"]["name"]] = dots.get(m["dot"]["name"], 0) + 1
                     if m.get("failed"):
                         dots["Unanswered turns"] = dots.get("Unanswered turns", 0) + 1
+        lab = None
+        if user["data"]["role"] == "manager" and not branch:
+            # The lab-report product is not tied to a center: one company-wide block for managers.
+            subs = tx.find("subscription")
+            plus_txns = [t for t in tx.find("payment_txn") if t["data"].get("order_kind") == "subscription"]
+            lab = {"plus_active": sum(1 for x in subs if x["state"] == "active" and x["data"].get("period_end", 0) > time.time()),
+                   "plus_revenue_thb": sum(t["data"]["amount_thb"] for t in plus_txns if t["state"] == "succeeded"),
+                   "plus_refunded_thb": sum(t["data"]["amount_thb"] for t in plus_txns if t["state"] == "refunded"),
+                   "ai_reads": sum(u["data"].get("ai_reads_used", 0) for u in tx.find("user")),
+                   "reports_confirmed": sum(1 for r in tx.find("report") if r["data"].get("confirmed")),
+                   "price_thb": 355, "mode": "SIMULATED_INTEGRATION"}
         return {
             "generated_at": time.time(), "scope": sorted(scope), "role": user["data"]["role"], "days": days,
             "bookings": {"by_state": by_state, "awaiting_oldest_minutes": round(oldest / 60), "upcoming_confirmed": sum(
@@ -402,7 +413,7 @@ async def dashboard(request: Request, branch: str = "", days: int = 7):
                         "with_staff": sum(t["state"] == "staff" for t in tickets), "median_first_response_minutes": None if median is None else round(median / 60, 1)},
             "quotes": {s: sum(q["state"] == s for q in quotes) for s in ("offered", "accepted", "superseded")} | {
                 "accepted_thb": sum(q["data"]["total_thb"] for q in quotes if q["state"] == "accepted")},
-            "assistant": dots, "is_demo": True,
+            "assistant": dots, "lab_reports": lab, "is_demo": True,
         }
 
 
@@ -504,10 +515,12 @@ async def staff_customer(owner: str, request: Request):
         bookings = [b for b in tx.find("booking", owner) if b["branch"] in scope]
         tickets = [t for t in tx.find("ticket", owner) if _in_scope(t, scope, user)]
         quotes = [x for x in tx.find("corporate_quote", owner) if x["branch"] in scope]
-        txns = [t for t in tx.find("payment_txn", owner) if t["branch"] in scope]
+        txns = [t for t in tx.find("payment_txn", owner) if _in_scope(t, scope, user)]
         if not (bookings or tickets or quotes or txns):
             raise ConversationError("not_found", "This customer has no records at your center.", 404)
         reports = tx.find("report", owner)
+        from services import business_plans
+        ent = business_plans.entitlement(tx, owner)
         tx.audit(user["id"], "customer.viewed", owner)
         return {
             "customer": _customer_label(tx, owner),
@@ -519,6 +532,7 @@ async def staff_customer(owner: str, request: Request):
                         "people": x["data"].get("people"), "date": x["data"].get("date")} for x in quotes],
             "payments": [ops.sim_view(tx, t) for t in txns],
             "reports": {"count": len(reports), "confirmed": sum(1 for r in reports if r["data"].get("confirmed"))},
+            "plan": {k: ent[k] for k in ("plan", "plan_name", "active", "period_end", "ai_reads_used")},
         }
 
 
@@ -532,15 +546,19 @@ async def staff_payments(request: Request, branch: str = "", state: str = ""):
         scope = _scope(tx, user, branch)
         items = []
         bookings = {b["id"]: b for b in tx.find("booking") if b["branch"] in scope}
+        manager_all = user["data"]["role"] == "manager" and not branch
         for t in tx.find("payment_txn"):
-            if t["branch"] not in scope:
+            # Plus subscriptions are not tied to a center (branch ""); managers see them in the all-centers view.
+            if not (t["branch"] in scope or (t["branch"] == "" and manager_all)):
                 continue
             v = ops.sim_view(tx, t)
             b = bookings.get(v["booking_id"])
+            plus = v["order_kind"] == "subscription"
             last = v["events"][-1] if v["events"] else None
-            items.append({"id": v["id"], "kind": "test_payment", "state": v["state"], "method": v["method"], "amount_thb": v["amount_thb"],
+            items.append({"id": v["id"], "kind": "subscription" if plus else "test_payment", "state": v["state"], "method": v["method"], "amount_thb": v["amount_thb"],
                           "reference": v["reference"], "booking_id": v["booking_id"], "branch": t["branch"], "created": t["created"],
-                          "items": [i["name"] for i in b["data"]["items"]] if b else [], "customer": _customer_label(tx, t["owner"])["label"],
+                          "items": ["ResultScope Plus, 30 days"] if plus else [i["name"] for i in b["data"]["items"]] if b else [],
+                          "customer": _customer_label(tx, t["owner"])["label"],
                           "last_event": last.get("type") if isinstance(last, dict) else None, "events": len(v["events"])})
         for b in bookings.values():
             d = b["data"]
@@ -552,7 +570,8 @@ async def staff_payments(request: Request, branch: str = "", state: str = ""):
         totals = {s: sum(1 for i in items if i["state"] == s) for s in ("pending", "succeeded", "failed", "expired", "cancelled", "refunded", "center")}
         money = {"succeeded_thb": sum(i["amount_thb"] for i in items if i["state"] == "succeeded"),
                  "center_thb": sum(i["amount_thb"] for i in items if i["state"] == "center"),
-                 "refunded_thb": sum(i["amount_thb"] for i in items if i["state"] == "refunded")}
+                 "refunded_thb": sum(i["amount_thb"] for i in items if i["state"] == "refunded"),
+                 "plus_thb": sum(i["amount_thb"] for i in items if i["state"] == "succeeded" and i["kind"] == "subscription")}
         shown = [i for i in items if not state or i["state"] == state]
         shown.sort(key=lambda i: i["created"], reverse=True)
         return {"payments": shown[:300], "totals": totals, "money": money, "mode": "SIMULATED_INTEGRATION", "scope": sorted(scope)}

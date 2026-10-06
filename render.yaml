@@ -23,3 +23,11 @@ services:
         generateValue: true
       - key: DEMO_ACCESS_CODE
         sync: false
+      # MongoDB Atlas Vector Search (optional, see the operating manual). Off until the
+      # owner creates the Atlas cluster, allows Render's outbound IPs and runs the indexer.
+      - key: VECTOR_SEARCH_ENABLED
+        value: "false"
+      - key: MONGODB_URI
+        sync: false
+      - key: EMBEDDING_API_KEY
+        sync: false

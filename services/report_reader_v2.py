@@ -79,10 +79,19 @@ def document_images(raw: bytes) -> list[tuple[bytes, str]]:
         raise ConversationError(exc.code, exc.message, exc.status_code) from None
 
 
-async def read_report(raw: bytes) -> dict:
+def all_images(raw: bytes | list[bytes]) -> list[tuple[bytes, str]]:
+    """Pages from one file or several files (ResultScope Plus), at most three in total."""
+    raws = raw if isinstance(raw, list) else [raw]
+    images = [image for item in raws for image in document_images(item)]
+    if not 1 <= len(images) <= 3:
+        raise ConversationError("page_limit", "Read one to three pages or images at a time.", 422)
+    return images
+
+
+async def read_report(raw: bytes | list[bytes]) -> dict:
     if not settings.VISION_ENABLED:
         raise ConversationError("vision_not_connected", "Report reading is not connected. You can still type your laboratory question in the chat.")
-    images = document_images(raw)
+    images = all_images(raw)
     provider = provider_for("vision")
     iapp = os.getenv('REPORT_OCR_PROVIDER','typhoon') == 'iapp'
     typhoon = provider.protocol == "typhoon_ocr_document" or provider.model == "typhoon-ocr"
