@@ -86,11 +86,51 @@ async def reserve(slot: str):
         if not isinstance(result, int) or result <= 0:
             raise ConversationError("budget_exhausted", "The configured call limit is exhausted or has changed. Contact the administrator.", 429)
         return None
+    if os.getenv("DATABASE_URL"):
+        return _reserve_durable(slot)
     try:
         # Guard/retrieval calls consume the LLM allowance; vision consumes OCR.
         return reserve_provider_attempt("ocr" if slot == "vision" else "llm", "ocr" if slot == "vision" else "chat")
     except ProviderBudgetError as exc:
         raise ConversationError(exc.code, exc.message, 429 if "exhausted" in exc.code else 503) from None
+
+
+def _reserve_durable(slot: str):
+    """Hosted call cap kept in the business PostgreSQL database (Render and similar hosts).
+
+    Hosts such as Render's free plan wipe the disk on every restart and offer no shell, so the
+    local SQLite cycle cannot be created or kept there. The cap is the owner-configured
+    PROVIDER_BUDGET_CYCLE_ID with CLOUD_CALL_LIMIT calls; the count survives restarts and
+    redeploys. A new cycle ID starts a new count, exactly as the Vercel/Upstash path does.
+    The THB ledger (cost_ledger) still applies on top of this count."""
+    import time
+    from services import business_store as db
+    cycle = settings.PROVIDER_BUDGET_CYCLE_ID
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,79}", cycle) or not 1 <= settings.CLOUD_CALL_LIMIT <= 100000:
+        raise ConversationError("cycle_required", "Configure PROVIDER_BUDGET_CYCLE_ID and a positive CLOUD_CALL_LIMIT before enabling AI.")
+    with db.transaction() as tx:
+        key = "provider_calls_" + db.digest(cycle)
+        row = tx.get(key)
+        data = row["data"] if row else {"cycle": cycle, "used": 0, "by_slot": {}, "started_at": time.time()}
+        if data["used"] >= settings.CLOUD_CALL_LIMIT:
+            raise ConversationError("budget_exhausted", "The configured call limit is exhausted. Contact the administrator.", 429)
+        data["used"] += 1
+        data["by_slot"][slot] = data["by_slot"].get(slot, 0) + 1
+        data.update(limit=settings.CLOUD_CALL_LIMIT, last_at=time.time())
+        tx.put(key, "provider_calls", "system", data, "open")
+    return None
+
+
+def durable_call_status() -> dict | None:
+    """Count for the configured cycle when the durable hosted cap is in use, for the staff budget view."""
+    if not os.getenv("DATABASE_URL") or os.getenv("VERCEL"):
+        return None
+    from services import business_store as db
+    with db.transaction() as tx:
+        row = tx.get("provider_calls_" + db.digest(settings.PROVIDER_BUDGET_CYCLE_ID or "-"))
+    data = row["data"] if row else {}
+    return {"cycle": settings.PROVIDER_BUDGET_CYCLE_ID or None, "used": data.get("used", 0), "limit": settings.CLOUD_CALL_LIMIT,
+            "by_slot": data.get("by_slot", {}), "storage": "postgresql"}
 
 
 def finish(reservation, outcome: str, reason: str | None = None):

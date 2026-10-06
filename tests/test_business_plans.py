@@ -166,3 +166,37 @@ def test_lab_report_pages_render_without_report_data():
     assert shell.status_code == 200 and 'data-lab-report="report_does_not_matter"' in shell.text and "/static/js/lab_report.js" in shell.text
     home = c.get("/")
     assert "/lab-reports" in home.text and "data-hero3d" in home.text and "/static/js/motion.js" in home.text
+
+
+def test_hosted_call_cap_is_kept_in_the_database(monkeypatch):
+    """Render's free plan has no shell and wipes its disk; with DATABASE_URL the cap lives in the business DB."""
+    import asyncio
+    from config import settings
+    from services import conversation_transport as transport
+    from services.conversation_transport import ConversationError
+    monkeypatch.setenv("DATABASE_URL", "postgresql://unused.invalid/db")
+    monkeypatch.setattr(settings, "PROVIDER_NETWORK_ENABLED", True)
+    monkeypatch.setattr(settings, "PROVIDER_BUDGET_CYCLE_ID", "")
+    # Use the test SQLite store in place of PostgreSQL; the counting logic is the same.
+    real = db.transaction
+    monkeypatch.setattr(db, "transaction", lambda: (monkeypatch.delenv("DATABASE_URL", raising=False), real())[1])
+    try:
+        asyncio.run(transport.reserve("llm"))
+        raise AssertionError("expected cycle_required")
+    except ConversationError as e:
+        assert e.code == "cycle_required"
+    monkeypatch.setenv("DATABASE_URL", "postgresql://unused.invalid/db")
+    monkeypatch.setattr(settings, "PROVIDER_BUDGET_CYCLE_ID", "demo-1")
+    monkeypatch.setattr(settings, "CLOUD_CALL_LIMIT", 2)
+    for _ in range(2):
+        monkeypatch.setenv("DATABASE_URL", "postgresql://unused.invalid/db")
+        assert asyncio.run(transport.reserve("llm")) is None
+    monkeypatch.setenv("DATABASE_URL", "postgresql://unused.invalid/db")
+    try:
+        asyncio.run(transport.reserve("guard"))
+        raise AssertionError("expected budget_exhausted")
+    except ConversationError as e:
+        assert e.code == "budget_exhausted" and e.status == 429
+    with real() as tx:
+        row = tx.get("provider_calls_" + db.digest("demo-1"))
+    assert row["data"]["used"] == 2 and row["data"]["by_slot"] == {"llm": 2}

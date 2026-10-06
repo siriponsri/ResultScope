@@ -934,6 +934,8 @@
       row('Cap', money(c.cap_thb) + ' for the whole project, not monthly'); row('Spent before this ledger', c.prior_spend_thb === null || c.prior_spend_thb === undefined ? 'Not set, so paid AI calls are blocked' : money(c.prior_spend_thb));
       row('Settled in ledger', c.available ? c.settled_thb.toFixed(4) + ' THB' : 'Unavailable'); row('Reserved now', c.available ? c.reserved_thb.toFixed(4) + ' THB' : 'Unavailable'); row('Remaining', c.remaining_thb === null || c.remaining_thb === undefined ? 'Unknown' : c.remaining_thb.toFixed(2) + ' THB');
       row('Calls', String(c.calls ?? 0)); row('Priced models', (c.priced_models || []).join(', ') || 'None configured'); row('Provider network', budget.network_enabled ? 'Enabled' : 'Disabled');
+      const hc = budget.hosted_calls;
+      if (hc) row('Call cap (saved in the database)', hc.cycle ? `${hc.used} of ${hc.limit} calls used in cycle ${hc.cycle}` : 'Set PROVIDER_BUDGET_CYCLE_ID and CLOUD_CALL_LIMIT to allow AI calls');
       b.append(kv);
     }
     const sim = el('section', null, 'card stack'); sim.append(el('h3', 'LINE channel simulator'), el('p', 'Sends a LINE-shaped, signed webhook event through the real verification, queue and worker. Replies are stored as simulated deliveries; nothing is sent to LINE.', 'small muted'));
