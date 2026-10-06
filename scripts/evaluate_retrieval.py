@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from services.knowledge import load_knowledge_base
 from services.retrieval import retrieve
+from services.source_revision import source_revision
 
 
 def main() -> int:
@@ -55,9 +56,7 @@ def main() -> int:
             }
         )
     passed = sum(row["passed"] for row in rows)
-    revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    revision = source_revision(ROOT)
     report = {
         "schema_version": "retrieval-evidence-v1",
         "run_id": "phase2-dev-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),

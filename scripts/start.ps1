@@ -1,21 +1,14 @@
 $ErrorActionPreference = "Stop"
-
-Write-Host "ResultScope local starter" -ForegroundColor Cyan
-
-if (-not (Test-Path ".venv")) {
-    Write-Host "Creating virtual environment..."
-    py -m venv .venv
-}
-
-& .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-
+Set-Location (Split-Path $PSScriptRoot -Parent)
+function Invoke-Checked { param([scriptblock]$Command) & $Command; if ($LASTEXITCODE -ne 0) { throw "Command failed with exit code $LASTEXITCODE" } }
+Write-Host "ResultScope 2.0 — LLM conversation" -ForegroundColor Cyan
+if (-not (Test-Path ".venv")) { Invoke-Checked { py -3.12 -m venv .venv } }
+$Python = Join-Path (Get-Location) ".venv\Scripts\python.exe"
+Invoke-Checked { & $Python -m pip install -r requirements.txt }
 if (-not (Test-Path ".env")) {
     Copy-Item ".env.example" ".env"
-    Write-Host "Created .env. Add your LLM_API_KEY before testing AI responses." -ForegroundColor Yellow
+    Write-Host "Created .env. Configure the LLM, guard and usage cycle to enable AI." -ForegroundColor Yellow
 }
-
-Write-Host "Opening http://127.0.0.1:8000" -ForegroundColor Green
+Write-Host "Open http://127.0.0.1:8000 — setup: docs/operations/LOCAL_SETUP.md" -ForegroundColor Green
 Start-Process "http://127.0.0.1:8000"
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+Invoke-Checked { & $Python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000 }

@@ -1,0 +1,31 @@
+{
+  "synthetic": true,
+  "clinical_validation": false,
+  "source_dataset": "User-supplied Thai_Lab_Reports_Reference_v3",
+  "files": [
+    {
+      "path": "01_A_Liver.png",
+      "sha256": "5a67c936b795a16c51207caee3c5e20f4f6e2899a2ba5c5ab3f7e5b655ec50e7"
+    },
+    {
+      "path": "02_A_Renal.png",
+      "sha256": "d4508a0501809cf1b97baec16bd32f9efe74cf8fd6ae81ec6009462bc72c307f"
+    },
+    {
+      "path": "03_B_Lipid.png",
+      "sha256": "02e129d36910fe0e405ec9c458e3bb2d7f260d1a1520737039cab6b6c3948155"
+    },
+    {
+      "path": "04_B_Glucose_Urine.png",
+      "sha256": "5f7dce75a4cf5a62c515d4f8ec03170e0f659ad77de7d85cd449fb770953e874"
+    },
+    {
+      "path": "05_C_Hematology.png",
+      "sha256": "dd10636b44e4c6285c52fbb9800cdf7a24053420f14c4e7379024e210daaf134"
+    },
+    {
+      "path": "06_C_Thyroid.png",
+      "sha256": "59e2b2b9957b418d265ff87c9b590bcee74cadf7be047ba7a331cf9a8200f65f"
+    }
+  ]
+}

@@ -1,33 +1,23 @@
 {
-    "$schema":  "https://openapi.vercel.sh/vercel.json",
-    "functions":  {
-                      "api/index.py":  {
-                                           "maxDuration":  60
-                                       }
-                  },
-    "env":  {
-                "APP_ENV":  "preview",
-                "KNOWLEDGE_MODE":  "synthetic",
-                "LOCAL_DEMO_MODE":  "false",
-                "PROVIDER_NETWORK_ENABLED":  "false",
-                "STORAGE_BACKEND":  "auto"
-            },
-    "rewrites":  [
-                     {
-                         "source":  "/api/:path*",
-                         "destination":  "/api/index.py"
-                     },
-                     {
-                         "source":  "/static/:path*",
-                         "destination":  "/api/index.py"
-                     },
-                     {
-                         "source":  "/health",
-                         "destination":  "/api/index.py"
-                     },
-                     {
-                         "source":  "/",
-                         "destination":  "/api/index.py"
-                     }
-                 ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 240
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    }
+  ]
 }

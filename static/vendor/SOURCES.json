@@ -1,8 +1,18 @@
 {
   "purpose": "Self-hosted dependencies; no remote scripts or fonts at app runtime.",
   "marked": "https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js",
-  "dompurify": "https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js",
+  "dompurify": {
+    "source": "https://registry.npmjs.org/dompurify/-/dompurify-3.4.16.tgz",
+    "version": "3.4.16",
+    "sha256": "2c90a9b46d6463f26038a29b686e82bc91de01fdac9d5229e7cfe3b360134ea2"
+  },
   "plex_font": "https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1swZSAXcomDVmadSDDV5zAA.ttf",
   "thai_font": "Copied unchanged from existing evidence addon, see font OFL.",
-  "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"
+  "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+  "hyperframes_player": {
+    "source": "https://registry.npmjs.org/@hyperframes/player/-/player-0.8.131.tgz",
+    "version": "0.8.131",
+    "sha256": "c5ec38b196af83111cc9c4f016535757051cc3e58c6b36eb3ad92365fd0cb85e",
+    "license": "HYPERFRAMES-LICENSE"
+  }
 }

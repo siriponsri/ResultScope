@@ -1,15 +1,15 @@
 # Troubleshooting
 
-| What you see | Meaning | Next action |
-| --- | --- | --- |
-| Provider access disabled | The offline guard is active | Continue with offline checks. An operator must authorize a new live cycle before provider testing. |
-| Provider not configured | The server has no usable credential for that slot | Ask the operator to configure it privately. Do not paste keys into chat. |
-| Budget exhausted | The configured attempt limit has been reached | Stop. Do not refresh, reset the ledger or open a new session to bypass the limit. |
-| Could not read an image | Unsupported/unreadable image or OCR unavailable | Use a clear de-identified PNG/JPEG or type the values. PDF upload is not implemented. |
-| Range unknown | No valid report-specific range was supplied | Add the range from the report, or leave the status unknown. |
-| Safe refusal / insufficient evidence | The question is outside scope, lacks evidence or fails validation | Narrow the question or provide source information. Do not weaken the validator. |
-| Administrator page unavailable | Explicit local-demo mode is disabled | This is expected outside local-demo mode. Ordinary users do not need this login. |
-| Reset fails | The previous session could not be cleared safely | Wait and retry. Do not assume a different report has a clean context until reset succeeds. |
-
-Start a new analysis for each separate report. Keep real patient identifiers out of
-screenshots, demonstration data and provider experiments.
+| Symptom | Action |
+|---|---|
+| Models unavailable | Inspect /settings and /api/v2/config; configure keys, guard, access code and a bounded provider cycle. Do not disable safety. |
+| Hosted account storage unavailable | Configure DATABASE_URL and the stable BUSINESS_DATA_KEY. Vercel/Render local files are not durable storage. |
+| Session or CSRF error | Reload and sign in again. Do not copy another browser's token. |
+| Preview expired or price changed | Request a fresh preview; the server does not silently accept a new price. |
+| Slot full | Choose a different available date/time. Capacity is checked atomically. |
+| Report unreadable | Use clearer pixels or fewer pages; confirm exact fields against the original. Do not use test oracle answers as OCR input. |
+| LINE silent | Check webhook signature configuration, worker state, reply expiry, push permission and manager delivery status. Avoid blind replay of uncertain sends. |
+| Payment pending | Verify the signed test-mode webhook and order amount. A redirect is not settlement. |
+| Map embed missing | Configure a referrer/API-restricted Google Maps Embed key. The link fallback is only an area map. |
+| Browser UAT cannot start | Install requirements-dev.txt and Playwright Chromium. Set TEST_PYTHON if your Python environment is outside .venv. |
+| Key lost | Restore the matching encryption key from a secure backup. Generating a new key cannot decrypt existing records. |

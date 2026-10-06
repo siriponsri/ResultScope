@@ -43,6 +43,14 @@ class RuntimeProvider:
 
 
 PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
+    "iapp_openthai2": ProviderDefinition(
+        "iapp_openthai2", "iApp OpenThai 2.0", "llm", "https://api.iapp.co.th/v3/llm/openthai2p0",
+        "openai_chat", "openthai2.0", "documentation-reviewed", "Separate from NECTEC OpenThaiLLM. Check current pricing and account access.",
+    ),
+    "llama_guard": ProviderDefinition(
+        "llama_guard", "Llama Guard", "guard", "https://openrouter.ai/api/v1",
+        "openai_chat", "meta-llama/llama-guard-4-12b", "contract-tested", "Input and output safety classification for conversation v2.",
+    ),
     "typhoon_llm": ProviderDefinition(
         "typhoon_llm", "OpenTyphoon LLM", "llm", "https://api.opentyphoon.ai/v1",
         "openai_chat", "typhoon-v2.5-30b-a3b-instruct", "verified", "OpenAI-compatible chat completions.",
@@ -98,11 +106,13 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
 }
 
 SLOT_DEFAULTS: dict[str, tuple[str, bool]] = {
+    "guard": ("llama_guard", True),
     "llm": ("typhoon_llm", True),
     "ocr": ("typhoon_ocr", True),
     "systemone": ("openthai_systemone", False),
 }
 SLOT_PROVIDER_IDS: dict[str, set[str]] = {
+    "guard": {"llama_guard"},
     "llm": {provider_id for provider_id, definition in PROVIDER_CATALOG.items() if definition.kind == "llm"},
     "ocr": {"typhoon_ocr"},
     "systemone": {"openthai_systemone"},
@@ -199,6 +209,8 @@ def _validate_state(state: Any) -> dict[str, Any]:
     if not isinstance(state, dict) or state.get("version") != 1 or not isinstance(state.get("providers"), dict):
         raise ProviderConfigError("Provider configuration is invalid.")
     defaults = _default_state()
+    # Add the new guard slot without rewriting keys, counters or older slots.
+    state["providers"].setdefault("guard", defaults["providers"]["guard"])
     for slot in SLOT_DEFAULTS:
         row = state["providers"].get(slot)
         if not isinstance(row, dict):
@@ -280,7 +292,7 @@ def public_snapshot(state: dict[str, Any] | None = None) -> dict[str, Any]:
             "enabled": row["enabled"],
             "model": row["model"],
             "timeout_seconds": row["timeout_seconds"],
-            "configured": bool(row.get("api_key")) or (slot == "llm" and bool(settings.LLM_API_KEY)) or (slot == "ocr" and bool(settings.VISION_API_KEY)),
+            "configured": bool(row.get("api_key")) or (slot == "llm" and bool(settings.LLM_API_KEY)) or (slot == "ocr" and bool(settings.VISION_API_KEY)) or (slot == "guard" and bool(settings.GUARD_API_KEY)),
             "shadow_mode": bool(row.get("shadow_mode")),
             "protocol": definition.protocol,
             "endpoint": definition.base_url,

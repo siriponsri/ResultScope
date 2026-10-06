@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import os
@@ -41,23 +41,13 @@ def test_entrypoint_exports_the_existing_fastapi_application(monkeypatch):
 def test_vercel_config_keeps_fastapi_static_mount_in_the_function():
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
 
-    assert config["functions"]["api/index.py"]["maxDuration"] == 60
-    assert config["rewrites"] == [
-        {"source": "/api/:path*", "destination": "/api/index.py"},
-        {"source": "/static/:path*", "destination": "/api/index.py"},
-        {"source": "/health", "destination": "/api/index.py"},
-        {"source": "/", "destination": "/api/index.py"},
-    ]
-    assert config["env"] == {
-        "APP_ENV": "preview",
-        "KNOWLEDGE_MODE": "synthetic",
-        "LOCAL_DEMO_MODE": "false",
-        "PROVIDER_NETWORK_ENABLED": "false",
-        "STORAGE_BACKEND": "auto",
-    }
-    # Static files are served by main.py's FastAPI mount, so they must not be
-    # excluded from the Python function bundle.
-    assert "excludeFiles" not in config["functions"]["api/index.py"]
+    assert config["functions"]["api/index.py"]["maxDuration"] == 240
+    assert "rewrites" not in config
+    assert "env" not in config
+    import tomllib
+    deployment = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    assert deployment["tool"]["vercel"]["entrypoint"] == "api.index:app"
+    assert deployment["tool"]["vercel"]["fastapi"]["static"]["cdn"] is False
 
 
 def test_vercel_preview_import_uses_synthetic_offline_defaults():
@@ -71,7 +61,7 @@ def test_vercel_preview_import_uses_synthetic_offline_defaults():
 
 
 def test_vercel_requires_a_server_side_session_secret():
-    result = _run_entrypoint(VERCEL="1")
+    result = _run_entrypoint(VERCEL="1", PROVIDER_NETWORK_ENABLED="true")
 
     assert result.returncode != 0
     assert "SESSION_SIGNING_KEY" in result.stderr
@@ -82,7 +72,7 @@ def test_vercel_requires_a_server_side_session_secret():
     ("setting", "value", "message"),
     [
         ("STORAGE_BACKEND", "sqlite", "STORAGE_BACKEND=sqlite"),
-        ("PROVIDER_NETWORK_ENABLED", "true", "Provider network access is disabled"),
+        ("PROVIDER_NETWORK_ENABLED", "true", "SESSION_SIGNING_KEY"),
     ],
 )
 def test_vercel_rejects_local_filesystem_or_network_modes(setting, value, message):
@@ -107,8 +97,8 @@ def test_admin_routes_remain_disabled_by_the_existing_vercel_guard(monkeypatch):
     client = TestClient(app)
     assert client.get("/admin/login").status_code == 404
     assert client.get("/admin/settings").status_code == 404
-    assert client.get("/api/v1/admin/config").status_code == 404
-    assert client.post("/api/v1/admin/login", json={"username": "admin", "password": "1234"}).status_code == 404
+    assert client.get("/api/v1/admin/config").status_code == 410
+    assert client.post("/api/v1/admin/login", json={"username": "admin", "password": "1234"}).status_code == 410
 
 
 def test_entrypoint_serves_application_and_static_routes_locally(monkeypatch):

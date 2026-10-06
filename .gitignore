@@ -17,3 +17,7 @@ data/admin_settings.json.tmp
 
 # Regenerable knowledge indexes; canonical source remains under knowledge/.
 /data/indexes/synthetic-*.json
+
+node_modules/
+build/
+static/motion/introduction/.hyperframes/

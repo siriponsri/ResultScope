@@ -1,0 +1,18 @@
+{
+  "version": "2026-10-05-proposed",
+  "is_demo": true,
+  "source_id": "RS-POLICY-20261005",
+  "currency": "THB",
+  "quote_valid_days": 7,
+  "reservation_hold_minutes": 10,
+  "booking_advance_days": 30,
+  "organization_min_people": 20,
+  "onsite_service": "Organization locations only; feasibility and travel fee quoted by staff. No home visits.",
+  "discount_policy": "No automatic discount. Only a server-issued promotion approved by an authorized manager may change a quote.",
+  "cancellation_policy": "Free reschedule or cancellation request >=24 hours before the slot. Less than 24 hours or any refund requires staff assessment. A request is not an approved refund.",
+  "refund_policy": "Staff reviews paid-order refunds; no guaranteed approval or processing time is promised.",
+  "results_policy": "Completion estimates and preparation instructions must come from a verified service record or staff; no universal fasting rule or invented turnaround.",
+  "payment_policy": "PromptPay/card sandbox and pay at center. A screenshot is not proof of settlement. Never collect card numbers in chat.",
+  "privacy_policy": "Only synthetic data in coursework. Employer receives coordination information, never employee lab details by default. Production consent, retention and data-processing agreements require separate approval.",
+  "handoff_policy": "Active hours Mon-Sat 07:00-16:00 Asia/Bangkok. Outside hours create a ticket without promising immediate response. Urgent health concerns must not wait for this queue."
+}

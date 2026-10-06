@@ -4,13 +4,12 @@
 
 Build ResultScope Laboratory Assistant, a laboratory information product prototype.
 Read PRODUCT.md, DESIGN.md, docs/README.md and docs/operations/READINESS.md first.
-The active design is the owner-approved C + 2 purple landing and conversation with a report drawer. It replaces the historical
-spectral instrument direction. Historical instructions are evidence, not new work orders.
+The active design is the owner-requested LLM conversation workspace with the original purple palette and optional report context. Historical designs and instructions are evidence, not new work orders.
 
 ## Engineering boundaries
 
 - Keep FastAPI main.py, Jinja templates and vanilla JavaScript. Preserve Windows setup.
-- Python owns scope, range comparisons, evidence checks and output validation.
+- The v2 LLM owns conversational decisions. Python owns exact range comparisons, evidence integrity, authentication and output validation.
 - Preserve source provenance, release/synthetic separation and the strict validator.
 - Never invent reference ranges, diagnoses, prescriptions or treatment changes.
 - Preserve report-supplied units and ranges; missing ranges remain unknown.
@@ -39,3 +38,7 @@ Run focused tests for behavior changes, then scripts/check.ps1 once the candidat
 Check real desktop and 390px mobile flows, keyboard focus, uploaded-field confirmation,
 out-of-scope refusal, safe errors and reset. Use synthetic fixtures; live calls default to zero.
 Record candidate SHA, test scope and blockers. Never claim production or clinical readiness.
+
+## Current delivery scope
+
+The current owner request is a complete replacement ZIP prepared for Vercel, not publication or deployment. Preserve local secrets/state and provide honest offline/live verification labels. The current v2 route must not depend on v1 symbolic intent routing. Future repository publication must follow the owner's authorized delivery scope.

@@ -1,36 +1,15 @@
-# Application threat model
+# Threat model — ResultScope 3
 
-Scope: the current local ResultScope Laboratory Assistant. This is an engineering
-record, not a security certification or approval for patient records.
+| Threat | Implemented control | Remaining limitation |
+|---|---|---|
+| Prompt injection in chat, report or retrieved content | Separate input/output guard, untrusted-data prompts, schema validation, local known source IDs and answer review | Model false negatives and multilingual effectiveness require live evaluation. |
+| Changed values or invented sources | Confirmed-field equality, citation allowlist and hashed local evidence | Prose/evidence review is model fallible; clinical review is not performed. |
+| Unauthorized business action | Opaque expiring proposal, explicit confirmation, current-price/capacity/ownership checks in a transaction | Deployment and concurrent production load remain untested. |
+| Cross-customer access | Digest-stored sessions, CSRF and same-origin checks, record ownership, staff branch/assignment checks | Fine-grained clinical role separation and account lifecycle need further work. |
+| Payment spoof or replay | Test-only keys, raw HMAC check, amount/currency/checkout match, event dedup, terminal refund protection | No real merchant or external payment acceptance test is included. |
+| Duplicate LINE delivery or wrong account | Signed events, persisted dedup, job leases, one-use account linking, ownership recheck and unlink cancellation | An outbound send already in flight cannot be recalled; quota/cold starts affect delivery. |
+| Provider spend | Explicit network gate, named cycle, atomic Redis cloud attempt cap, no hidden paid fallback | Attempt counting is not a per-customer currency budget; local rate limits are per instance. |
+| Stored health data disclosure | Encrypted entity payloads and originals; no body/key logging; report deletion clears conversation copies | Metadata remains visible; backup expiry, account erasure and provider-side deletion need policy. |
+| Unsafe HTML or untrusted links | Sanitized Markdown and server-resolved source URLs; CSP and no-store business responses | Browser/dependency patch management and independent review remain necessary. |
 
-| Asset or boundary | Implemented control | Main evidence paths | Residual limitation |
-| --- | --- | --- | --- |
-| Scope and policy | Python routing; privileged requests refused; retrieved/OCR text treated as untrusted | lab_scope.py, intent_router.py; safety tests | Prompt boundaries cannot prove all live-model behavior |
-| Numeric and business facts | Supplied-range calculations, release corpus gate, validated output | deterministic_engine.py, knowledge.py, output_validation.py | Source approval and business corpus remain incomplete |
-| Citations and URLs | Bind source markers and links to current retrieval; reject unsupported output | answer_service.py, output_validation.py; public-reference tests | Post-remediation live validation is not complete |
-| Conversation/extraction access | Signed session cookies, revision and ownership checks, reset | sessions.py, image_extraction.py; image/session tests | Not patient identity, RBAC, or multi-tenant authorization |
-| Administrator configuration | Explicit local mode, password handling, CSRF, write-only key entry, encrypted local file | admin_auth.py, provider_config.py; admin tests | Demo fallback credentials and file persistence are unsuitable online |
-| Provider quota | Offline guard and atomic SQLite reservation before HTTP, no refunds | provider_budget.py; budget and runner tests | One shared local filesystem, not a distributed cloud quota service |
-| Browser content | DOM text nodes, sanitized Markdown, bounded error messages | chat.js; safety and API tests | Full accessibility/security penetration review remains open |
-| Image input | Decoded-format and size/pixel checks, re-encoding, metadata removal | image_extraction.py; image tests | PDF unsupported; provider retention needs separate review |
-| Availability | Message/history/output bounds, timeout, local rate limits | chat.py, request_limits.py | Local request limits and locks do not coordinate multiple hosts |
-
-Code paths above are under services/ unless their UI/router names identify otherwise.
-
-## Required boundaries during evaluation
-
-Keep provider networking off for offline work. Do not use real patient identifiers,
-edit stored secrets, reopen a budget cycle or expose local-demo administration to
-obtain a prettier demonstration. Render an honest unavailable state when a dependency
-is missing. Synthetic screenshot mocks must remain visibly identified.
-
-The new UI serves its fonts, Markdown parser and sanitizer from the same origin.
-This removes runtime CDN fetching but does not assert that dependencies have undergone
-a vulnerability audit. The optional media composition is not loaded by the app.
-
-## Open operational work
-
-Production requires a defined identity/access model, consent and retention policy,
-cloud secret storage, shared distributed limits, audit ownership, monitoring,
-backup/restore and incident handling. Historical provider-budget overruns remain
-in the [evidence history](../evidence/HISTORY.md). A new interface does not erase them.
+The retained /lab route separately uses signed encrypted browser context. Business accounts use durable encrypted database entities and revocable server-side sessions. These are different storage models. This coursework package is not a security certification or a clinical release.

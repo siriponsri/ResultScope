@@ -1,0 +1,758 @@
+[
+  {
+    "source_line": 33,
+    "raw_table_row": "| หมวด / การทดสอบ | ช่วงอ้างอิงหรือเกณฑ์ทั่วไป | หน่วย | ข้อสังเกต | แหล่งและดาวน์โหลด |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 35,
+    "raw_table_row": "| **CBC — WBC** | หญิง 4.4–10.3; ชาย 4.5–11.3 | ×10³/µL | sex-specific; เด็กต่างตามอายุ | [Siriraj Haematology PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 36,
+    "raw_table_row": "| RBC | หญิง 4.0–5.5; ชาย 4.2–6.1 | ×10⁶/µL | ใช้ร่วม Hb/Hct/indices | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 37,
+    "raw_table_row": "| Haemoglobin | หญิง 12.0–14.9; ชาย 12.7–16.9 | g/dL | WHO ใช้ diagnostic anaemia cut-offs แยกต่างหาก | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf); [WHO 2024 PDF](https://iris.who.int/bitstreams/f9f74397-1440-478d-a63c-26f29a01552f/download) citeturn8view0turn26search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 38,
+    "raw_table_row": "| Haematocrit | หญิง 37.0–45.7; ชาย 40.3–51.9 | % | sex-specific | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 39,
+    "raw_table_row": "| MCV | หญิง 80.4–95.9; ชาย 80.6–98.8 | fL | micro/macrocytosis ต้องดู Hb, retic, iron/B12/folate | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 40,
+    "raw_table_row": "| MCH | หญิง 25.0–31.2; ชาย 25.8–33.1 | pg | sex-specific ที่ศิริราช | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 41,
+    "raw_table_row": "| MCHC | หญิง 30.2–34.2; ชาย 30.8–34.6 | g/dL |  | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 42,
+    "raw_table_row": "| RDW | หญิง 11.7–15.0; ชาย 11.9–14.5 | % | Leeds 12–15% | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0turn18view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 43,
+    "raw_table_row": "| Platelet | หญิง 179–435; ชาย 160–356 | ×10³/µL | Leeds ใช้ 150–400 ×10⁹/L | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0turn18view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 44,
+    "raw_table_row": "| Neutrophil | หญิง 40–73.1%; ชาย 40–70.3%; absolute หญิง 1.8–6.8, ชาย 2.1–7.2 | %, ×10³/µL | absolute count สำคัญกว่าร้อยละสำหรับ neutropenia | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 45,
+    "raw_table_row": "| Lymphocyte | หญิง 20.3–47.9%; ชาย 18.7–48.3%; absolute 1.2–3.4 / 1.3–3.5 | %, ×10³/µL | เด็กมี lymphocyte สูงกว่าผู้ใหญ่ได้ตามวัย | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 46,
+    "raw_table_row": "| Monocyte | 3.4–9.7% หญิง; 3.9–12.3% ชาย | % | absolute หญิง 0.2–0.6; ชาย 0.2–0.9 ×10³/µL | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 47,
+    "raw_table_row": "| Eosinophil | 0.4–7.5% หญิง; 0.8–9.2% ชาย | % | allergy/parasite/drug context | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 48,
+    "raw_table_row": "| Basophil | 0.2–1.4% หญิง; 0.1–1.4% ชาย | % |  | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Reference-Ranges-Hematology-2016.pdf) citeturn8view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 49,
+    "raw_table_row": "| Reticulocyte | Leeds 0.64–2.52%; absolute 29–106 | %, ×10⁹/L | ใช้แปลกลไก anaemia | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 50,
+    "raw_table_row": "| **Electrolytes — Sodium** | 136–145 | mmol/L | Leeds 133–146 | [Siriraj Electrolytes PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/electrolytes.pdf) citeturn5view0turn17view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 51,
+    "raw_table_row": "| Potassium | 3.4–4.5 | mmol/L | Leeds ผู้ใหญ่ 3.5–5.3; hemolysis อาจทำให้สูงปลอม | [Siriraj Electrolytes PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/electrolytes.pdf) citeturn5view0turn18view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 52,
+    "raw_table_row": "| Chloride | 98–107 | mmol/L | Leeds ใช้ช่วงกว้างต่างตามระบบ | [Siriraj Electrolytes PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/electrolytes.pdf) citeturn5view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 53,
+    "raw_table_row": "| Total CO₂ / bicarbonate | 22–29 | mmol/L | acid-base interpretation ต้องดู clinical context/gas | [Siriraj Electrolytes PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/electrolytes.pdf) citeturn5view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 54,
+    "raw_table_row": "| Total calcium | 18–60 ปี 8.6–10.0 | mg/dL | 60–90 ปี 8.8–10.2; ควรแปลร่วม albumin | [Siriraj Calcium PDF](https://www.si.mahidol.ac.th/th/manual/Project/PDF/Calcium.pdf) citeturn30search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 55,
+    "raw_table_row": "| Ionised calcium | 4.6–5.2 | mg/dL | pH-dependent; useful when albumin/protein abnormal | [Siriraj Ionised Ca PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/ca-ionized.pdf) citeturn30search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 56,
+    "raw_table_row": "| Magnesium | 21–59 ปี 1.6–2.6 | mg/dL | 60–90 ปี 1.6–2.4 | [Siriraj Mg PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/magnesium.pdf) citeturn19view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 57,
+    "raw_table_row": "| Phosphate | ผู้ใหญ่ 2.5–4.5 | mg/dL | pediatric RI สูงและ sex-specific บางวัย | [Siriraj Phosphate PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/phosphate.pdf) citeturn19view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 58,
+    "raw_table_row": "| Osmolality | ใช้ laboratory-specific interval | mOsm/kg | Leeds มี harmonised laboratory RI; ควรใช้คู่ Na/glucose/urea | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn16view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 59,
+    "raw_table_row": "| **Renal — BUN** | 18–60 ปี 6–20; 60–90 ปี 8–23 | mg/dL | เด็ก <1 ปี 4–19; 1–18 ปี 5–18 | [Siriraj BUN PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/bun.pdf) citeturn4view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 60,
+    "raw_table_row": "| Creatinine | ชาย 0.67–1.17; หญิง 0.51–0.95 | mg/dL | sex-/muscle-mass-dependent; pediatric ranges ต่างมาก | [Siriraj Creatinine PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/creatinine.pdf) citeturn4view5 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 61,
+    "raw_table_row": "| eGFR | G1 ≥90; G2 60–89; G3a 45–59; G3b 30–44; G4 15–29; G5 <15 | mL/min/1.73m² | **GFR category ไม่ใช่ RI**; CKD ต้องพิจารณาความเรื้อรัง/markers | [KDIGO 2024 PDF](https://kdigo.org/wp-content/uploads/2024/03/KDIGO-2024-CKD-Guideline.pdf); [Thai CKD PDF](https://www.nephrothai.org/wp-content/uploads/2023/03/CKD-guideline-2565-revised-edition.pdf) citeturn26search6turn27search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 62,
+    "raw_table_row": "| Urine ACR | A1 <30 mg/g (<3 mg/mmol); A2 30–300; A3 >300 | mg/g | decision categories; repeat incidental abnormality | [Thai CKD PDF](https://www.nephrothai.org/wp-content/uploads/2023/03/CKD-guideline-2565-revised-edition.pdf); [KDIGO](https://kdigo.org/wp-content/uploads/2024/03/KDIGO-2024-CKD-Guideline.pdf) citeturn27search2turn26search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 63,
+    "raw_table_row": "| Uric acid | ชาย 3.4–7.0; หญิง 2.4–5.7 | mg/dL | gout treatment target ≠ RI | [Siriraj UA PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/ua.pdf) citeturn5view6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 64,
+    "raw_table_row": "| Cystatin C | assay-specific | mg/L | ใช้ช่วยประเมิน GFR เมื่อ creatinine มีข้อจำกัด | [KDIGO 2024](https://kdigo.org/wp-content/uploads/2024/03/KDIGO-2024-CKD-Guideline.pdf) citeturn26search2turn26search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 65,
+    "raw_table_row": "| **Liver — Albumin** | ผู้ใหญ่ 3.5–5.2 | g/dL | 0–4 วัน 2.8–4.4; เด็กต่างตามวัย | [Siriraj Albumin PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/albumin.pdf) citeturn4view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 66,
+    "raw_table_row": "| Total protein | 6.4–8.3 | g/dL | posture/hydration affect concentration | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/total-protein.pdf) citeturn20view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 67,
+    "raw_table_row": "| AST | ชาย 5–40; หญิง 5–32 | U/L | muscle injury can contribute | [Siriraj AST PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/ast.pdf) citeturn4view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 68,
+    "raw_table_row": "| ALT | Leeds adult ≤40 | U/L | method/lab specific; clinical concern depends pattern and context | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 69,
+    "raw_table_row": "| ALP | ชาย ≥19 ปี 40–129; หญิง 35–104 | U/L | very age-dependent in children/adolescents | [Siriraj ALP PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/alp.pdf) citeturn4view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 70,
+    "raw_table_row": "| GGT | Leeds หญิง 6–40; ชาย 12–68 | U/L | alcohol/drugs/cholestasis context | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 71,
+    "raw_table_row": "| Total bilirubin | 0–1.2 | mg/dL | fractionate when indicated | [Siriraj Bilirubin PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Bilirubin.pdf) citeturn4view6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 72,
+    "raw_table_row": "| Direct bilirubin | ตาม assay/lab | mg/dL หรือ µmol/L | interpret with total bilirubin and pattern | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 73,
+    "raw_table_row": "| LDH | Leeds 120–246 | U/L | non-specific; hemolysis markedly affects | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 74,
+    "raw_table_row": "| **Glucose — fasting plasma glucose** | RI ศิริราช >15 ปี 74–99; diabetes DL ≥126 (=7.0 mmol/L) | mg/dL | fasting preparation 8 h; diagnosis requires clinical criteria | [Siriraj Glucose PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/glucose.pdf); [Thai DM guideline](https://dmthai.org/new/index.php/sara-khwam-ru/bukhlakr-thangkar-phaethy/cpg/naewthang-wech-ptibati-sahrab-rokh-bea-hwan-2567) citeturn5view1turn18view2turn27search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 75,
+    "raw_table_row": "| HbA1c | RI ศิริราช 4.8–5.9%; diabetes DL ≥6.5% | % NGSP | variants/transfusion/altered RBC survival may distort | [Siriraj HbA1c PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/hba1c.pdf); [Thai DM guideline](https://dmthai.org/new/index.php/sara-khwam-ru/bukhlakr-thangkar-phaethy/cpg/naewthang-wech-ptibati-sahrab-rokh-bea-hwan-2567) citeturn6view0turn18view2turn27search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 76,
+    "raw_table_row": "| OGTT 2-h glucose | ใช้ diagnostic decision limits ไม่ใช่ RI | mg/dL | indication-specific เช่น diabetes/pregnancy | [Thai DM guideline](https://dmthai.org/new/index.php/sara-khwam-ru/bukhlakr-thangkar-phaethy/cpg/naewthang-wech-ptibati-sahrab-rokh-bea-hwan-2567) citeturn27search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 77,
+    "raw_table_row": "| Fructosamine | assay-specific | µmol/L | useful when HbA1c unreliable in selected patients | [Siriraj test menu](https://www.si.mahidol.ac.th/th/manual/Project/service-1.html) citeturn2view1turn30search8 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 78,
+    "raw_table_row": "| **Lipids — Total cholesterol** | <200 | mg/dL | desirable laboratory threshold | [Siriraj Cholesterol PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/cholesterol.pdf) citeturn6view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 79,
+    "raw_table_row": "| LDL-C | local RI <130 | mg/dL | **clinical target is risk-based**, use Thai CPG 2024 | [Siriraj LDL PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/ldl-c.pdf); [RCPT Dyslipidaemia 2024 PDF](https://www2.rcpt.org/web/media/content/file/2025/10/CF-1108-RCPT_CPG_Dyslipidemia_2024_%E0%B8%9B%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%9B%E0%B8%A3%E0%B8%B8%E0%B8%87-251002102712Hrmtrp.pdf) citeturn5view3turn27search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 80,
+    "raw_table_row": "| HDL-C | ชาย >40; หญิง >50 | mg/dL | sex-specific desirable level | [Siriraj HDL PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/hdl-c.pdf) citeturn5view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 81,
+    "raw_table_row": "| Triglyceride | <150 | mg/dL | fasting status and alcohol affect results | [Siriraj TG PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Triglycerides.pdf) citeturn5view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 82,
+    "raw_table_row": "| non-HDL-C | calculated = TC−HDL | mg/dL | target depends CV risk | [RCPT 2024 PDF](https://www2.rcpt.org/web/media/content/file/2025/10/CF-1108-RCPT_CPG_Dyslipidemia_2024_%E0%B8%9B%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%9B%E0%B8%A3%E0%B8%B8%E0%B8%87-251002102712Hrmtrp.pdf) citeturn27search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 83,
+    "raw_table_row": "| Lipoprotein(a) | assay/risk-specific | mg/dL หรือ nmol/L | do not interchange units by simple fixed conversion | [Siriraj clinical chemistry menu](https://www.si.mahidol.ac.th/th/manual/Project/service-1.html) citeturn2view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 84,
+    "raw_table_row": "| **Thyroid — TSH** | >20 ปี 0.27–4.20 | µIU/mL | newborn–20 yr age-specific | [Siriraj TSH PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/tsh.pdf) citeturn5view5 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 85,
+    "raw_table_row": "| Free T4 | >20 ปี 0.92–1.68 | ng/dL | ≈11.8–21.6 pmol/L; age-specific in children | [Siriraj FT4 PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/FT4.pdf) citeturn19view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 86,
+    "raw_table_row": "| Free T3 | Leeds ประมาณ 3.5–6.5 | pmol/L | assay-specific; use local interval | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn16view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 87,
+    "raw_table_row": "| Anti-TPO | assay-specific | IU/mL | positive/negative according platform; not a general screening test alone | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn16view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 88,
+    "raw_table_row": "| Thyroglobulin Ab | Leeds <4.5 | IU/mL | assay-specific | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 89,
+    "raw_table_row": "| **Reproductive/endocrine — Total testosterone** | ชาย 20–49: 2.49–8.36; ≥50: 1.93–7.40; หญิง 20–49: 0.084–0.481 | ng/mL | morning timing matters clinically | [Siriraj Testosterone PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Testosterone.pdf) citeturn19view6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 90,
+    "raw_table_row": "| Estradiol | ชาย 11.3–43.2; หญิง follicular 30.9–90.4; ovulatory 60.4–533; luteal 60.4–232 | pg/mL | postmenopause <5–138 in local assay | [Siriraj E2 PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/e2.pdf) citeturn1search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 91,
+    "raw_table_row": "| FSH | หญิง 14–40 follicular/luteal 1–8; ชาย 14–40 1–9 | IU/L | phase/age dependent | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view1turn18view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 92,
+    "raw_table_row": "| LH | หญิง 14–40 follicular/luteal 1–10; ชาย 14–40 1–9 | IU/L | phase/age dependent | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 93,
+    "raw_table_row": "| Prolactin | ชาย <550; หญิง <600 | mU/L | stress/medications/macroprolactin affect interpretation | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 94,
+    "raw_table_row": "| Progesterone | ไม่มี universal RI; mid-luteal >35 supports ovulation in Leeds protocol | nmol/L | cycle-day dependent | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 95,
+    "raw_table_row": "| β-hCG serum | <5 | U/L | pregnancy/tumour context | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 96,
+    "raw_table_row": "| Cortisol 09:00 | <140 suggests adrenal insufficiency; 140–400 indeterminate; >400 makes it unlikely in Leeds algorithm | nmol/L | **decision bands, not RI**; assay-specific | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 97,
+    "raw_table_row": "| PTH | Leeds 1.5–7.6 | pmol/L | interpret with Ca, phosphate, vitamin D, renal function | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 98,
+    "raw_table_row": "| SHBG | ชาย ≥20 ปี 13.3–89.5; หญิง 20–46 ปี 18.2–135.2 | nmol/L | age/sex-specific | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 99,
+    "raw_table_row": "| **Iron/vitamins — Ferritin** | ชาย 30–400; หญิง 13–150 | ng/mL | acute-phase reactant; inflammation may mask deficiency | [Siriraj Ferritin PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/ferritin.pdf) citeturn19view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 100,
+    "raw_table_row": "| Serum iron | Leeds หญิง 9.0–30.4; ชาย 11.6–31.3 | µmol/L | diurnal and nutritional variation | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 101,
+    "raw_table_row": "| TIBC | Leeds 45–76 | µmol/L | combine with iron/transferrin saturation | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn16view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 102,
+    "raw_table_row": "| Folate | 3.89–26.8 | ng/mL | Siriraj recommends fasting 8 h; hemolysis can raise result | [Siriraj Folate PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/folate.pdf) citeturn19view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 103,
+    "raw_table_row": "| Vitamin B12 | 197–771 | pg/mL | interpret borderline values with clinical/functional markers | [Siriraj B12 PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Vitamin-B12.pdf) citeturn30search1turn30search5 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 104,
+    "raw_table_row": "| 25-OH Vitamin D | ศิริราช DL ≥30 ng/mL | ng/mL | local decision limit; not universally agreed | [Siriraj Vit D PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/vitd.pdf) citeturn20view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 105,
+    "raw_table_row": "| 25-OH Vitamin D by LC-MS/MS | ≥30 | ng/mL | reports D2, D3 and total | [Siriraj LC-MS/MS PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/vitd2.pdf) citeturn20view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 106,
+    "raw_table_row": "| Vitamin D international comparison | <25 deficient; 25–49 insufficient; 50–99 sufficient; 100–250 review intake; >250 possible toxicity | nmol/L | Leeds v3.20 Aug 2026 | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 107,
+    "raw_table_row": "| Vitamin C | 4–15 | mg/L | pre-analytical handling critical | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Biochem/Index_files/5_21_1ZTG5TI.pdf) citeturn1search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 108,
+    "raw_table_row": "| Vitamin E | 5.5–18 | mg/L | lipid status may affect interpretation | [Siriraj PDF](https://www.si.mahidol.ac.th/th/manual/Biochem/Index_files/7_21_1EylJyn.pdf) citeturn1search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 109,
+    "raw_table_row": "| **Coagulation — PT** | Leeds 9.0–14.0 | s | **reagent/lot-specific**; Siriraj advises local PT range | [Siriraj PT PDF](https://www.si.mahidol.ac.th/th/manual/project/pdf/pt.pdf); [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn15search5turn17view3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 110,
+    "raw_table_row": "| INR | non-anticoagulated 0.8–1.3 | ratio | therapeutic target with warfarin depends indication, commonly 2–4 in Leeds protocol | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 111,
+    "raw_table_row": "| aPTT | Leeds 23.5–37.5 | s | reagent-specific; heparin monitoring requires assay target | [Siriraj aPTT PDF](https://www.si.mahidol.ac.th/th/manual/project/pdf/aptt.pdf); [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn15search1turn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 112,
+    "raw_table_row": "| Fibrinogen | Leeds Clauss 1.5–5.8 | g/L | acute phase reactant | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 113,
+    "raw_table_row": "| D-dimer | assay-specific; Leeds assay negative cut-off 230 | ng/mL | **do not transfer cut-off between assays**; use with clinical probability | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 114,
+    "raw_table_row": "| **Urinalysis — pH** | 4.6–8.0 | — | affected by diet/storage/infection | [Siriraj UA page](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 115,
+    "raw_table_row": "| Specific gravity | 1.003–1.030 | — | hydration/concentrating ability | [Siriraj UA](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 116,
+    "raw_table_row": "| Urine protein/albumin dipstick | Negative | qualitative | quantify persistent albuminuria with ACR | [Siriraj UA PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Urinalysis.pdf) citeturn15search0turn26search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 117,
+    "raw_table_row": "| Urine glucose | Negative | qualitative | renal threshold and drugs such as SGLT2 inhibitors affect result | [Siriraj UA PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Urinalysis.pdf) citeturn15search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 118,
+    "raw_table_row": "| Urine ketone | Negative | qualitative | positive result requires metabolic/fasting context | [Siriraj UA PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Urinalysis.pdf) citeturn15search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 119,
+    "raw_table_row": "| Occult blood | Negative | qualitative | confirm/microscopy when persistent | [Siriraj UA PDF](https://www.si.mahidol.ac.th/th/manual/Project/pdf/Urinalysis.pdf) citeturn15search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 120,
+    "raw_table_row": "| RBC urine | 0–2 | /HPF | persistent haematuria requires evaluation | [Siriraj UA](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 121,
+    "raw_table_row": "| WBC urine | 0–5 | /HPF | symptoms/culture determine UTI significance | [Siriraj UA](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 122,
+    "raw_table_row": "| Hyaline casts | 0–2 | /LPF | other cast types need morphology/context | [Siriraj UA](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 123,
+    "raw_table_row": "| Bacteria/yeast | Negative | qualitative | contamination vs infection depends collection/symptoms | [Siriraj UA](https://www.si.mahidol.ac.th/th/manual/Document/a15/Urinalysis.htm) citeturn15search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 124,
+    "raw_table_row": "| **Inflammation/immunology — CRP** | Leeds generally <10 | mg/L | method-specific; hsCRP has different purpose/cut-offs | [Leeds 2026 PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 125,
+    "raw_table_row": "| ESR | ชาย <10; หญิง <15 | mm/h | age/anaemia/pregnancy can affect | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 126,
+    "raw_table_row": "| IgG | ศิริราชผู้ใหญ่ 548–1768 | mg/dL | pediatric age-specific | [Siriraj IgG](https://www.si.mahidol.ac.th/Th/manual/Document/a17/Immunoglobulin_G_level_%28IgG%29.htm) citeturn15search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 127,
+    "raw_table_row": "| IgM | ศิริราชผู้ใหญ่ 45–153 | mg/dL | pediatric age-specific | [Siriraj IgM](https://www.si.mahidol.ac.th/Th/manual/Document/a17/) citeturn15search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 128,
+    "raw_table_row": "| IgA | Leeds adult interval roughly 0.8–4.0 depending age | g/L | age/lab specific | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 129,
+    "raw_table_row": "| Rheumatoid factor | Leeds <14 | IU/mL | positive alone does not diagnose RA | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn17view4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 130,
+    "raw_table_row": "| ANA | negative/low titre according assay | qualitative/titre | pattern + titre + clinical context required | [Mayo test catalogue](https://backend.mayocliniclabs.com/test-catalog/index.html) citeturn11search1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 131,
+    "raw_table_row": "| anti-dsDNA / ENA | negative according assay | IU/mL/qualitative | no universal numeric RI | [Mayo catalogue](https://backend.mayocliniclabs.com/test-catalog/index.html) citeturn11search1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 132,
+    "raw_table_row": "| C3/C4 | laboratory-specific | mg/dL หรือ g/L | assay/population-specific | [Mayo catalogue](https://backend.mayocliniclabs.com/test-catalog/index.html) citeturn11search1 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 133,
+    "raw_table_row": "| **Tumour marker — AFP** | 0–5.8 | IU/mL | adjunct/follow-up, not cancer diagnosis alone | [Siriraj AFP](https://www.si.mahidol.ac.th/Th/manual/Document/a17/Alpha-fetoprotein_%28AFP%29.htm) citeturn14search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 134,
+    "raw_table_row": "| CEA | 0–3.4 | ng/mL | smoking/benign disease may influence; follow trends using same assay | [Siriraj CEA](https://www.si.mahidol.ac.th/th/manual/Document/a17/Carcinoembryonic_antigen_%28CEA%29.htm) citeturn30search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 135,
+    "raw_table_row": "| CA-125 | 0–35 | U/mL | menstruation/endometriosis and benign causes possible | [Siriraj CA-125](https://www.si.mahidol.ac.th/th/manual/Document/a17/CA_125.htm) citeturn14search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 136,
+    "raw_table_row": "| CA 19-9 | 0–39 | U/mL | Leeds uses <37; assay-dependent | [Siriraj CA19-9](https://www.si.mahidol.ac.th/th/manual/Document/a17/CA_19-9.htm) citeturn14search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 137,
+    "raw_table_row": "| CA 15-3 | Leeds <30 | U/mL | primarily monitoring context | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn12view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 138,
+    "raw_table_row": "| Total PSA | ศิริราช 0–4 | ng/mL | age-specific decision limits may be preferable | [Siriraj Total PSA](https://www.si.mahidol.ac.th/Th/manual/Document/a17/Total_prostate_specific_antigen_%28Total_PSA%29.htm) citeturn30search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 139,
+    "raw_table_row": "| Free/Total PSA ratio | Total PSA 4–10: cut-off 0.23; Total PSA <4: cut-off 0.15 | ratio | lower ratio → greater cancer probability in local assay | [Siriraj Free PSA](https://www.si.mahidol.ac.th/th/manual/Document/a17/Free_PSA.htm) citeturn30search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 140,
+    "raw_table_row": "| **Infectious — HIV Ag/Ab** | non-reactive / reactive | qualitative | reactive screening must enter national confirmatory algorithm | [Thai DDC National testing guideline 2025 PDF](https://ddc.moph.go.th/uploads/publish/1731520251021162402.pdf) citeturn22view0turn21search5 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 141,
+    "raw_table_row": "| HBsAg | non-reactive | qualitative | reactive → HBV evaluation; use with anti-HBc/anti-HBs | [Thai DDC 2025 PDF](https://ddc.moph.go.th/uploads/publish/1731520251021162402.pdf) citeturn22view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 142,
+    "raw_table_row": "| Anti-HBs | ≥10 after documented complete vaccine series = seroprotective | mIU/mL | assay-specific; interpretation differs years after vaccination | [CDC HBV 2026 PDF](https://www.cdc.gov/hepatitis-b/media/pdfs/2026/08/HBV-Provider-Implementation-Toolkit_FAQ_R02_20260731.pdf) citeturn21search9turn21search2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 143,
+    "raw_table_row": "| Total anti-HBc | negative/reactive | qualitative | differentiates exposure from vaccine-only immunity in triple panel | [Thai DDC 2025 PDF](https://ddc.moph.go.th/uploads/publish/1731520251021162402.pdf) citeturn22view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 144,
+    "raw_table_row": "| Anti-HCV | non-reactive / reactive | qualitative | reactive screening requires HCV RNA confirmation of current infection | [Thai DDC 2025 PDF](https://ddc.moph.go.th/uploads/publish/1731520251021162402.pdf) citeturn21search5turn22view0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 145,
+    "raw_table_row": "| Anti-HAV IgG | negative / positive | qualitative | positive generally indicates immunity/past exposure; indication risk-based | Thai health-check use documented by [Chulalongkorn Hospital](https://kcmh.chulalongkornhospital.go.th/en/other-specific-health-examination-programs/) citeturn14search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 146,
+    "raw_table_row": "| Syphilis RPR/VDRL | non-reactive; reactive reported with endpoint titre | qualitative + titre | interpret with treponemal test | [Thai DDC 2025 PDF](https://ddc.moph.go.th/uploads/publish/1731520251021162402.pdf); [CDC 2024 PDF](https://www.cdc.gov/mmwr/volumes/73/rr/pdfs/rr7301a1-H.pdf) citeturn22view0turn21search3 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 147,
+    "raw_table_row": "| Treponemal antibody | non-reactive/reactive | qualitative | combine in conventional or reverse algorithm | [CDC 2024 PDF](https://www.cdc.gov/mmwr/volumes/73/rr/pdfs/rr7301a1-H.pdf) citeturn21search3turn21search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 148,
+    "raw_table_row": "| **Microbiology — blood culture** | no growth | qualitative | positive organisms require identification/AST; contamination context essential | [CLSI M100 Ed36](https://clsi.org/shop/standards/m100/) citeturn28search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 149,
+    "raw_table_row": "| Urine culture | no significant pathogen / interpretation depends collection and count | CFU/mL + organism | fixed universal “normal count” is inappropriate across specimen types | [CLSI M100 Ed36](https://clsi.org/shop/standards/m100/) citeturn28search0 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 150,
+    "raw_table_row": "| Stool culture/PCR | no enteric pathogen detected | qualitative | test menu depends syndrome/exposure | [Siriraj laboratory manual](https://www.si.mahidol.ac.th/th/manual/main.htm) citeturn30search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 151,
+    "raw_table_row": "| Ova & parasite examination | none detected | qualitative | sensitivity depends specimen number/organism | [Siriraj laboratory manual](https://www.si.mahidol.ac.th/th/manual/main.htm) citeturn30search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 152,
+    "raw_table_row": "| Antimicrobial susceptibility | S/I/R or MIC-based category | µg/mL/MIC | use organism–drug-specific breakpoints, CLSI M100 Ed36 2026 | [CLSI M100](https://clsi.org/shop/standards/m100/) citeturn28search0turn28search4 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 153,
+    "raw_table_row": "| **Genetics — HLA-B\\*15:02** | Negative / Positive | qualitative | pharmacogenetic drug-hypersensitivity test; not numeric RI | [Siriraj HLA PDF](https://si.mahidol.ac.th/th/manual/bloodbank/Index_files/36_1_1e0Vj9X.pdf) citeturn28search3turn28search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 154,
+    "raw_table_row": "| HLA-B\\*58:01 | Negative / Positive | qualitative | same principle; clinical use is drug-specific | [Siriraj HLA PDF](https://si.mahidol.ac.th/th/manual/bloodbank/Index_files/36_1_1e0Vj9X.pdf) citeturn28search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 155,
+    "raw_table_row": "| HLA-B\\*57:01 | Negative / Positive | qualitative | genotype report | [Siriraj HLA PDF](https://si.mahidol.ac.th/th/manual/bloodbank/Index_files/36_1_1e0Vj9X.pdf) citeturn28search7 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 156,
+    "raw_table_row": "| G6PD activity | Leeds >16 ปี 10.10–14.19 | IU/g Hb | method/population-specific; genotype/phenotype issues possible | [Leeds PDF](https://www.leedsth.nhs.uk/wp-content/uploads/2026/08/BSHC-REC-317b_Blood-Sciences-Reference-Range-Database_v3.20.pdf) citeturn18view2 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 157,
+    "raw_table_row": "| Thalassaemia/Hb typing | pattern + percentages; no single “normal range” sufficient | % Hb fractions | Thai-relevant; follow HbA/HbA₂/HbF/variant pattern and molecular testing when indicated | [Siriraj laboratory/genetics index](https://www.si.mahidol.ac.th/th/manual/main.htm) citeturn30search6 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 158,
+    "raw_table_row": "| CYP2C19 / other pharmacogenomics | genotype → phenotype | qualitative | no numeric RI; report allele calls and interpretation | Siriraj molecular testing list documents CYP2C19/VKORC1 services. citeturn28search15 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  },
+  {
+    "source_line": 159,
+    "raw_table_row": "| BRCA1/2, Lynch and hereditary-cancer panels | pathogenic / likely pathogenic / VUS / likely benign / benign | categorical | interpretation must follow current variant-classification framework | [ClinGen current guidance](https://www.clinicalgenome.org/tools/clingen-variant-classification-guidance/); [ACMG laboratory standards](https://www.acmg.net/genetics-laboratory-standards/) citeturn28search2turn28search9 |",
+    "status": "DISCOVERY_ONLY_NOT_APPROVED",
+    "runtime_rag": false
+  }
+]

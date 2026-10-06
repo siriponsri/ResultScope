@@ -1,0 +1,86 @@
+[
+  {
+    "file": "01-Final-Project.docx",
+    "bytes": 30309,
+    "sha256": "c02b15e3fce123162ca4941d807cb4d5661cdeae08636745e36afce14934a45a",
+    "type": "original_course_source"
+  },
+  {
+    "file": "02-Week-12.pdf",
+    "bytes": 160559,
+    "sha256": "ce38eaf888e6a6b9da7873864d849a33c4368e9f234ad193ddf4697a13da50ca",
+    "type": "original_course_source"
+  },
+  {
+    "file": "03-Week1.pdf",
+    "bytes": 3935167,
+    "sha256": "7d356038ed97f4536db791c0eb419e7f892589adebb688fac716eabd481998ff",
+    "type": "original_course_source"
+  },
+  {
+    "file": "04-week2.pdf",
+    "bytes": 11374117,
+    "sha256": "adcf7c922fb22bc1d02f543892d5d6792446403c0d49c49bc2d896edc99fb407",
+    "type": "original_course_source"
+  },
+  {
+    "file": "05-Week3.pdf",
+    "bytes": 2132131,
+    "sha256": "445651580ec0172a47ac26c7d74dcebe69d3883e8e75015c78ebd3057b471908",
+    "type": "original_course_source"
+  },
+  {
+    "file": "06-Week4.pdf",
+    "bytes": 2117260,
+    "sha256": "0bfef208d41ee29ca3eb7aca3041d533599983b4e0a4ad4f559d96740459e977",
+    "type": "original_course_source"
+  },
+  {
+    "file": "07-Week5.pdf",
+    "bytes": 1131583,
+    "sha256": "6c84c79330eb0bdd2443ebacdb2e00d9331937d4e41075090fb89d58aec8f548",
+    "type": "original_course_source"
+  },
+  {
+    "file": "08-Week6.pdf",
+    "bytes": 966333,
+    "sha256": "e72d61fd44836fa8635fe1f5978b7f8e1baea433fbc451ccab810ef56bae07cd",
+    "type": "original_course_source"
+  },
+  {
+    "file": "09-week7-1.pdf",
+    "bytes": 721860,
+    "sha256": "debfa3939883a954719139311d4abe4bf15d767faa71bf8a447b10bd9df51201",
+    "type": "original_course_source"
+  },
+  {
+    "file": "10-week7.pdf",
+    "bytes": 721860,
+    "sha256": "debfa3939883a954719139311d4abe4bf15d767faa71bf8a447b10bd9df51201",
+    "type": "original_course_source"
+  },
+  {
+    "file": "11-Week8.pdf",
+    "bytes": 3534879,
+    "sha256": "3025d34d1546794d35928f36f8add0cb62e2d4dd0a9e2238742731636088ed9a",
+    "type": "original_course_source"
+  },
+  {
+    "file": "12-Week9.pdf",
+    "bytes": 845433,
+    "sha256": "476d60447d23b2351071ccba8ff1325b807c56f94900f12d04d33c9079edb386",
+    "type": "original_course_source"
+  },
+  {
+    "file": "13-Week10.pdf",
+    "bytes": 553899,
+    "sha256": "1c541342d7c945bacb2d7798cfc1429d6a7318d1e696a713c507a9d55f057ed3",
+    "type": "original_course_source"
+  },
+  {
+    "file": "14-Week11.pdf",
+    "bytes": 514116,
+    "sha256": "c79485d82bcb6667c3c1082d0b88b70dadfdc1ec8b116c868fad50a7d8867e8c",
+    "type": "original_course_source"
+  }
+]

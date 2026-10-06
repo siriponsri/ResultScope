@@ -1,0 +1,75 @@
+{
+  "version": "2.0.0",
+  "date": "2026-10-05",
+  "provider_calls": 0,
+  "checks": [
+    "Desktop composer and original purple theme",
+    "Offline mode shows a real provider setup error, never a canned AI answer",
+    "Reset clears conversation",
+    "Reference library displays real publishers",
+    "Supplied artifact preview loads",
+    "Report correction and explicit confirmation UI",
+    "Scripted multi-turn answer, citations and Thai follow-up preserve context",
+    "Conversation export",
+    "Hyperframes player loads and seeks",
+    "390 px mobile navigation, gallery and document dialog",
+    "Reduced motion, keyboard skip link and Escape dialog closure",
+    "No uncaught browser errors"
+  ],
+  "entries": [
+    {
+      "file": "01-conversation-desktop.png",
+      "mode": "real local UI; providers disabled",
+      "sha256": "501ce8fe746ea256d59c497206bfa577db7c642426d655708f1e23806dea92ce"
+    },
+    {
+      "file": "02-offline-recovery.png",
+      "mode": "real local API error; no model calls",
+      "sha256": "09f92b495abb9cf9917b5ccc91ef620c6f332edd1e82ad52ed74e00835dda044"
+    },
+    {
+      "file": "03-six-supplied-reports.png",
+      "mode": "real supplied synthetic artifacts; no OCR",
+      "sha256": "f540148b372c1874751cfcadd74eeaea6d95e68cd150c29365a9f3e554c40075"
+    },
+    {
+      "file": "04-report-review-scripted.png",
+      "mode": "explicit vision API double; row is not measured OCR",
+      "sha256": "08a694a871831745bb12297f834fb3ab6edf296458773e898e8d26fbb289a750"
+    },
+    {
+      "file": "05-conversation-scripted.png",
+      "mode": "explicit answer API double; not live LLM evidence",
+      "sha256": "3e992ab527111091a74925ee0610c00d0c8c6a30ef36812c677accf031308bd5"
+    },
+    {
+      "file": "06-hyperframes-introduction.png",
+      "mode": "real Hyperframes player, held composition frame",
+      "sha256": "eb7d7922d6b5a4e36587e0ac981ca73721880080a0666a4817c632961346bc01"
+    },
+    {
+      "file": "07-conversation-mobile.png",
+      "mode": "real local mobile UI; providers disabled",
+      "sha256": "e0140ece4fb5c4ef6cfb445ddabef7fbdb737e54d850d715c1321e8a287f1aa2"
+    },
+    {
+      "file": "08-sample-gallery-mobile.png",
+      "mode": "real supplied synthetic report gallery",
+      "sha256": "d6ba11a408108b323ca9056398265b5e420bc2ececd393b283904db44e707494"
+    },
+    {
+      "file": "09-report-mobile.png",
+      "mode": "real supplied synthetic thyroid PNG; no OCR",
+      "sha256": "f7c6c5c1281ffe1dcb234a4a20b25a96dc686ed42647fe8d91ebb3f15aa5ec1b"
+    },
+    {
+      "file": "10-user-guide.png",
+      "mode": "current HTML guide",
+      "sha256": "8c4502022ae6516a52c8dfa45c61c96272dee94aae7931c72481c66f04ca2a1b"
+    }
+  ],
+  "limits": [
+    "API doubles do not establish OCR or LLM quality.",
+    "Actual Vercel deployment and live providers were not tested."
+  ]
+}

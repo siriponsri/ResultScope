@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คู่มือการส่งตรวจทางห้องปฏิบัติการทางการแพทย์ | คณะแพทยศาสตร์ศิริราชพยาบาล</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #003865; /* Siriraj Deep Blue */
+            --secondary-color: #D4AF37; /* Gold Accent */
+            --bg-color: #f4f7f9;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        /* Top Header / Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #002244 100%);
+            color: #ffffff;
+            padding: 40px 20px;
+            border-bottom: 5px solid var(--secondary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title-area {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .title-area h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-area p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Repositioned QR Code Section at Top */
+        .qr-top-container {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .qr-code-box {
+            width: 90px;
+            height: 90px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .qr-code-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .qr-text {
+            max-width: 150px;
+        }
+
+        .qr-text h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .qr-text p {
+            font-size: 0.8rem;
+            color: #e0e0e0;
+        }
+
+        /* Search & Filter Controls */
+        .search-container {
+            margin: -25px auto 40px auto;
+            padding: 0 20px;
+        }
+
+        .search-wrapper {
+            background: #ffffff;
+            padding: 10px 15px;
+            border-radius: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-wrapper i {
+            color: #a0aec0;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        .search-wrapper input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        /* Grid Directory Content */
+        .directory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 25px;
+            padding: 0 20px;
+        }
+
+        .dept-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f5;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+
+        .dept-header {
+            background-color: #f8fafc;
+            padding: 16px 20px;
+            border-bottom: 1px solid #edf2f7;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dept-header i {
+            color: var(--secondary-color);
+        }
+
+        .lab-list {
+            list-style: none;
+            padding: 10px 20px 20px 20px;
+            flex-grow: 1;
+        }
+
+        .lab-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .lab-item:last-child {
+            border-bottom: none;
+        }
+
+        .lab-link {
+            color: #4a5568;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .lab-link:hover {
+            color: var(--primary-color);
+            padding-left: 5px;
+            font-weight: 500;
+        }
+
+        .lab-link i {
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .lab-link:hover i {
+            opacity: 1;
+            transform: translateX(3px);
+            color: var(--secondary-color);
+        }
+
+        /* General Document Download Section */
+        .extra-docs {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #eef2f7 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .qr-top-container {
+                width: 100%;
+                justify-content: center;
+            }
+            .directory-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero-section">
+        <div class="container header-content">
+            <div class="title-area">
+                <h1><i class="fa-solid fa-microscope"></i> คู่มือการส่งตรวจทางห้องปฏิบัติการทางการแพทย์</h1>
+                <p>คณะแพทยศาสตร์ศิริราชพยาบาล มหาวิทยาลัยมหิดล</p>
+            </div>
+            
+            <div class="qr-top-container">
+                <div class="qr-code-box">
+                    <img src="qrcode.png" alt="QR Code Link" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.si.mahidol.ac.th/th/manual/main.htm'">
+                </div>
+                <div class="qr-text">
+                    <h4>ค้นหา LAB ศิริราชง่ายๆ</h4>
+                    <p>เพิ่มเพื่อนเลย SiLabBot</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container container">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="labSearch" placeholder="พิมพ์ชื่อภาควิชา หรือห้องปฏิบัติการเพื่อค้นหา..." onkeyup="filterDirectory()">
+        </div>
+    </div>
+
+    <main class="container">
+    <div style="text-align: right; margin-bottom: 25px;">
+        <a href="YOUR_INDEX_PAGE_URL_HERE" style="display: inline-flex; align-items: center; gap: 8px; background-color: #ffffff; color: #004b93; font-family: 'Segoe UI', Tahoma, Thonburi, sans-serif; font-size: 14px; font-weight: bold; text-decoration: none; padding: 8px 20px; border: 2px solid #004b93; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.backgroundColor='#004b93'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#ffffff'; this.style.color='#004b93';">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            รวม index ทั้งหมด
+        </a>
+    </div>
+    </main>
+
+    <main class="container directory-grid" id="directoryGrid">
+        
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-baby"></i> ภาควิชากุมารเวชศาสตร์
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a01.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาต่อมไร้ท่อและเมแทบอลิซึม <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a02.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาโรคภูมิแพ้และวิทยาภูมิคุ้มกัน <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a03.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาโลหิตวิทยาและอองโคโลยี <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a04.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาเวชพันธุศาสตร์ <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/manual/Nutrition" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาโภชนาการ <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-microscope"></i> ภาควิชาจุลชีววิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/department/microbiology/LabManual/index.html" class="lab-link" target="_blank">ห้องปฏิบัติการจุลชีววิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-bong"></i> ภาควิชาชีวเคมี
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/manual/biochem/" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาชีวเคมี <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-hand-dots"></i> ภาควิชาตจวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a05.html" class="lab-link" target="_blank">ห้องปฏิบัติการตจวิทยาภูมิคุ้มกัน <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-fingerprint"></i> ภาควิชานิติเวชศาสตร์
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="M-FO-00-4-001-15.pdf" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชานิติเวชศาสตร์ <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-bug"></i> ภาควิชาปรสิตวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/department/parasitology/examination_process.html" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาปรสิตวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-virus-covid"></i> ภาควิชาพยาธิวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://sites.google.com/view/sipatholab" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาพยาธิวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-vial-virus"></i> ภาควิชาพยาธิวิทยาคลินิก
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/manual/Project" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาพยาธิวิทยาคลินิก <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-x-ray"></i> ภาควิชารังสีวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a06.html" class="lab-link" target="_blank">ห้องปฏิบัติการเคมีนิวเคลียร์ <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-disease"></i> ภาควิชาวิทยาภูมิคุ้มกัน
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/department/immunology/news_detail.asp?id=272" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาวิทยาภูมิคุ้มกัน <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-droplet"></i> ภาควิชาเวชศาสตร์การธนาคารเลือด
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/manual/bloodbank" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาเวชศาสตร์การธนาคารเลือด <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-skull-crossbones"></i> งานพิษวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a07.html" class="lab-link" target="_blank">ห้องปฏิบัติการพิษวิทยาคลินิก <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-child-reaching"></i> ภาควิชาสรีรวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="ANSFORM28-03-55.pdf" class="lab-link" target="_blank">ห้องปฏิบัติการภาควิชาสรีรวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+         <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-venus"></i> ภาควิชาสูติศาสตร์-นรีเวชวิทยาวิทยา
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a08.html" class="lab-link" target="_blank">ห้องปฏิบัติการหน่วยเซลล์วิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a09.html" class="lab-link" target="_blank">ห้องปฏิบัติการโครโมโซมวินิจฉัยก่อนคลอด <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+       
+         <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-dna"></i> ศูนย์จีโนมิกส์ศิริราช
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a16.html" class="lab-link" target="_blank">ห้องปฏิบัติการโครโมโซมวินิจฉัยมะเร็งเม็ดเลือดขาว <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a10.html" class="lab-link" target="_blank">ห้องปฏิบัติการอณูพันธุศาสตร์ <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+        
+         <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-capsules"></i> ภาควิชาอายุรศาสตร์
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="WebManual/sub_a11.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาต่อมไร้ท่อและเมตะบอลิสม <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a12.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาประสาทวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a13.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาโรคติดเชื้อและอายุรศาสตร์เขตร้อน <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a14.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาโลหิตวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+                <li class="lab-item"><a href="WebManual/sub_a15.html" class="lab-link" target="_blank">ห้องปฏิบัติการสาขาวิชาวักกะวิทยา <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+        
+        <div class="dept-card">
+            <div class="dept-header">
+                <i class="fa-solid fa-vials"></i> ศูนย์บริหารจัดการสิ่งส่งตรวจศิริราช
+            </div>
+            <ul class="lab-list">
+                <li class="lab-item"><a href="https://www.si.mahidol.ac.th/th/division/sisc/download.asp" class="lab-link" target="_blank">ศูนย์บริหารจัดการสิ่งส่งตรวจศิริราช <i class="fa-solid fa-chevron-right"></i></a></li>
+            </ul>
+        </div>
+
+        <div class="extra-docs">
+            <h3 style="font-size: 1.1rem; color: var(--primary-color); margin-bottom: 8px;"><i class="fa-solid fa-file-pdf"></i> เอกสารเพิ่มเติม</h3>
+            <a href="F-SI-70-1-002-01.pdf" class="lab-link" target="_blank" style="justify-content: flex-start; gap: 8px; font-weight: 500;">
+                หนังสือแสดงเจตนาให้เก็บสิ่งส่งตรวจสำหรับการตรวจทางพันธุกรรม 
+                <i class="fa-solid fa-download" style="opacity:1;"></i>
+            </a>
+            <a href="F-SI-70-1-003-00.pdf" class="lab-link" target="_blank" style="justify-content: flex-start; gap: 8px; font-weight: 500;">
+                Declaration of Intent for Retention of Specimens for Genetic Testing 
+                <i class="fa-solid fa-download" style="opacity:1;"></i>
+            </a>
+        </div>
+    </main>
+
+    <script>
+        function filterDirectory() {
+            let input = document.getElementById('labSearch').value.toLowerCase();
+            let grid = document.getElementById('directoryGrid');
+            let cards = grid.getElementsByClassName('dept-card');
+            
+            for (let i = 0; i < cards.length; i++) {
+                let textContent = cards[i].textContent || cards[i].innerText;
+                if (textContent.toLowerCase().indexOf(input) > -1) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

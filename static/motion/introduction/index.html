@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280, height=720"><title>ResultScope — A conversation with context</title>
+<style>
+@font-face{font-family:Plex;src:url(plex-400.woff2)}@font-face{font-family:Plex;src:url(plex-600.woff2);font-weight:600}@font-face{font-family:Plex;src:url(plex-700.woff2);font-weight:700}
+*{box-sizing:border-box;margin:0}html,body{width:1280px;height:720px;overflow:hidden;background:#F8F8FF;font-family:Plex,sans-serif;color:#21172F}
+#root{width:1280px;height:720px;position:relative;overflow:hidden}.scene-content{width:100%;height:100%;padding:58px 70px 82px;display:flex;flex-direction:column;gap:36px}
+.brand{display:flex;align-items:center;gap:14px;font-size:26px;font-weight:600;color:#4B0082}.mark{width:38px;height:38px;border:9px solid #4B0082;border-radius:13px;transform:rotate(-12deg)}
+.stage{display:grid;grid-template-columns:1.05fr 1fr;gap:58px;flex:1;align-items:center}.intro{display:flex;flex-direction:column;gap:25px}h1{font-size:70px;line-height:1.03;letter-spacing:-.045em;font-weight:700;max-width:580px}h1 span{color:#4B0082}.lede{font-size:26px;line-height:1.45;max-width:470px;color:#61586F}
+.conversation{padding:26px;border:1px solid #DED8E9;border-radius:28px;background:white;display:flex;flex-direction:column;gap:22px;box-shadow:0 24px 70px #4b008211}.label{font-size:18px;letter-spacing:.1em;color:#61586F}.question{padding:20px 23px;background:#F1EBFC;border-radius:20px 20px 5px 20px;font-size:26px;line-height:1.35;color:#4B0082}.reply{font-size:26px;line-height:1.4;font-weight:600}.source{display:flex;gap:10px;align-items:center;font-size:20px;color:#4B0082;padding-top:18px;border-top:1px solid #DED8E9}.source:before{content:'↗';width:29px;height:29px;border:1px solid #DED8E9;border-radius:50%;text-align:center}.followup{padding:14px 18px;border:1px solid #DED8E9;border-radius:14px;font-size:21px;color:#61586F}
+.footer{display:flex;justify-content:space-between;align-items:center;font-size:18px;color:#61586F}.pill{padding:10px 16px;border-radius:99px;background:#F1EBFC;color:#4B0082;font-size:20px}.line{position:absolute;bottom:0;height:5px;width:100%;background:#6A5ACD;transform-origin:left}
+</style></head><body>
+<div id="root" data-composition-id="resultscope-intro" data-start="0" data-duration="12" data-width="1280" data-height="720">
+<div class="scene-content">
+<div class="brand"><span class="mark"></span>ResultScope</div>
+<div class="stage"><div class="intro"><h1>A conversation.<span> More clarity.</span></h1><p class="lede">Ask naturally. Follow the evidence. Keep the context.</p></div>
+<div class="conversation"><div class="label">START WITH A QUESTION</div><div class="question">Can you help me understand my lab report?</div><div class="reply">Bring your questions. We’ll find the context.</div><div class="source">Sources you can open</div><div class="followup">Explain it in my language →</div></div></div>
+<div class="footer"><span class="pill">Made for conversation</span><span>Illustrative introduction · Educational use</span></div>
+</div><div class="line" data-layout-ignore></div></div>
+<script src="gsap.min.js"></script><script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+tl.from('.brand',{opacity:0,y:16,duration:.6,ease:'power2.out'},.15)
+.from('h1',{opacity:0,y:30,duration:.85,ease:'power3.out'},.35)
+.from('.lede',{opacity:0,x:-18,duration:.65,ease:'sine.out'},1)
+.from('.conversation',{opacity:0,scale:.97,duration:.8,ease:'power2.out'},1.4)
+.from('.label',{opacity:0,y:10,duration:.45,ease:'sine.out'},1.65)
+.from('.question',{opacity:0,x:24,duration:.6,ease:'power3.out'},2)
+.from('.reply',{opacity:0,y:18,duration:.7,ease:'power2.out'},3.6)
+.from('.source',{opacity:0,y:12,duration:.5,ease:'sine.out'},5.3)
+.from('.followup',{opacity:0,x:14,duration:.6,ease:'power3.out'},6.8)
+.from('.footer',{opacity:0,y:10,duration:.6,ease:'sine.out'},8.4)
+.from('.line',{scaleX:0,duration:11.8,ease:'none'},.2);
+window.__timelines['resultscope-intro']=tl;
+</script></body></html>

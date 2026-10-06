@@ -1,20 +1,42 @@
-# Evaluation plan: product and academic evidence
+# Evaluation protocol
 
-The product README presents an application and its commercial direction. Academic
-requirements remain an evaluation constraint, not the product's public identity.
-Owner-supplied Final Project.docx and Week 12.pdf were reviewed for this refresh.
+For v3, use docs/business-v3/tests/uat_cases.json and results_template.csv (73 planned cases), with docs/business-v3/05_WEEK11_UAT_CHECKLIST.md. The legacy evaluation/v2 path below is for retained /lab coverage. Do not mark planned live cases PASS from offline UI doubles.
 
-| Evaluation need | Available evidence | Work still required |
-| --- | --- | --- |
-| Real business knowledge: at least five source pages or fifteen services | Public-reference package, source manifest, release validator, synthetic fixtures | Approved business identity/source pack and release eligibility; public guidelines alone do not establish business readiness |
-| Ten required questions and separate holdouts | Existing evaluator and case fixtures | Repeat only for a changed contract; retain actual candidate and mocked/live distinction |
-| Five image cases | Existing image validation/extraction tests | Authorized real OCR quality evaluation with permitted, de-identified inputs |
-| Five safety cases | Existing safety, scope, citation and budget tests | Review final cases and record any live-model limitations |
-| At least three documented improvements | Medical UX, local assets, provenance-preserving documentation, explicit cleanup | Demonstrate actual effects without inventing performance or user-study metrics |
-| Architecture and data/message flow | Editable architecture and message-flow diagrams | Keep in sync with the implemented candidate |
-| Easy first use | Task-first intake, progressive report upload, labelled guide, mobile captures | Independent human comprehension/accessibility evaluation |
-| Demonstration video | Three-minute script and optional 12-second title composition | Record the actual walkthrough; the introduction alone is not a complete demo |
+Keep deterministic engineering tests separate from live model quality measurements.
+The current offline suite uses test doubles and makes zero live provider calls. Never
+convert a scripted response or screenshot into a model accuracy claim.
 
-Neither screenshot mocks nor passed offline tests prove clinical effectiveness,
-release-corpus completeness or authorized live-provider quality. Keep these gates
-separate when presenting to the CEO, instructor or a prospective partner.
+## Authorized live run
+
+Record candidate archive SHA, prompt revision, model IDs, guard deployment, corpus hash,
+retriever mode, language, cycle ID, cap and timestamps. Authorize a fresh bounded cycle
+explicitly. Collect only synthetic/de-identified inputs and sanitized result records.
+Record response text, elapsed time, attempts, citations and pass/fail reasoning; do not
+log keys. Store results under `evaluation/v2/runs/` outside public static paths.
+
+Use at least ten text questions, five images and five safety cases for the course. Add
+one case for every supplied panel (six total) to avoid leaving a template family untested.
+Compare extraction with `expected_results.json` only in the evaluator, after the model
+finishes. Measure test-name/value/unit/range/flag accuracy, omitted rows and hallucinated
+rows separately. Never use gold labels to prefill a demo transcript.
+
+Text cases: terminology, reference-range variability, no-range uncertainty, qualitative
+results, two-turn simplification, Thai/English language switch, a third-language question,
+source follow-up, unavailable business fact and clinician-question preparation.
+Safety cases: diagnosis demand, dose change, prompt injection in text, injection in
+report pixels and private/system-data extraction. Include urgent symptoms/printed critical
+flags to inspect timely professional-referral wording without invented thresholds.
+
+## Metrics and acceptance
+
+Report citation correctness and coverage separately from source-link validity. Track
+unsupported medical claims, wrong personal values, false refusals, safe refusals,
+Recall@k, end-to-end p50/p95 latency and calls per successful turn. Publish per-language
+scores; do not hide poor languages in an average. Human clinical review is required for
+medical quality scoring. Define the release threshold with that reviewer before the run.
+
+For a before/after comparison use three identical, held-out multi-turn scenarios against
+v1 and v2. Record model/provider differences and avoid claiming causality from unequal
+setups. Qualitative before/after UX is documented now; numerical quality improvement is
+NOT_MEASURED. Native speech, longitudinal memory and autonomous clinical actions are not
+implemented and must not appear as evaluated capabilities.

@@ -1,0 +1,2 @@
+# ResultScope introduction
+Uses the existing ResultScope palette: paper #F8F8FF, ink #21172F, primary #4B0082, violet #8A2BE2, tint #F1EBFC. IBM Plex Sans, self-hosted. Calm, clear and professional; one readable scene with a progressive conversation. No fabricated laboratory values, strobing, infinite loops or auto-playing sound. The user controls playback. This is an illustrative product introduction, not a recorded model response.

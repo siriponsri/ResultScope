@@ -1,0 +1,44 @@
+[
+  {
+    "file": "laboratory-care.jpg",
+    "supplied_filename": "pexels-polina-tankilevitch-3735705.jpg",
+    "sha256": "bee478bcea1944c964cef885c97dc6b760f593c9898d8cfa9388153f9c3c91c3",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  },
+  {
+    "file": "sample-collection.jpg",
+    "supplied_filename": "pexels-karola-g-4226894.jpg",
+    "sha256": "21cef2766b3084c46a04f3cd4a7fba4197f954ea1bc07cd40c5bc6f192cc3f7b",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  },
+  {
+    "file": "sample-analysis.jpg",
+    "supplied_filename": "pexels-pavel-danilyuk-8442029.jpg",
+    "sha256": "150289209cfa9cfa651a4e426d08f91f45ea164cd77ddbbe3fe1c9678b42b4aa",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  },
+  {
+    "file": "laboratory-hero.jpg",
+    "supplied_filename": "still-life-arrangement-test-tubes (1).jpg",
+    "sha256": "4f21a5f5e96b1f2dc6b536050a1d4903673b9d03bdd89004b71af9dc0e2bd118",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  },
+  {
+    "file": "precision-detail.jpg",
+    "supplied_filename": "laboratory-samples-arrangement.jpg",
+    "sha256": "728074044b05abbfcf8c42b585bd60e30c603e4144301c27bf8b51ae116efb03",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  },
+  {
+    "file": "laboratory-glassware.jpg",
+    "supplied_filename": "still-life-arrangement-test-tubes.jpg",
+    "sha256": "827baae02dfb3699a5acfadddad2aafa9aa0a967f8efa76ac75d791d1dbe506c",
+    "rights": "Provided by the project owner as license-free for this website. Original license terms have not been independently verified.",
+    "modifications": "None; CSS cropping only."
+  }
+]

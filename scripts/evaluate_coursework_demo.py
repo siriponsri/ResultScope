@@ -432,7 +432,8 @@ def main() -> int:
     finally:
         answer_service.llm_client.chat = original_chat
 
-    revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True).stdout.strip()
+    from services.source_revision import source_revision
+    revision = source_revision(ROOT)
     mandatory_passed = sum(row["passed"] for row in rows if row["set"] == "mandatory")
     holdout_passed = sum(row["passed"] for row in rows if row["set"] == "holdout")
     report = {

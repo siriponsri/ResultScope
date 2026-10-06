@@ -1,25 +1,35 @@
-# Decision: Python controls, optional shadow models
+# ADR: LLM decisions with independent safety boundaries
 
-Status: implemented in the current local prototype. Documentation reviewed 2026-10-04.
+Version 3 reuses this guard boundary for business_agent.py and report reading. The LLM proposes actions; the business API revalidates ownership, current catalog, capacity, expiry and idempotency after explicit confirmation. Week 11 request fixtures are in docs/business-v3/tests/week11.postman_collection.json.
 
-Python remains authoritative for scope, privileged business routing, source
-selection, supplied-range arithmetic, extraction confirmation and output validation.
-A model cannot grant itself authorization, invent a retrieved citation, change a
-supplied range or convert synthetic business records into approved information.
+Status: implemented in v2; live model effectiveness remains unvalidated.
 
-JSON and SSE run the same answer-validation boundary. The SSE response is not a
-raw-token bypass. Invalid output fails closed with sanitized stable error codes.
-Logs must not include raw provider answers, keys, patient content or image bytes.
+The owner requested LLM-led conversation. We removed symbolic intent decisions from the
+active route. Deterministic checks remain for authentication, range arithmetic, data
+integrity and resource limits. These checks do not generate educational responses.
 
-Every provider transport path reserves a persistent local attempt before HTTP.
-`PROVIDER_NETWORK_ENABLED=false` blocks transport before reservation. Consumed,
-failed and unfinished attempts are never refunded. The ledger does not reset when
-the app restarts. Admin tests and model listing share the same accounting boundary.
+The guard integration follows `chacharin/llama-guard-layer`: separate safety model,
+input/output directions, and screening at the application boundary. Direct mode uses
+Llama Guard chat roles; output classification includes the original user request followed
+by an assistant message. Service mode calls `/check` with message and direction.
+The reviewed teacher guard.py blob was `40c849e67d5dd84d4473af20256abd33e92a08ef`.
 
-SystemOne is a distinct optional shadow adapter. Its output does not override Python.
-Clef is disabled. A future external guard requires its own contract and validation;
-it cannot replace source-ID, URL, number, authorization or session checks.
+We deliberately tighten the teacher example: malformed/missing verdicts, unknown category
+syntax, timeouts and unavailable models fail closed. Direct mode rejects every reported
+S1–S14 unsafe result, including specialized advice S6 and privacy S7. Teacher service mode
+requires a valid direction/result/categories response and an empty category list for safe.
+Configure the external service to block all categories required by this deployment; the
+upstream example's configurable category exclusions must not silently weaken this policy.
+Protect a remote service with an authenticated proxy if it does not implement the optional
+Bearer token itself. Local string tripwires only cover a few obvious injection attempts.
 
-This keeps essential decisions inspectable and testable. It does not prove live
-model safety, defeat every prompt injection, or establish distributed cloud controls.
-See [threat model](THREAT_MODEL.md) and [readiness](../operations/READINESS.md).
+Llama Guard is not a factuality detector. Citation IDs and structured observations are
+checked in code, then a distinct LLM call checks support and prose-level field fidelity.
+A same-model critic can share the generator's mistakes; evaluate it rather than treating
+it as independent medical approval. Check follow-up suggestions as part of the output.
+No unreviewed text is streamed; failures display an English operational message.
+
+Sources: [teacher repository](https://github.com/chacharin/llama-guard-layer),
+[Llama Guard 4 model card](https://huggingface.co/meta-llama/Llama-Guard-4-12B).
+The model card does not establish equally reliable safety in every language. Maintain
+language-specific tests, false-refusal review and adversarial evaluation before widening use.

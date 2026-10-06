@@ -90,7 +90,7 @@ class Settings(BaseSettings):
     ADMIN_TEST_RATE_LIMIT_REQUESTS: int = 3
     ADMIN_TEST_RATE_LIMIT_WINDOW_SECONDS: int = 300
     ADMIN_SECRET_STORAGE_KEY: str = ""
-    SYSTEMONE_SHADOW_ENABLED: bool = True
+    SYSTEMONE_SHADOW_ENABLED: bool = False
 
     # Provider calls are deny-by-default until an owner explicitly enables a
     # persisted attempt cycle. The ledger is local-only in this remediation.
@@ -111,6 +111,23 @@ class Settings(BaseSettings):
     IMAGE_MAX_PIXELS: int = 12 * 1000 * 1000
     MAX_EXTRACTION_FIELDS: int = 30
     EXTRACTION_TTL_SECONDS: int = 60 * 60 * 24
+
+    # Conversation v2: model-led decisions, bounded tools and guarded answers.
+    GUARD_BASE_URL: str = "https://openrouter.ai/api/v1"
+    GUARD_API_KEY: str = ""
+    GUARD_MODEL: str = "meta-llama/llama-guard-4-12b"
+    GUARD_SERVICE_URL: str = ""
+    GUARD_SERVICE_TOKEN: str = ""
+    GUARD_TIMEOUT_SECONDS: float = 20.0
+    # All categories are blocked, including specialized medical advice (S6).
+    DEMO_ACCESS_CODE: str = ""
+    CONTEXT_TTL_SECONDS: int = 3600
+    CLOUD_CALL_LIMIT: int = 200
+    LIGHTRAG_URL: str = ""
+    LIGHTRAG_API_KEY: str = ""
+    LIGHTRAG_ENABLED: bool = False
+    # External retrieval may rank only records in our verified local manifest.
+    RETRIEVAL_TIMEOUT_SECONDS: float = 12.0
 
     model_config = SettingsConfigDict(
         env_file=".env",

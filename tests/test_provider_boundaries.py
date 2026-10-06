@@ -191,6 +191,7 @@ def test_failed_adapter_transport_reports_consumed_attempt_without_provider_deta
 
 
 def test_systemone_shadow_uses_shared_reservation_and_sanitized_parser(monkeypatch, tmp_path):
+    monkeypatch.setattr("config.settings.SYSTEMONE_SHADOW_ENABLED", True)
     _budget(monkeypatch, tmp_path, systemone=1)
     provider = RuntimeProvider(
         "openthai_systemone",

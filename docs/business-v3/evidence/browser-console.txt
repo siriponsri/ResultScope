@@ -1,0 +1,9 @@
+MOBILE [
+  { name: 'workspace-body', w: 390, right: 390, display: 'flex' },
+  { name: 'view chat-layout', w: 390, right: 390, display: 'flex' },
+  { name: 'conversation-column', w: 390, right: 390, display: 'flex' },
+  { name: 'composer-area', w: 390, right: 390, display: 'block' },
+  { name: 'send-button', w: 36, right: 360, display: 'block' },
+  { name: 'context-panel', w: 0, right: 0, display: 'none' }
+]
+[{"name":"Homepage: six supplied images and English navigation","status":"PASS","ms":1089},{"name":"Workspace: free-text first and account creation","status":"PASS","ms":949},{"name":"Chat proposal does not book until confirmation","status":"PASS","ms":160},{"name":"Confirm creates exactly one appointment with canonical price","status":"PASS","ms":125},{"name":"Payment at center stays pending","status":"PASS","ms":42},{"name":"Upload opens source image and editable unconfirmed fields (OCR double)","status":"PASS","ms":547},{"name":"Explicit field confirmation and selected context","status":"PASS","ms":112},{"name":"Archive and saved report survive reload","status":"PASS","ms":731},{"name":"Staff handoff consent queues the conversation","status":"PASS","ms":200},{"name":"Staff signs in and takes over a case","status":"PASS","ms":887},{"name":"Live website staff reply reaches customer","status":"PASS","ms":2395},{"name":"Manager operations and catalog are available","status":"PASS","ms":139},{"name":"Desktop keyboard focus visible and no overflow","status":"PASS","ms":5},{"name":"390px fresh-load mobile navigation and reduced motion","status":"PASS","ms":1021},{"name":"Mobile photographic home has no horizontal overflow","status":"PASS","ms":759},{"name":"No browser JavaScript errors","status":"PASS","ms":0}]

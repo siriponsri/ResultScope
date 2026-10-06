@@ -1,13 +1,13 @@
-# ResultScope business brief
+# Business brief — educational prototype
 
-ResultScope Laboratory Assistant is a product prototype for understanding laboratory
-information through reviewed values, source-linked explanations and explicit limits.
+ResultScope helps people ask better questions about laboratory reports. Its deliverable
+is a source-grounded conversation, not a laboratory service or a diagnostic decision.
+The primary audience is a person reviewing a de-identified report with a care team.
+Secondary users are educators and project reviewers exploring synthetic documents.
 
-The current product scope and target users are documented in
-[Product overview](docs/product/OVERVIEW.md). The future integration strategy is documented
-in [Roadmap](docs/product/ROADMAP.md). These are product hypotheses, not a claim that a real
-laboratory has approved a service catalog or that an HIS connector is implemented.
-
-The original planning brief is retained as immutable non-release source evidence under
-knowledge/snapshots/legacy/BUSINESS_BRIEF.md. Rebranding does not confer owner approval on
-synthetic data, public reference ranges, educational sources or business policies.
+The repository does not establish a real laboratory business name, address, opening
+hours, prices, service contract or booking policy. Do not manufacture these facts to
+satisfy a course rubric. Owner evidence is required before adding a business knowledge base.
+The current real-source collection covers laboratory information; the six reports are
+fictional evaluation artifacts. See `docs/coursework/REQUIREMENTS.md` for outstanding
+submission requirements and `docs/product/EVALUATION_PLAN.md` for the evaluation protocol.

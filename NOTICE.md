@@ -31,3 +31,8 @@ local GSAP copies with the original copyright header and license pointer. See
 
 The new name, logo, interface and documentation do not grant additional rights to
 upstream code or source datasets. Preserve all separate notices and source terms.
+
+
+## ResultScope 2.0 additions
+
+The Hyperframes player is @hyperframes/player 0.8.131, MIT licensed; the license is in static/vendor/HYPERFRAMES-LICENSE. The original 12-second composition uses the existing GSAP and font notices, copied alongside its runtime assets. DOMPurify is updated to 3.4.16, with its full license in static/vendor/dompurify-LICENSE. Exact source URLs and hashes are in static/vendor/SOURCES.json. Teacher repositories inform the independently authored integration patterns; their server source has not been bundled as a local runtime. Source-specific laboratory manuals retain the existing vendor bundle notices.

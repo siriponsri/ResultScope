@@ -1,21 +1,13 @@
-# Three-minute product demonstration
+# Three minute demonstration script
 
-Audience: CEO, product team and course examiner. Present a local product prototype.
-Use synthetic information. State whether this session is offline, mocked or authorized
-live before showing answers. Never narrate a mock response as a live result.
+| Time | Demonstration |
+|---|---|
+| 0–20 s | Introduce the health-check business, individual/organization customers and English UI. |
+| 20–50 s | Type a Thai package question; show the actual model and evidence-linked answer. If using a double, label it explicitly. |
+| 50–80 s | Upload a supplied synthetic report, inspect the source and confirm exact fields. Explain that reference evidence is real. |
+| 80–110 s | Ask a follow-up, inspect sources and request an appointment preview; confirm explicitly. |
+| 110–135 s | Show pending payment, sandbox checkout or center receipt; explain webhook verification. |
+| 135–155 s | Request staff; show takeover and reply. Describe LINE linking and worker evidence honestly. |
+| 155–180 s | Show architecture, UAT results and remaining live/clinical limits. Identify each student's actual contribution. |
 
-| Time | Screen | Narrative and action |
-| --- | --- | --- |
-| 0:00-0:20 | Landing → conversation | Choose Open workspace to enter the same-page conversation. Introduce ResultScope Laboratory Assistant: a place to review laboratory values and understand their context. |
-| 0:20-0:45 | Example input | Load the synthetic example. Point out the value, unit and report-supplied range. |
-| 0:45-1:10 | Image review | In an explicitly mocked or authorized live session, open the report drawer and show field correction and confirmation. Otherwise use the labeled manual screenshot. |
-| 1:10-1:40 | Result and sources | Select a value. Explain that the range check is deterministic. Open the available source details. Identify the response's evidence mode. |
-| 1:40-2:00 | Follow-up | Show one supported question in the same context, then reset for a different report. |
-| 2:00-2:20 | Boundary / error | Show an unrelated request refused locally and a clear provider-unavailable message. |
-| 2:20-2:45 | Architecture | Python owns policy. Source retrieval and providers are separate. External calls pass the guard and attempt budget. |
-| 2:45-3:00 | Roadmap | Propose a scoped partner pilot. HIS/pharmacy integration and cloud operations are future work. State the next evidence needed. |
-
-Business facts and approved source rights remain prerequisites to a real partner
-pilot. Product screenshots demonstrate interface behavior, not effectiveness or
-clinical validation. The three-minute ceiling satisfies the stricter of the two
-course-document video limits.
+Record actual behavior and elapsed time. Do not replace a failed model answer with a prewritten successful one. The video file and Google Drive submission are not produced by this source package.

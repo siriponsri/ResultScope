@@ -1,0 +1,12 @@
+{
+  "name": "resultscope-introduction",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preview": "npx --yes hyperframes@0.8.131 preview",
+    "lint": "npx --yes hyperframes@0.8.131 lint",
+    "validate": "npx --yes hyperframes@0.8.131 validate",
+    "inspect": "npx --yes hyperframes@0.8.131 inspect",
+    "render": "npx --yes hyperframes@0.8.131 render"
+  }
+}

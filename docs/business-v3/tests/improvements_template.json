@@ -1,0 +1,47 @@
+{
+  "status": "NOT_RUN",
+  "items": [
+    {
+      "id": "IMP01",
+      "hypothesis": "LLM-led conversation improves goal changes and multi-turn clarification",
+      "cases": [
+        "T01",
+        "T05",
+        "X01"
+      ],
+      "before_revision": null,
+      "after_revision": null,
+      "before_result": null,
+      "after_result": null,
+      "measure": "Task success and unnecessary clarification count; record regressions and latency."
+    },
+    {
+      "id": "IMP02",
+      "hypothesis": "Layout-aware OCR plus field confirmation reduces unsafe value/row errors",
+      "cases": [
+        "I02",
+        "I03",
+        "I04",
+        "OCR01"
+      ],
+      "before_revision": null,
+      "after_revision": null,
+      "before_result": null,
+      "after_result": null,
+      "measure": "Exact critical field accuracy, missing/extra rows, user corrections, time and cost."
+    },
+    {
+      "id": "IMP03",
+      "hypothesis": "BM25 plus LightRAG improves Thai paraphrase retrieval without harming grounding",
+      "cases": [
+        "RAG01",
+        "RAG04"
+      ],
+      "before_revision": null,
+      "after_revision": null,
+      "before_result": null,
+      "after_result": null,
+      "measure": "Recall@5, supported citation rate, elapsed time and total provider cost; held-out qrels required."
+    }
+  ]
+}

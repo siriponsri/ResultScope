@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ResultScope 2.0 | User guide</title><style>
+@font-face{font-family:Plex;src:url('../fonts/plex-400.woff2')}@font-face{font-family:Plex;src:url('../fonts/plex-600.woff2');font-weight:600}
+*{box-sizing:border-box}body{font:16px/1.7 Plex,Arial,sans-serif;color:#21172f;background:#f8f8ff;margin:0}main{max-width:850px;margin:50px auto;padding:40px 50px;background:white;border:1px solid #ded8e9;border-radius:14px}a{color:#4b0082}h1{font-size:40px;line-height:1.15;letter-spacing:-1px;font-weight:600}h2{font-size:24px;line-height:1.3;margin:35px 0 15px;color:#4b0082;font-weight:600}p{margin:0 0 15px}strong{font-weight:600}.back{display:inline-block;text-decoration:none;font-size:13px;margin-bottom:25px}.edition{font-size:12px;color:#61586f;border-top:1px solid #ded8e9;padding-top:20px;margin-top:35px}
+@media(max-width:600px){main{margin:0;padding:28px 22px;border:0;border-radius:0}h1{font-size:32px}}
+@page{size:A4;margin:18mm 19mm 20mm} @media print{body{font-size:11pt;background:white;line-height:1.55}main{border:0;margin:0;padding:0;max-width:none}h1{font-size:29pt}h2{font-size:17pt;break-after:avoid}p{orphans:3;widows:3}.back{display:none}.edition{font-size:9pt}a{color:#4b0082;text-decoration:none}}
+</style></head><body><main><a class="back" href="/">← Back to the conversation</a><h1>User guide — ResultScope 2.0</h1>
+<h2>Start with a question</h2>
+<p>Type a laboratory question in the composer and press Enter. Shift+Enter inserts a
+new line. No file is required. You can ask in your preferred language, request a simpler
+explanation or ask a follow-up. The page controls stay in English. Model quality varies
+by language; professional terms, units and report intervals should remain unchanged.</p>
+<p>When <strong>Connect AI</strong> appears, open <strong>Settings &amp; connection</strong>. The project operator must
+configure the language and safety models. If requested, enter the demo access code;
+it stays in this tab. A configured badge is not proof of a successful provider call.</p>
+<h2>Read a response</h2>
+<p>The interface shows actual processing stages while the models work. The answer appears
+only after the evidence and safety checks complete. Open source links to read the
+original publisher. Source presence does not guarantee clinical correctness. Ask another
+question in your own words or use a suggested follow-up. <strong>Stop</strong> cancels a pending
+request; a provider attempt may already have been charged. <strong>Try again</strong> starts a new
+attempt and also consumes budget. <strong>Download conversation</strong> exports the visible exchange.</p>
+<h2>Add an optional report</h2>
+<p>Use the paperclip for PNG, JPEG or PDF, at most 3 MB. PDFs support one to three pages.
+Open <strong>Sample reports</strong> for the six supplied Thai laboratory reports. Each is synthetic,
+including its identities, results and ranges; these are not real patient records.
+Download the original PNG/PDF from the preview if needed.</p>
+<p>Selecting a file does not send it to the model. Review consent, then choose <strong>Read with AI</strong>.
+The report reader transcribes the actual pixels. Compare every name, value, unit,
+reference interval and flag with the original. Correct mistakes or remove spurious rows.
+Only <strong>Confirm values &amp; continue the conversation</strong> makes those rows available to chat.
+You can inspect confirmed rows again through <strong>Report context</strong>.</p>
+<p>Printed flags are preserved separately from conservative numeric interval comparisons.
+Qualitative or ambiguous results stay unchanged and may have an unknown comparison.
+A public reference interval never replaces the interval printed on your report. The
+combined six-page demo PDF is for browsing; upload individual panel PDFs to the reader.</p>
+<h2>Privacy and limits</h2>
+<p>Use synthetic or de-identified documents for this prototype. The configured AI services
+receive your message, relevant recent conversation and confirmed report fields. The
+vision provider receives document pixels after consent. The guard receives the request
+and candidate answer. An optional LightRAG service receives a model-written search query.
+Providers may retain data under their own policies. No provider retention guarantee is made.</p>
+<p>The app holds an encrypted, session-bound context token in tab memory. It expires after
+one hour by default. Refreshing clears the workspace. The server does not save v2 report
+images or conversation bodies to disk. The signed cookie and Redis usage counts contain
+no report text. Logs record request ID/outcome/duration, not message bodies.
+A downloaded conversation is your own file and may contain sensitive information.</p>
+<p><strong>New conversation</strong> clears the current workspace after confirmation and rotates its
+session cookie. Attach a different report in a new conversation to avoid mixing context.
+A copied old token is unusable with the new cookie; this is not remote revocation of a
+previously stolen cookie/token pair. Do not share browser sessions.</p>
+<p>ResultScope explains laboratory information. It cannot diagnose, prescribe, change
+medication or decide treatment. Missing evidence leads to clarification or a candid
+limitation. Discuss important findings and any urgent symptoms with a qualified clinician.</p>
+<p class="edition">ResultScope 2.0 · Updated 2026-10-05 · Educational prototype</p></main></body></html>

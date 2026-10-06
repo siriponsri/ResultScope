@@ -18,12 +18,12 @@ def test_rulebook_endpoint_and_home_surface():
 
     home = client.get("/")
     assert home.status_code == 200
-    assert "Understand your" in home.text
-    assert "View calculation rules" in home.text
+    assert "Your health." in home.text
     assert 'lang="en"' in home.text
-    assert 'id="image-input"' in home.text
-    assert 'id="image-review"' in home.text
-    assert '/static/js/chat.js' in home.text
+    assert '/app' in home.text
+    lab = client.get('/lab')
+    assert 'id="report-dialog"' in lab.text
+    assert '/static/js/conversation.js' in lab.text
 
 
 def test_default_same_origin_configuration_does_not_emit_wildcard_cors():
@@ -205,7 +205,9 @@ def test_focus_field_is_sent_to_the_authoritative_analysis_prompt(monkeypatch):
     assert "Hb" in captured["prompt"]
     assert "10.8" in captured["prompt"]
     assert "MCV" not in captured["prompt"]
-    assert "72" not in captured["prompt"]
+    # A random extraction UUID can contain "72"; inspect the clinical fields.
+    assert '"raw_value": "72"' not in captured["prompt"]
+    assert '"numeric_value": "72"' not in captured["prompt"]
 
 
 def test_unknown_focus_field_and_unconfirmed_extraction_fail_closed(monkeypatch):

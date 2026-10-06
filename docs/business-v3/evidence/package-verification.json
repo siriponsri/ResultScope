@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "mode": "clean extracted candidate; no provider calls",
+  "candidate_zip_sha256": "01dcf28e0c7c26dffd866b0364fe3b55dcfc01a3565cbd11eab731408ea82a68",
+  "manifest_file_count": 654,
+  "crc_and_all_file_hashes": "PASS",
+  "private_state_excluded": "PASS",
+  "both_environment_examples": "PASS",
+  "required_vercel_source_files": 21,
+  "historical_zip_crc_checks": 1,
+  "credential_pattern_scan": "PASS \u2014 specific credential patterns only, not a security audit",
+  "asgi": {
+    "routes": 8,
+    "corpus_records": 58,
+    "isolated_database": true,
+    "network_calls": 0
+  },
+  "source_integrity": {
+    "runtime_records": 58,
+    "source_urls": 68,
+    "integrity": "PASS",
+    "network_calls": 0
+  },
+  "scope": "Delivery ZIP is regenerated after this record and verification documentation are committed; final manifest/CRC checked again."
+}
