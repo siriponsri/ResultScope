@@ -350,3 +350,51 @@ def test_budget_status_is_manager_only():
     m = client(); promote(m)
     body = m.get(API + "/staff/budget").json()
     assert body["cost"]["scope"] == "project_total" and body["cost"]["cap_thb"] == 300.0
+
+
+# ------------------------------------------------------------ admin dashboard
+
+def test_dashboard_metrics_come_from_records_and_respect_branch_scope():
+    c = client(); b1 = confirmed(c); book(c, time="10:00")
+    other = client(); book(other, branch_id="CNX01", time="10:00")
+    txn = c.post(API + "/payments/checkout", json={"booking_id": b1["id"], "method": "card"}).json()["txn"]
+    c.post(API + f"/payments/simulator/{txn['id']}/events", json={"outcome": "success"})
+    m = client(); promote(m)
+    d = m.get(API + "/staff/dashboard").json()
+    assert d["bookings"]["by_state"]["confirmed"] == 1 and d["bookings"]["by_state"]["requested"] == 2
+    assert d["money"]["paid_thb"] == 1690 and d["money"]["test_payments"]["succeeded"] == 1
+    assert d["funnel"] == {"requested": 3, "confirmed": 1, "paid": 1}
+    bkk = next(x for x in d["capacity"] if x["branch_id"] == "BKK01")
+    assert sum(day["used"] for day in bkk["days"]) == 2 and bkk["days"][0]["capacity"] == 18 * 3
+    only_cnx = m.get(API + "/staff/dashboard", params={"branch": "CNX01"}).json()
+    assert only_cnx["scope"] == ["CNX01"] and only_cnx["bookings"]["by_state"]["requested"] == 1
+    branch_staff = client(); uid = promote(branch_staff, "staff")
+    with db.transaction() as tx:
+        u = tx.get(uid); u["data"]["branch"] = "CNX01"; tx.put(uid, "user", uid, u["data"])
+    scoped = branch_staff.get(API + "/staff/dashboard", params={"branch": "BKK01"}).json()
+    assert scoped["scope"] == ["CNX01"] and scoped["money"]["paid_thb"] == 0
+    assert c.get(API + "/staff/dashboard").status_code == 403
+
+
+def test_first_response_time_and_audit_log():
+    c = client(); c.post(API + "/handoffs", json={"summary": "Need help"})
+    m = client(); promote(m)
+    tid = m.get(API + "/staff/inbox").json()["tickets"][0]["id"]
+    m.post(API + f"/staff/tickets/{tid}/state", json={"state": "staff"})
+    m.post(API + f"/staff/tickets/{tid}/messages", json={"message": "Hello"})
+    assert m.get(API + "/staff/dashboard").json()["tickets"]["median_first_response_minutes"] is not None
+    events = m.get(API + "/staff/audit").json()["events"]
+    assert {"handoff.requested", "handoff.staff", "staff.message"} <= {e["action"] for e in events}
+    assert c.get(API + "/staff/audit").status_code == 403
+
+
+def test_manager_capacity_change_applies_to_slots_immediately():
+    m = client(); promote(m)
+    assert m.put(API + "/staff/branches/KKC01", json={"capacity_per_slot": 1}).status_code == 200
+    assert m.put(API + "/staff/branches/KKC01", json={"capacity_per_slot": 0}).status_code == 422
+    c = client()
+    s = c.get(API + "/slots", params={"branch_id": "KKC01", "date": slot()}).json()["slots"]
+    assert all(x["capacity"] == 1 for x in s)
+    assert book(c, branch_id="KKC01", time="11:00").status_code == 200
+    assert book(client(), branch_id="KKC01", time="11:00").json()["code"] == "slot_full"
+    assert client().put(API + "/staff/branches/KKC01", json={"capacity_per_slot": 5}).status_code == 403

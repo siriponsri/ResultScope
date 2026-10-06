@@ -440,6 +440,7 @@ async def staff_send(id:str,body:StaffMessage,request:Request):
         u,t=staff_ticket(tx,request,id)
         if t['state']!='staff' or t['data'].get('assigned_to')!=u['id']:raise ConversationError('takeover_required','Take over this case before replying.',409)
         c=conversation(tx,t['owner']);c['data']['messages']=(c['data']['messages']+[msg('staff',body.message)])[-100:];tx.put(c['id'],'conversation',t['owner'],c['data']);tx.audit(u['id'],'staff.message',id)
+        if not t['data'].get('first_response_at'):t['data']['first_response_at']=time.time();tx.put(id,'ticket',t['owner'],t['data'],t['state'],t['branch'])
         ops.notify(tx,t['owner'],'New reply from our team',body.message[:160],id,'/app')
         for link in tx.find('line_identity',t['owner']):
             tx.put('outbox_'+secrets.token_hex(12),'line_outbox',t['owner'],{'line_user_id':link['data']['line_user_id'],'reply':body.message,'retry_key':str(__import__('uuid').uuid4()),'attempts':0},'pending')

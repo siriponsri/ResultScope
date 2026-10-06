@@ -330,3 +330,116 @@ async def line_sim_run(request: Request):
             raise ConversationError("forbidden", "Manager access required for the channel simulator.", 403)
     from services.business_worker import once
     return await once()
+
+
+# ------------------------------------------------------------ admin dashboard
+
+def _scope(tx, user: dict, branch: str) -> set[str]:
+    all_ids = {b["id"] for b in db.branches(tx)["branches"]}
+    if user["data"]["role"] == "manager":
+        return {branch} if branch in all_ids else all_ids
+    return {user["data"].get("branch", "")}
+
+
+@router.get("/staff/dashboard")
+async def dashboard(request: Request, branch: str = "", days: int = 7):
+    """Operational metrics computed from stored records. Money values are simulated."""
+    from datetime import timedelta
+    days = max(1, min(days, 30))
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        scope = _scope(tx, user, branch)
+        branches = [b for b in db.branches(tx)["branches"] if b["id"] in scope]
+        bookings = [b for b in tx.find("booking") if b["branch"] in scope]
+        tickets = [t for t in tx.find("ticket") if t["branch"] in scope or (t["branch"] == "" and user["data"]["role"] == "manager")]
+        quotes = [q for q in tx.find("corporate_quote") if q["branch"] in scope]
+        txns = [t for t in tx.find("payment_txn") if t["branch"] in scope]
+        now = datetime.now(TZ)
+        by_state = {s: sum(b["state"] == s for b in bookings) for s in ("requested", "confirmed", "declined", "cancelled")}
+        waiting = [b for b in bookings if b["state"] == "requested"]
+        oldest = max((time.time() - b["data"].get("requested_at", b["created"]) for b in waiting), default=0)
+        individual = [b for b in bookings if not b["data"].get("organization")]
+        money = {
+            "paid_thb": sum(b["data"]["total_thb"] for b in bookings if b["data"].get("payment_status") == "paid"),
+            "unpaid_confirmed_thb": sum(b["data"]["total_thb"] for b in bookings if b["state"] == "confirmed" and b["data"].get("payment_status") == "pending"),
+            "refunded_thb": sum(b["data"]["total_thb"] for b in bookings if b["data"].get("payment_status") == "refunded"),
+            "test_payments": {s: sum(t["state"] == s for t in txns) for s in ("pending", "succeeded", "failed", "expired", "cancelled", "refunded")},
+            "mode": "SIMULATED_INTEGRATION",
+        }
+        capacity = []
+        for b in branches:
+            series = []
+            day = now.date()
+            while len(series) < days:
+                if day.weekday() != 6:
+                    ds = day.strftime("%Y-%m-%d")
+                    slots = 18 * b["capacity_per_slot"]
+                    used = sum(1 for x in individual if x["branch"] == b["id"] and x["data"]["date"] == ds and x["state"] in ops.ACTIVE_BOOKING_STATES)
+                    series.append({"date": ds, "used": used, "capacity": slots})
+                day += timedelta(days=1)
+            total = sum(s["capacity"] for s in series)
+            capacity.append({"branch_id": b["id"], "name": b["name"], "capacity_per_slot": b["capacity_per_slot"], "days": series,
+                             "utilization": round(sum(s["used"] for s in series) / total, 4) if total else 0})
+        responded = [t["data"]["first_response_at"] - t["created"] for t in tickets if t["data"].get("first_response_at")]
+        responded.sort()
+        median = responded[len(responded) // 2] if responded else None
+        funnel = {"requested": len(individual), "confirmed": sum(b["state"] == "confirmed" for b in individual),
+                  "paid": sum(b["data"].get("payment_status") == "paid" for b in individual)}
+        dots = {}
+        if user["data"]["role"] == "manager":
+            for c in tx.find("conversation"):
+                for m in c["data"].get("messages", []):
+                    if m.get("role") == "assistant" and isinstance(m.get("dot"), dict):
+                        dots[m["dot"]["name"]] = dots.get(m["dot"]["name"], 0) + 1
+                    if m.get("failed"):
+                        dots["Unanswered turns"] = dots.get("Unanswered turns", 0) + 1
+        return {
+            "generated_at": time.time(), "scope": sorted(scope), "role": user["data"]["role"], "days": days,
+            "bookings": {"by_state": by_state, "awaiting_oldest_minutes": round(oldest / 60), "upcoming_confirmed": sum(
+                1 for b in bookings if b["state"] == "confirmed" and b["data"]["date"] >= now.strftime("%Y-%m-%d"))},
+            "funnel": funnel, "money": money, "capacity": capacity,
+            "tickets": {"open": sum(t["state"] != "closed" for t in tickets), "waiting": sum(t["state"] == "waiting" for t in tickets),
+                        "with_staff": sum(t["state"] == "staff" for t in tickets), "median_first_response_minutes": None if median is None else round(median / 60, 1)},
+            "quotes": {s: sum(q["state"] == s for q in quotes) for s in ("offered", "accepted", "superseded")} | {
+                "accepted_thb": sum(q["data"]["total_thb"] for q in quotes if q["state"] == "accepted")},
+            "assistant": dots, "is_demo": True,
+        }
+
+
+@router.get("/staff/audit")
+async def audit_log(request: Request, limit: int = 100):
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required.", 403)
+        rows = sorted(tx.find("audit"), key=lambda r: r["created"], reverse=True)[:max(1, min(limit, 300))]
+        users = {}
+        out = []
+        for r in rows:
+            actor = r["owner"]
+            if actor not in users:
+                u = tx.get(actor)
+                users[actor] = (u["data"].get("role", "customer") if u and u["kind"] == "user" else actor.split("_")[0]) if actor else "system"
+            out.append({"at": r["created"], "actor_role": users[actor], "actor": actor[-6:], "action": r["data"]["action"], "object": r["data"]["object_id"][-10:]})
+        return {"events": out}
+
+
+class BranchEdit(Strict):
+    capacity_per_slot: int = Field(ge=1, le=20)
+
+
+@router.put("/staff/branches/{branch_id}")
+async def edit_branch(branch_id: str, body: BranchEdit, request: Request):
+    with db.transaction() as tx:
+        user = staff(tx, request)
+        if user["data"]["role"] != "manager":
+            raise ConversationError("forbidden", "Manager access required.", 403)
+        config = db.branches(tx)
+        b = next((x for x in config["branches"] if x["id"] == branch_id), None)
+        if not b:
+            raise ConversationError("not_found", "Unknown center.", 404)
+        b["capacity_per_slot"] = body.capacity_per_slot
+        config["version"] = "edited-" + secrets.token_hex(6)
+        tx.put("configuration_branches", "configuration", "system", config)
+        tx.audit(user["id"], "branch.capacity", branch_id)
+        return {"branch": b, "version": config["version"]}
