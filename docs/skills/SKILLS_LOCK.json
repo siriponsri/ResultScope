@@ -1,0 +1,60 @@
+{
+  "fetched_at": "2026-10-06T08:20:00+07:00",
+  "environment": "Claude Cowork cloud session (Linux container). No Claude Code CLI, no Cowork plugin from these repos is installed. claude.ai ListPlugins returned none; enabled account skills do not include these items.",
+  "method": "Shallow git clone into a session scratch directory outside the repository. Files were read as instructions only; no installer, hook, launcher binary or script from these repositories was executed.",
+  "skills": [
+    {
+      "repo": "https://github.com/anthropics/skills",
+      "resolved_commit": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+      "commit_date": "2026-10-05T06:46:42-07:00",
+      "selected_paths": ["skills/frontend-design/SKILL.md", "skills/webapp-testing/SKILL.md"],
+      "license": "Apache-2.0 (LICENSE.txt in each selected skill)",
+      "hooks_or_config_writes": "none",
+      "status": "MANUAL_REFERENCE",
+      "use": "Design plan review; Playwright reconnaissance-then-action pattern for browser tests"
+    },
+    {
+      "repo": "https://github.com/pbakaus/impeccable",
+      "resolved_commit": "ca6ca49f6a74e2e23adb955fb3801f4aa6426f3d",
+      "commit_date": "2026-10-05T18:10:31-07:00",
+      "selected_paths": [".agents/skills/impeccable/SKILL.md", ".agents/skills/impeccable/reference/audit.md", ".agents/skills/impeccable/reference/critique.md", ".agents/skills/impeccable/reference/craft-floor.md"],
+      "license": "Apache-2.0",
+      "hooks_or_config_writes": "The skill's `scripts/impeccable` launcher downloads a binary on first run and can install hooks; NOT run. Existing `.impeccable/design.json` left unchanged.",
+      "status": "MANUAL_REFERENCE",
+      "use": "Audit dimensions (a11y, responsive, theming, integrity) applied by hand"
+    },
+    {
+      "repo": "https://github.com/vercel-labs/agent-browser",
+      "resolved_commit": "526157cfd4ec64f45939f9ba0f10d5936aa7ac33",
+      "commit_date": "2026-10-03T03:28:26-03:00",
+      "selected_paths": ["skill-data/core/SKILL.md", "skill-data/dogfood/SKILL.md"],
+      "license": "Apache-2.0",
+      "hooks_or_config_writes": "CLI not installed; Playwright (already present) used as the single browser path",
+      "status": "MANUAL_REFERENCE",
+      "use": "Dogfood exploratory checklist; derive-client not used"
+    },
+    {
+      "repo": "https://github.com/anthropics/knowledge-work-plugins",
+      "resolved_commit": "8444efcd48f7012f09797778a36a33e73d0861f4",
+      "commit_date": "2026-10-01T14:59:31-07:00",
+      "selected_paths": ["marketing/skills/content-creation", "marketing/skills/brand-review", "marketing/skills/competitive-brief", "marketing/skills/draft-content"],
+      "license": "Apache-2.0",
+      "hooks_or_config_writes": "Plugin not installed; no connectors enabled",
+      "status": "MANUAL_REFERENCE",
+      "use": "Brand voice, content plan and outreach drafts"
+    },
+    {
+      "repo": "https://github.com/coreyhaines31/marketingskills",
+      "resolved_commit": "dda3841f0b294e01e93b1541486beefbfab0915e",
+      "commit_date": "2026-10-02T18:51:39-07:00",
+      "selected_paths": ["skills/product-marketing", "skills/copywriting", "skills/copy-editing", "skills/content-strategy", "skills/cro", "skills/seo-audit"],
+      "license": "MIT",
+      "hooks_or_config_writes": "none",
+      "status": "MANUAL_REFERENCE",
+      "use": "Copy, CRO review of catalog/booking flow, SEO metadata with noindex"
+    }
+  ],
+  "not_used": [
+    {"repo": "https://github.com/microsoft/playwright-mcp", "reason": "Playwright 1.56.1 with bundled Chromium is already available; MCP server not needed"}
+  ]
+}

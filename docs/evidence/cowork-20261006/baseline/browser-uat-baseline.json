@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-06T01:16:29.110Z",
+  "mode": "OFFLINE — real UI/API/storage; LLM and OCR test doubles; not clinical/model validation",
+  "records": [
+    {
+      "name": "Homepage: six supplied images and English navigation",
+      "status": "PASS",
+      "ms": 2222
+    },
+    {
+      "name": "Workspace: free-text first and account creation",
+      "status": "PASS",
+      "ms": 1054
+    },
+    {
+      "name": "Chat proposal does not book until confirmation",
+      "status": "PASS",
+      "ms": 264
+    },
+    {
+      "name": "Confirm creates exactly one appointment with canonical price",
+      "status": "PASS",
+      "ms": 201
+    },
+    {
+      "name": "Payment at center stays pending",
+      "status": "PASS",
+      "ms": 84
+    },
+    {
+      "name": "Upload opens source image and editable unconfirmed fields (OCR double)",
+      "status": "PASS",
+      "ms": 1024
+    },
+    {
+      "name": "Explicit field confirmation and selected context",
+      "status": "PASS",
+      "ms": 268
+    },
+    {
+      "name": "Archive and saved report survive reload",
+      "status": "PASS",
+      "ms": 745
+    },
+    {
+      "name": "Staff handoff consent queues the conversation",
+      "status": "PASS",
+      "ms": 200
+    },
+    {
+      "name": "Staff signs in and takes over a case",
+      "status": "PASS",
+      "ms": 1180
+    },
+    {
+      "name": "Live website staff reply reaches customer",
+      "status": "PASS",
+      "ms": 2031
+    },
+    {
+      "name": "Manager operations and catalog are available",
+      "status": "PASS",
+      "ms": 311
+    },
+    {
+      "name": "Desktop keyboard focus visible and no overflow",
+      "status": "PASS",
+      "ms": 10
+    },
+    {
+      "name": "390px fresh-load mobile navigation and reduced motion",
+      "status": "PASS",
+      "ms": 1150
+    },
+    {
+      "name": "Mobile photographic home has no horizontal overflow",
+      "status": "PASS",
+      "ms": 1140
+    },
+    {
+      "name": "No browser JavaScript errors",
+      "status": "PASS",
+      "ms": 0
+    }
+  ],
+  "errors": []
+}
