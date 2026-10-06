@@ -45,7 +45,8 @@
       liveNote = el('span', '', 'sr-only'); liveNote.setAttribute('aria-live', 'polite');
       document.body.append(tray, liveNote);
     }
-    tray.hidden = memory.length === 0 || location.pathname === '/compare';
+    tray.hidden = memory.length === 0 || !location.pathname.startsWith('/packages');
+    document.body.classList.toggle('has-tray', !tray.hidden);
     tray.replaceChildren();
     const list = el('ul');
     memory.forEach(item => {
@@ -100,9 +101,9 @@
     return p;
   }
   function card(p) {
-    const a = el('article', null, 'pkg'); a.dataset.package = p.id;
+    const a = el('article', null, 'pkg' + (p.segment === 'organization' ? ' org' : p.staff_review_required ? ' follow' : '')); a.dataset.package = p.id;
     const head = el('div', null, 'pkg-head'), h = el('h3'), link = el('a', p.name); link.href = '/packages/' + encodeURIComponent(p.id); h.append(link);
-    const badge = p.segment === 'organization' ? el('span', 'Organizations', 'badge neutral') : p.staff_review_required ? el('span', 'Staff review', 'badge warn') : el('span', 'Book directly', 'badge');
+    const badge = p.segment === 'organization' ? el('span', 'Organizations', 'badge org') : p.staff_review_required ? el('span', 'Staff review first', 'badge follow') : el('span', 'Book directly', 'badge');
     head.append(h, badge);
     const ul = el('ul', null, 'pkg-tests'); ul.setAttribute('aria-label', 'Included tests');
     p.services.slice(0, 6).forEach(s => ul.append(el('li', s))); if (p.services.length > 6) ul.append(el('li', '+' + (p.services.length - 6) + ' more'));

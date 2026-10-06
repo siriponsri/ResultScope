@@ -1,4 +1,5 @@
 {% extends "site/base.html" %}
+{% block body_attrs %}data-no-dock="true"{% endblock %}
 {% block content %}
 <div class="wrap page-head">
   <nav class="crumbs small" aria-label="Breadcrumb"><a href="/app?view=bookings">My appointments</a> / <span aria-current="page">Test payment</span></nav>
@@ -17,4 +18,4 @@
   </aside>
 </div>
 {% endblock %}
-{% block scripts %}<script src="/static/js/rs-api.js" defer></script><script src="/static/js/pay_sim.js" defer></script>{% endblock %}
+{% block scripts %}<script src="/static/js/pay_sim.js" defer></script>{% endblock %}

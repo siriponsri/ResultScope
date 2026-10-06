@@ -1,11 +1,11 @@
 {% macro money(n) %}฿{{ "{:,}".format(n) }}{% endmacro %}
 
 {% macro package_card(p, branches=None) %}
-<article class="pkg" data-package="{{ p.id }}">
+<article class="pkg{{ ' org' if p.segment == 'organization' else (' follow' if p.staff_review_required else '') }}" data-package="{{ p.id }}">
   <div class="pkg-head">
     <h3><a href="/packages/{{ p.id }}">{{ p.name }}</a></h3>
-    {% if p.segment == 'organization' %}<span class="badge neutral">Organizations</span>
-    {% elif p.staff_review_required %}<span class="badge warn">Staff review</span>
+    {% if p.segment == 'organization' %}<span class="badge org">Organizations</span>
+    {% elif p.staff_review_required %}<span class="badge follow">Staff review first</span>
     {% else %}<span class="badge">Book directly</span>{% endif %}
   </div>
   <ul class="pkg-tests" aria-label="Included tests">

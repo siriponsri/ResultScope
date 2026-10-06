@@ -8,8 +8,8 @@
   <article class="stack detail-main">
     <div class="stack-sm">
       <div class="row">
-        {% if p.segment == 'organization' %}<span class="badge neutral">Organizations · 20+ people</span>
-        {% elif p.staff_review_required %}<span class="badge warn">Staff review before booking</span>
+        {% if p.segment == 'organization' %}<span class="badge org">Organizations · 20+ people</span>
+        {% elif p.staff_review_required %}<span class="badge follow">Staff review before booking</span>
         {% else %}<span class="badge">Book directly</span>{% endif %}
         <span class="badge sim">Simulated package</span>
       </div>
@@ -41,7 +41,7 @@
       <p class="small">{{ detail.policy.payment_policy }}</p>
     </section>
   </article>
-  <aside class="buy-box card" aria-label="Price and next steps">
+  <aside class="buy-box card{{ ' org' if p.segment == 'organization' else (' follow' if p.staff_review_required else '') }}" aria-label="Price and next steps">
     <div class="pkg-price"><strong>{{ money(p.price_thb) }}</strong><span>{{ p.price_unit }}</span></div>
     <p class="tiny muted">Simulated price · catalog {{ detail.catalog_version }}</p>
     {% if p.segment == 'organization' %}

@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-05-proposed",
+  "version": "2026-10-06-customer-copy",
   "is_demo": true,
   "source_id": "RS-POLICY-20261005",
   "currency": "THB",
@@ -7,12 +7,13 @@
   "reservation_hold_minutes": 10,
   "booking_advance_days": 30,
   "organization_min_people": 20,
-  "onsite_service": "Organization locations only; feasibility and travel fee quoted by staff. No home visits.",
-  "discount_policy": "No automatic discount. Only a server-issued promotion approved by an authorized manager may change a quote.",
-  "cancellation_policy": "Free reschedule or cancellation request >=24 hours before the slot. Less than 24 hours or any refund requires staff assessment. A request is not an approved refund.",
-  "refund_policy": "Staff reviews paid-order refunds; no guaranteed approval or processing time is promised.",
-  "results_policy": "Completion estimates and preparation instructions must come from a verified service record or staff; no universal fasting rule or invented turnaround.",
-  "payment_policy": "PromptPay/card sandbox and pay at center. A screenshot is not proof of settlement. Never collect card numbers in chat.",
-  "privacy_policy": "Only synthetic data in coursework. Employer receives coordination information, never employee lab details by default. Production consent, retention and data-processing agreements require separate approval.",
-  "handoff_policy": "Active hours Mon-Sat 07:00-16:00 Asia/Bangkok. Outside hours create a ticket without promising immediate response. Urgent health concerns must not wait for this queue."
+  "onsite_service": "Onsite service is for organizations only; our team checks feasibility and quotes any travel fee. We do not offer home visits.",
+  "discount_policy": "There are no automatic discounts. Only a promotion approved by an authorized manager can change a quotation.",
+  "cancellation_policy": "You can withdraw a request at any time. Once confirmed, you can reschedule or cancel free of charge 24 hours or more before your slot; closer than that, and for any refund, our team reviews the request. A request is not an approved refund.",
+  "refund_policy": "Our team reviews refunds for paid appointments. Approval and processing time are not guaranteed.",
+  "results_policy": "Preparation instructions and result timing come from our team for your specific appointment. We do not apply a universal fasting rule or promise a turnaround time.",
+  "payment_policy": "Pay at the center, or with a test PromptPay or card payment that moves no real money. A screenshot is not proof of payment, and we never ask for card numbers in chat.",
+  "privacy_policy": "Use synthetic data only in this coursework system. Employers receive coordination information, never an employee's lab results. A production service would need its own consent, retention and data-processing approvals.",
+  "handoff_policy": "Our team works Monday to Saturday, 07:00–16:00 Bangkok time. Outside those hours your request waits in the queue without a promised response time. Urgent health concerns should not wait here: contact emergency or medical services.",
+  "source_note": "Customer-facing wording revised 2026-10-06 without changing the rules of version 2026-10-05-proposed."
 }

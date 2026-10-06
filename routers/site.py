@@ -49,19 +49,22 @@ def _package_json(data) -> str:
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    from services import business_dots
     data = _business()
     packages = [p for p in data["catalog"]["packages"] if p.get("active", True)]
-    core = [p for p in packages if p["segment"] == "individual" and not p.get("staff_review_required")][:3]
-    counts = {
-        "core": sum(1 for p in packages if p["segment"] == "individual" and not p.get("staff_review_required")),
-        "follow": sum(1 for p in packages if p["segment"] == "individual" and p.get("staff_review_required")),
-        "org": sum(1 for p in packages if p["segment"] == "organization"),
-        "budget": sum(1 for p in packages if p["price_thb"] < 1000),
+    groups = {
+        "core": [p for p in packages if p["segment"] == "individual" and not p.get("staff_review_required")],
+        "follow": [p for p in packages if p["segment"] == "individual" and p.get("staff_review_required")],
+        "org": [p for p in packages if p["segment"] == "organization"],
+        "budget": sorted([p for p in packages if p["price_thb"] < 1000], key=lambda p: p["price_thb"]),
     }
-    return page(request, "site/home.html", "ResultScope — Health checks with a clear conversation",
+    counts = {k: len(v) for k, v in groups.items()}
+    featured = next((p for p in groups["core"] if p["id"] == "P02"), groups["core"][0] if groups["core"] else None)
+    return page(request, "site/home.html", "ResultScope — Health checks, explained and booked",
                 "Compare health-check packages, ask questions in your own language and request an appointment. Coursework simulation.",
-                core=core, segments=SEGMENTS, counts=counts, branches=data["branches"]["branches"], policies=data["policies"],
-                catalog_version=data["catalog"]["version"])
+                groups=groups, segments=SEGMENTS, counts=counts, featured=featured, branches=data["branches"]["branches"],
+                policies=data["policies"], catalog_version=data["catalog"]["version"], dots=business_dots.public_roster(),
+                total=len(packages))
 
 
 @router.get("/packages", response_class=HTMLResponse)
