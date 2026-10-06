@@ -33,11 +33,11 @@
     r.rows.forEach(x => {
       const tr = make('tr', null, x.status === 'high' || x.status === 'low' ? 'flagged' : ''), st = make('td'), [label, tone] = STATUS[x.status] || STATUS.unknown;
       st.append(make('span', label, 'badge ' + tone));
-      tr.append(make('th', x.name), make('td', x.value, 'n num'), make('td', x.unit || '—'), make('td', x.reference || 'Not printed', x.reference ? 'num' : 'muted'), st);
+      tr.append(make('th', x.name), make('td', x.value, 'n num'), make('td', x.unit || 'None', x.unit ? '' : 'muted'), make('td', x.reference || 'Not printed', x.reference ? 'num' : 'muted'), st);
       tr.firstChild.scope = 'row';
       if (r.previous) {
         const p = x.previous;
-        tr.append(make('td', p ? p.value : '—', 'n num'), make('td', p && p.change !== null && p.change !== undefined ? (p.change > 0 ? '+' : '') + p.change : '—', 'n num'));
+        tr.append(make('td', p ? p.value : 'Not in previous', p ? 'n num' : 'n muted'), make('td', !p ? '' : p.change !== null && p.change !== undefined ? (p.change > 0 ? '+' : '') + p.change : 'Not numeric', p && p.change !== null && p.change !== undefined ? 'n num' : 'n muted'));
       }
       body.append(tr);
     });

@@ -27,8 +27,10 @@ assistants. It is Markdown guidance only, is not served by the application and i
 ## Current third-party assets
 
 The product refresh includes local copies of marked, DOMPurify, IBM Plex Sans, Noto Sans Thai,
-Geist and Geist Mono (Vercel, SIL OFL 1.1, `static/fonts/Geist-OFL.txt`), and the v3 serif files Source Serif 4 and
-Noto Serif Thai (SIL OFL 1.1), which v4 no longer loads. Their upstream notices and licenses accompany the files under
+Geist and Geist Mono (Vercel, SIL OFL 1.1, `static/fonts/Geist-OFL.txt`), Source Serif 4 (Adobe, SIL OFL 1.1,
+variable optical-size file `static/fonts/source-serif-4-opsz.woff2`, license `static/fonts/SourceSerif4-OFL.txt`) and
+Noto Serif Thai (SIL OFL 1.1), used again for display headings from v5. The website hero bundles Three.js r0.186.1
+(MIT, license in `static/vendor/three/LICENSE`, legal comments kept at the end of `static/js/hero3d.js`). Their upstream notices and licenses accompany the files under
 static/vendor and static/fonts. The approved native-scroll transition and optional presentation composition include
 local GSAP copies with the original copyright header and license pointer. See
 [design attribution](docs/engineering/DESIGN_REFERENCES.md) and

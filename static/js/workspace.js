@@ -696,7 +696,7 @@
     trendBox.append(grid);
     const tableBtn = button('Show as a table', () => {
       const wrap = el('div', null, 'table-wrap'), t = el('table', null, 'data'), hr = el('tr'); ['Test', ...tr.reports.map(r => r.date)].forEach(x => hr.append(el('th', x))); t.append(hr);
-      tr.tests.forEach(s => { const row = el('tr'); row.append(el('td', s.name + (s.unit ? ' (' + s.unit + ')' : ''))); tr.reports.forEach(r => { const pnt = s.points.find(p => p.report_id === r.id); row.append(el('td', pnt ? pnt.value : '—', 'n')); }); t.append(row); });
+      tr.tests.forEach(s => { const row = el('tr'); row.append(el('td', s.name + (s.unit ? ' (' + s.unit + ')' : ''))); tr.reports.forEach(r => { const pnt = s.points.find(p => p.report_id === r.id); row.append(el('td', pnt ? pnt.value : 'Not in report', pnt ? 'n' : 'n muted')); }); t.append(row); });
       wrap.append(t); modal('Results over time', wrap);
     }, 'btn ghost sm');
     const tableRow = el('div', null, 'row'); tableRow.append(tableBtn); trendBox.append(tableRow); box.append(trendBox); return box;

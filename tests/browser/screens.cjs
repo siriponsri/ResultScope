@@ -53,6 +53,8 @@ async function view(page, v) { const nav = page.locator(`.nav-item[data-view="${
 (async () => {
   let tmp;
   if (!process.env.SCREENS_BASE) {
+    // Refuse to run against a server that already answers on the port: its database would be used.
+    try { if ((await fetch(base + '/health')).ok) { console.error('Port in use: another server answers on ' + base + '. Stop it first.'); process.exit(2); } } catch { /* port free */ }
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'resultscope-screens-'));
     server = spawn(py, ['tests/browser/screens_server.py'], { cwd: root, env: { ...process.env, UI_TEST_PORT: String(port), APP_ENV: 'test', PROVIDER_NETWORK_ENABLED: 'false', BUSINESS_DB_PATH: path.join(tmp, 'db.sqlite'), BUSINESS_KEY_PATH: path.join(tmp, 'key'), BUSINESS_DATA_KEY: '', DATABASE_URL: '', VERCEL: '', RENDER: '', BUSINESS_EXTERNAL_ENABLED: '', STRIPE_SECRET_KEY: '', LINE_CHANNEL_SECRET: '', LINE_CHANNEL_ACCESS_TOKEN: '' }, stdio: ['ignore', 'ignore', 'pipe'] });
     let log = ''; server.stderr.on('data', x => { log += x; });
